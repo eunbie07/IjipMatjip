@@ -25,13 +25,14 @@
 
 ### 실행 방법
 ```bash
-cd C:\Users\kibwa07\Documents\GitHub\final_project\room-measure\eunbi\backend-local
+cd C:\Users\kibwa07\Documents\GitHub\IjipMatjip\eunbi\backend-local
 uv run uvicorn main:app --host 0.0.0.0 --port 3010 --reload
 ```
 
 ### 네트워크 설정
-- 방화벽에서 포트 3010 열기
-- 로컬 IP 주소 확인: `ipconfig` (Windows) 또는 `ifconfig` (Mac/Linux)
+- Windows 방화벽에서 포트 3010 인바운드 허용
+- 로컬 IP 주소 확인: `ipconfig` (Windows)
+- Windows 보안 → 방화벽 및 네트워크 보호 → 고급 설정 → 인바운드 규칙 → 새 규칙 → 포트 → TCP → 3010
 
 ## 2. EC2 환경 (backend-cloud + frontend)
 
@@ -45,7 +46,7 @@ sudo apt install python3-pip python3-venv
 
 # 프로젝트 클론
 git clone <your-repo>
-cd room-measure/eunbi/backend-cloud
+cd IjipMatjip/eunbi/backend-cloud
 
 # 가상환경 설정
 python3 -m venv venv
@@ -97,7 +98,7 @@ sudo apt-get install -y nodejs
 
 **Step 2: 빌드 및 배포**
 ```bash
-cd room-measure/eunbi/frontend
+cd IjipMatjip/eunbi/frontend
 
 # 환경변수 설정 (프로덕션용)
 cat > .env.production << EOF
