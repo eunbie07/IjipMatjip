@@ -4,11 +4,9 @@ import {createBrowserRouter, RouterProvider} from 'react-router-dom'
 import './index.css'
 
 import App from './App.jsx'
-import Home from './pages/Home.jsx'
 import PreferenceView from './pages/PreferenceView.jsx'
 import RecommendationView from './pages/RecommendationView.jsx'
 import DetailView from './pages/DetailView.jsx'
-import Ui from './pages/Ui.jsx'
 
 const router = createBrowserRouter([
   {

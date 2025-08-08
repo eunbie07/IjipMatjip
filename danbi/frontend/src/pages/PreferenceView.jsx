@@ -15,7 +15,7 @@ const ZapIcon = (props) => (
   </svg>
 );
 
-const lifestyleOptions = ['조용한 곳', '학군 중요', '교통 편리', '번화가', '생활편의시설','가성비'];
+const lifestyleOptions = ['조용한 곳', '학군 중요', '교통 편리', '번화가', '생활편의시설'];
 
 const PreferenceView = () => {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ const PreferenceView = () => {
   const [roomType, setRoomType] = useState('전체');
   const [areaPyeong, setAreaPyeong] = useState('');
 
-  const [selectedLifestyles, setSelectedLifestyles] = useState(['교통 편리']);
+  const [selectedLifestyles, setSelectedLifestyles] = useState(['']);
   
   const [sidoList, setSidoList] = useState([]);
   const [sigunguList, setSigunguList] = useState([]);
@@ -88,7 +88,7 @@ const PreferenceView = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-orange-50 p-4">
+    <div className="w-full min-h-screen flex items-center justify-center  p-4">
       <div className="w-full max-w-2xl flex flex-col gap-8 bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-gray-200">
         <div className="text-center flex flex-col gap-2">
           <div className="flex justify-center items-center">

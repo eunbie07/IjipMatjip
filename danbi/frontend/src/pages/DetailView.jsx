@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import InfrastructureMap from '../components/InfrastructureMap';
-import { getPhotoUrl } from '../../../ml-server/function/getPhotoUrl'
+import { getPhotoUrl } from '../function/getPhotoUrl'
 
 // --- 아이콘 컴포넌트 ---
 const ArrowLeftIcon = (props) => (
@@ -45,6 +45,7 @@ const DetailView = () => {
   const navigate = useNavigate();
   const estateData = location.state?.estateData;
   const photo_urls = getPhotoUrl(estateData.photo_url)
+  const searchConditions = location.state?.conditions
 
   // AI 리포트, 인프라, 출퇴근 시간 등 추가 데이터를 위한 State
   const [aiReport, setAiReport] = useState(null);
@@ -64,26 +65,42 @@ const DetailView = () => {
       setLoading(true);
       try {
         // TODO: 실제 AI 리포트 생성 API 호출 , 현재 더미 데이터
-        setTimeout(() => {
-          setAiReport({
-            score: 92,
-            summary: "교통 편의성과 생활 인프라를 중시하는 1인 가구에게 92% 일치하는 최적의 매물입니다.",
-            pros: ["강남역 도보 1분 거리의 초역세권", "24시간 보안 및 최신 시설", "주변에 맛집, 카페, 병원 등 편의시설 밀집"],
-            cons: ["월세가 주변 시세보다 약간 높음", "주차 공간이 협소할 수 있음"]
-          });
-        }, 1000);
-
-        // 주변 인프라 정보 요청
-        const infraPromise = axios.post('/api/infrastructure', {
+        const reportPromise = axios.post('/api/report/generate',{
+          property_data : estateData,
+          user_preferences: searchConditions
+        })
+        const infraPromise = axios.post('/api/infrastructure',{
           latitude: estateData.latitude,
           longitude: estateData.longitude,
-          radius_km: 1.0
-        });
+          radius_km:1.0
+        })
+
+        const promises = [reportPromise]
+
+        if(searchConditions?.commute?.address){
+          promises.push(axios.post('/api/geocode', {address: searchConditions.commute.address}))
+        }
+
+        promises.push(infraPromise)
         
         // 모든 API 호출을 병렬로 처리
-        const [infraRes] = await Promise.all([infraPromise]);
-        setInfrastructure(infraRes.data);
+        const results = await Promise.all(promises);
+        let resultIndex = 0;
+        
+        setAiReport(results[resultIndex].data);
+        resultIndex++;
 
+        if(searchConditions?.commute?.address){
+          const workCoords = results[resultIndex].data;
+          const directionsRes = await axios.post('/api/directions', {
+            origin:{lat: estateData.latitude, lng: estateData.longitude},
+            destination: workCoords,
+          })
+          setCommuteTime(directionsRes .data.duration_minutes)
+          resultIndex++;
+        }
+
+        setInfrastructure(results[resultIndex].data)
       } catch (error) {
         console.error("상세 정보 로딩 실패:", error);
       } finally {
@@ -92,7 +109,7 @@ const DetailView = () => {
     };
 
     fetchDetails();
-  }, [estateData]);
+  }, [estateData, searchConditions]);
 
   if (!estateData) {
     return (
@@ -102,8 +119,6 @@ const DetailView = () => {
       </div>
     );
   }
-
-  // 사진이 여러 개인 것처럼 보이게 하기 위한 더미 데이터
   
 
   return (
@@ -121,62 +136,29 @@ const DetailView = () => {
         </div>
       </header>
       
-      <main className="container mx-auto p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <main className="container p-2">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column */}
-            <div className="space-y-8">
-                <div className="mb-8">
-                    <img src={selectedImage} alt="Main view" className="w-full h-auto max-h-[500px] object-cover rounded-2xl shadow-lg mb-4" />
-                    <div className="grid grid-cols-4 gap-4">
+            <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2">
+                    <img src={selectedImage} alt="Main view" className="w-full h-auto max-h-[530px] object-cover rounded-2xl shadow-lg mb-4" />
+                    <div className="grid grid-cols-5 gap-4">
                         {photo_urls.map((img, index) => (
                             <img 
                                 key={index} 
                                 src={img} 
                                 alt={`Thumb ${index + 1}`} 
                                 onClick={() => setSelectedImage(img)} 
-                                className={`w-full h-auto object-cover rounded-lg cursor-pointer transition-all duration-200 ${selectedImage === img ? 'ring-4 ring-[#FF7E97] shadow-md' : 'opacity-70 hover:opacity-100'}`} 
+                                className={`w-full h-auto max-h-[105px] object-cover rounded-lg cursor-pointer transition-all duration-200 ${selectedImage === img ? 'ring-4 ring-[#FF7E97] shadow-md' : 'opacity-70 hover:opacity-100'}`} 
                             />
                         ))}
                     </div>
                 </div>
-
-                {loading || !aiReport ? (
-                  <div className="bg-gradient-to-br from-pink-50 to-orange-50 p-6 rounded-2xl shadow-md text-center">
-                    <p>AI 리포트를 생성 중입니다...</p>
+                <div className= "w-full flex flex-col gap-2 bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+                  <div className='flex gap-4'>
+                    <h1 className="text-2xl font-bold text-slate-900">{estateData.room_type}</h1>
+                    <p className="text-gray-500  flex items-center gap-1"><MapPinIcon /> {estateData.address}</p>
                   </div>
-                ) : (
-                  <div className="bg-gradient-to-br from-pink-50 to-orange-50 p-6 rounded-2xl shadow-md">
-                      <div className="flex items-center gap-3 mb-4">
-                          <ZapIcon className="w-8 h-8 text-[#FF7E97]" />
-                          <h2 className="text-2xl font-bold text-slate-900">AI 분석 리포트</h2>
-                          <span className="px-3 py-1 text-sm font-bold text-white bg-gradient-to-r from-[#FF7E97] to-[#f89baf] rounded-full">
-                              SCORE {aiReport.score}
-                          </span>
-                      </div>
-                      <p className="text-gray-700 mb-6">{aiReport.summary}</p>
-                      <div className="grid md:grid-cols-2 gap-6">
-                          <div>
-                              <h4 className="font-bold text-green-600 mb-2">👍 추천하는 이유</h4>
-                              <ul className="space-y-2 text-sm text-gray-600">
-                                  {aiReport.pros.map((pro, i) => <li key={i} className="flex gap-2"><CheckCircleIcon className="text-green-500 flex-shrink-0 mt-0.5"/>{pro}</li>)}
-                              </ul>
-                          </div>
-                          <div>
-                              <h4 className="font-bold text-red-600 mb-2">🤔 고려할 점</h4>
-                              <ul className="space-y-2 text-sm text-gray-600">
-                                  {aiReport.cons.map((con, i) => <li key={i} className="flex gap-2"><XCircleIcon className="text-red-500 flex-shrink-0 mt-0.5"/>{con}</li>)}
-                              </ul>
-                          </div>
-                      </div>
-                  </div>
-                )}
-            </div>
-            
-            {/* Right Column */}
-            <div className="space-y-8">
-                <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-                    <h1 className="text-3xl font-bold text-slate-900">{estateData.room_type}</h1>
-                    <p className="text-gray-500 mt-2 flex items-center gap-2"><MapPinIcon /> {estateData.address}</p>
                     <div className="mt-6 pt-6 border-t border-gray-200 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                         <div><p className="text-sm text-gray-500">거래 종류</p><p className="font-bold text-lg text-slate-800">{estateData.deal_type}</p></div>
                         <div><p className="text-sm text-gray-500">가격</p><p className="font-bold text-lg text-slate-800">{formatPrice(estateData)}</p></div>
@@ -184,7 +166,12 @@ const DetailView = () => {
                         <div><p className="text-sm text-gray-500">층</p><p className="font-bold text-lg text-slate-800">{estateData.floor}</p></div>
                     </div>
                 </div>
-                <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+
+            </div>
+            
+            {/* Right Column */}
+            <div className="flex flex-col gap-12">
+                <div className=" flex flex-col gap-2 bg-white p-6 rounded-2xl shadow-md border border-gray-100">
                     <h2 className="text-2xl font-bold text-slate-900 mb-4">위치 및 주변 정보</h2>
                     <div className="h-80 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
                       <InfrastructureMap 
@@ -195,6 +182,36 @@ const DetailView = () => {
                       />
                     </div>
                 </div>
+                {loading || !aiReport ? (
+                  <div className="bg-gradient-to-br from-pink-50 to-orange-50 p-6 rounded-2xl shadow-md text-center">
+                    <p>AI 리포트를 생성 중입니다...</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2 bg-gradient-to-br from-pink-50 to-orange-50 p-6 rounded-2xl shadow-md">
+                      <div className="flex items-center gap-2 mb-4">
+                          <ZapIcon className="w-8 h-8 text-[#FF7E97]" />
+                          <h2 className="text-2xl font-bold text-slate-900">AI 분석 리포트</h2>
+                          <span className="px-3 py-1 text-sm font-bold text-white bg-gradient-to-r from-[#FF7E97] to-[#f89baf] rounded-full">
+                              SCORE {aiReport.score}
+                          </span>
+                      </div>
+                      <p className="text-gray-700 mb-6">{aiReport.summary}</p>
+                      <div className="grid md:grid-cols-2 gap-6">
+                          <div className=' flex flex-col gap-2'>
+                              <h4 className="font-bold text-green-600 mb-2">👍 추천하는 이유</h4>
+                              <ul className="space-y-2 text-sm text-gray-600 flex flex-col gap-2">
+                                  {aiReport.pros.map((pro, i) => <li key={i} className="flex gap-2"><CheckCircleIcon className="text-green-500 flex-shrink-0 mt-0.5"/>{pro}</li>)}
+                              </ul>
+                          </div>
+                          <div className=' flex flex-col gap-2'>
+                              <h4 className="font-bold text-red-600 ">🤔 고려할 점</h4>
+                              <ul className="space-y-2 text-sm text-gray-600 flex flex-col gap-2">
+                                  {aiReport.cons.map((con, i) => <li key={i} className="flex gap-2"><XCircleIcon className="text-red-500 flex-shrink-0 mt-0.5"/>{con}</li>)}
+                              </ul>
+                          </div>
+                      </div>
+                  </div>
+                )}
             </div>
         </div>
       </main>
