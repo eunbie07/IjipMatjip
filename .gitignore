@@ -115,10 +115,12 @@ claude_*
 **/key.json
 **/key.json.example
 **/service-account*.json
+service-account.json
 **/google-credentials*.json
 **/*key*.json
 **/*key*
 *key*
+
 
 # Environment files
 **/*env*.json

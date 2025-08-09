@@ -444,17 +444,42 @@ async def call_vertex_imagen3(image_bytes: bytes, prompt: str, strength: float, 
     # SDXL 호환 크기로 리사이즈 (Vertex AI도 크기 제한이 있을 수 있음)
     resized_image_bytes = resize_image_for_sdxl(image_bytes)
     
-    # Google CLI 인증 사용 (Application Default Credentials)
+    # Google 서비스 계정 키 파일 인증 사용
     try:
         import google.auth
         from google.auth.transport.requests import Request
+        from google.oauth2 import service_account
+        import json
         
-        print("[Vertex] Google CLI 인증 사용")
+        print("[Vertex] 서비스 계정 키 파일 인증 사용")
         
-        # Application Default Credentials 사용
-        credentials, project_id = google.auth.default(
-            scopes=['https://www.googleapis.com/auth/cloud-platform']
-        )
+        # 서비스 계정 키 파일 경로들 시도
+        key_paths = [
+            "/app/service-account.json",  # Docker 내부 경로
+            "./service-account.json",     # 로컬 경로
+            "./chatbot-project-463902-6ff24439c52c.json"  # 실제 파일명
+        ]
+        
+        credentials = None
+        for key_path in key_paths:
+            try:
+                credentials = service_account.Credentials.from_service_account_file(
+                    key_path,
+                    scopes=['https://www.googleapis.com/auth/cloud-platform']
+                )
+                print(f"[Vertex] 키 파일 로드 성공: {key_path}")
+                break
+            except FileNotFoundError:
+                continue
+        
+        if not credentials:
+            # 폴백: Application Default Credentials
+            credentials, project_id = google.auth.default(
+                scopes=['https://www.googleapis.com/auth/cloud-platform']
+            )
+            print("[Vertex] 폴백: CLI 인증 사용")
+        else:
+            project_id = GCP_PROJECT_ID
         
         # Access Token 생성
         credentials.refresh(Request())
