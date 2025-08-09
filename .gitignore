@@ -89,8 +89,7 @@ test/project/mongosh-2.0.2-linux-x64/
 
 **/secret.yaml
 
-keys/
-*.json
+keys/*.json
 google-vision-key.json
 service-account-*.json
 
@@ -98,3 +97,30 @@ service-account-*.json
 .env
 .env.local
 .env.production
+
+service-account-key.json
+
+# Claude settings
+.claude/
+.claude/**
+**/.claude/
+**/.claude/**
+*.claude
+claude_*
+
+# Git templates
+.gitmessage
+
+# Google Cloud credentials
+**/key.json
+**/key.json.example
+**/service-account*.json
+**/google-credentials*.json
+**/*key*.json
+**/*key*
+*key*
+
+# Environment files
+**/*env*.json
+**/*env*
+*env*
