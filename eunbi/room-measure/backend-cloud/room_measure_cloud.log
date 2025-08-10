@@ -219,3 +219,15 @@
 2025-08-08 16:59:26,168 - main - INFO - MongoDB¿¡ ÀúÀå ¿Ï·á: 6895ae5d0605b90aa15e9a4d
 2025-08-08 16:59:26,186 - main - INFO - ¹æ ·¹ÀÌ¾Æ¿ô ÀúÀå ¿Ï·á (°Ô½ºÆ® - MongoDB)
 2025-08-08 16:59:26,186 - main - INFO - Request 2394939848992 completed in 0.234s - Status: 200
+2025-08-10 12:30:23,964 - main - INFO - Request 4365572560: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-10 12:30:23,966 - main - INFO - Request 4365572560 completed in 0.002s - Status: 200
+2025-08-10 12:30:23,968 - main - INFO - Request 4365576160: POST http://localhost:3000/save-room-layout-guest
+2025-08-10 12:30:24,432 - main - INFO - MongoDBì— ì €ì¥ ì™„ë£Œ: 6898124fcc9102abbe9b4784
+2025-08-10 12:30:24,448 - main - INFO - ë°© ë ˆì´ì•„ì›ƒ ì €ì¥ ì™„ë£Œ (ê²ŒìŠ¤íŠ¸ - MongoDB)
+2025-08-10 12:30:24,449 - main - INFO - Request 4365576160 completed in 0.480s - Status: 200
+2025-08-10 15:28:55,868 - main - INFO - Request 4403360208: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-10 15:28:55,869 - main - INFO - Request 4403360208 completed in 0.001s - Status: 200
+2025-08-10 15:28:55,870 - main - INFO - Request 4403357472: POST http://localhost:3000/save-room-layout-guest
+2025-08-10 15:28:56,331 - main - INFO - MongoDBì— ì €ì¥ ì™„ë£Œ: 68983c271dac734b67a7750f
+2025-08-10 15:28:56,334 - main - INFO - ë°© ë ˆì´ì•„ì›ƒ ì €ì¥ ì™„ë£Œ (ê²ŒìŠ¤íŠ¸ - MongoDB)
+2025-08-10 15:28:56,335 - main - INFO - Request 4403357472 completed in 0.464s - Status: 200

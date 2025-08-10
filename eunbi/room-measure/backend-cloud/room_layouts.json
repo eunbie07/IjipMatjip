@@ -3951,5 +3951,79 @@
     "created_at": "2025-08-08T16:59:26.168952",
     "updated_at": "2025-08-08T16:59:26.168952",
     "user_id": null
+  },
+  {
+    "scene": {
+      "description": "AI 인테리어 생성을 위한 36.43cm × 45.58cm 방 공간",
+      "room": {
+        "width": 364.3,
+        "depth": 455.8,
+        "height": 230
+      },
+      "objects": [
+        {
+          "name": "Bed",
+          "type": "bed",
+          "position": [
+            75,
+            30,
+            100
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "created_at": "2025-08-10T12:30:24.434256",
+    "updated_at": "2025-08-10T12:30:24.434270",
+    "user_id": null
+  },
+  {
+    "scene": {
+      "description": "AI 인테리어 생성을 위한 방 공간",
+      "room": {
+        "width": 402.6,
+        "depth": 429.1,
+        "height": 230
+      },
+      "objects": [
+        {
+          "name": "Bed",
+          "type": "bed",
+          "position": [
+            100,
+            30,
+            105
+          ],
+          "rotation_y": 0,
+          "size": [
+            150,
+            60,
+            200
+          ]
+        },
+        {
+          "name": "Desk",
+          "type": "desk",
+          "position": [
+            342.6,
+            37.5,
+            31.7164
+          ],
+          "rotation_y": 0,
+          "size": [
+            120,
+            75,
+            60
+          ]
+        }
+      ]
+    },
+    "created_at": "2025-08-10T15:28:56.331194",
+    "updated_at": "2025-08-10T15:28:56.331198",
+    "user_id": null
   }
 ]

@@ -7,7 +7,7 @@ import React, {
   useEffect,
 } from "react";
 import { useNavigate } from "react-router-dom";
-import { Canvas } from "@react-three/fiber";
+import SafeCanvas from './SafeCanvas';
 import {
   OrbitControls,
   Text as DreiText,
@@ -16,6 +16,25 @@ import {
   ContactShadows,
 } from "@react-three/drei";
 import * as THREE from "three";
+
+// CSS 애니메이션을 위한 스타일
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+if (!document.head.querySelector('style[data-roombox-styles]')) {
+  styleSheet.setAttribute('data-roombox-styles', 'true');
+  document.head.appendChild(styleSheet);
+}
 
 // 분리된 유틸리티들
 import CollisionDetector from "../utils/CollisionDetector";
@@ -221,7 +240,16 @@ export default function RoomBox({
     try {
       showInfo("방 데이터를 저장하고 있습니다...");
 
-      // 현재 방 데이터 준비
+      // 이상적인 JSON 구조에 맞게 가구 데이터 변환
+      const sceneObjects = furniture.map((f) => ({
+        name: f.name || f.type,
+        type: f.type,
+        position: f.position,
+        rotation_y: f.rotation ? Math.round((f.rotation[1] * 180) / Math.PI) : 0,
+        size: f.size,
+      }));
+
+      // 현재 방 데이터 준비 (네비게이션용)
       const roomData = {
         dimensions: {
           width_cm: w,
@@ -230,35 +258,22 @@ export default function RoomBox({
         },
         area_sqm: (w * d) / 10000,
         volume_cum: (w * h * d) / 1000000,
-        furniture_3d: furniture.map((f) => ({
-          name: f.name || f.type,
-          type: f.type,
-          position: f.position,
-          scale: f.scale,
-          rotation: f.rotation,
-        })),
+        furniture_3d: sceneObjects,
         created_at: new Date().toISOString(),
       };
 
-      // MongoDB에 방 데이터 저장
+      // MongoDB에 저장할 데이터 (API가 사용할 최종 JSON 구조)
       const saveData = {
         scene: {
-          description: `AI 인테리어 생성을 위한 ${w / 10}cm × ${
-            d / 10
-          }cm 방 공간`,
+          description: "AI 인테리어 생성을 위한 방 공간",
           room: {
             width: w,
             depth: d,
             height: h,
           },
-          objects: furniture.map((f) => ({
-            name: f.name || f.type,
-            type: f.type,
-            position: f.position,
-            scale: f.scale,
-            rotation: f.rotation,
-          })),
+          objects: sceneObjects,
         },
+        // 기존에 있던 추가 정보들도 유지
         area_sqm: (w * d) / 10000,
         volume_cum: (w * h * d) / 1000000,
         created_at: new Date().toISOString(),
@@ -475,6 +490,10 @@ export default function RoomBox({
     roughness: 0.85,
     metalness: 0.05,
   });
+
+  // 스타일 패널 접기/펼치기 상태 (디폴트는 접힌 상태)
+  const [wallPanelExpanded, setWallPanelExpanded] = useState(false);
+  const [floorPanelExpanded, setFloorPanelExpanded] = useState(false);
 
   // 벽 텍스처 프리셋
   const wallPresets = {
@@ -1298,28 +1317,53 @@ export default function RoomBox({
       </div>
 
       {/* 왼쪽 하단 - 벽면 스타일 패널 */}
-      <div className="absolute bottom-4 left-4 z-10 w-80 max-w-sm space-y-4">
+      <div className="absolute bottom-4 left-4 z-20 w-80 max-w-sm space-y-4">
         {/* 벽면 스타일 패널 */}
-        <div className="backdrop-blur-lg p-4 rounded-xl shadow-lg bg-surface/85 border border-border/50 hover:bg-surface/90 transition-all duration-200">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="p-1.5 rounded-lg bg-primary/10">
-              <svg
-                className="w-4 h-4 text-primary"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M7 21a4.5 4.5 0 01-4.5-4.5V5a2 2 0 012-2h14L21 10v6.5a4.5 4.5 0 01-4.5 4.5"
-                />
-              </svg>
+        <div className="backdrop-blur-lg rounded-xl shadow-lg bg-surface/85 border border-border/50 hover:bg-surface/90 transition-all duration-200">
+          {/* 헤더 (클릭 가능) */}
+          <button
+            onClick={() => setWallPanelExpanded(!wallPanelExpanded)}
+            className="w-full p-4 text-left flex items-center justify-between hover:bg-primary/5 transition-colors duration-200"
+          >
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-primary/10">
+                <svg
+                  className="w-4 h-4 text-primary"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 21a4.5 4.5 0 01-4.5-4.5V5a2 2 0 012-2h14L21 10v6.5a4.5 4.5 0 01-4.5 4.5"
+                  />
+                </svg>
+              </div>
+              <h4 className="font-bold text-sm text-text-primary">벽면 스타일</h4>
             </div>
-            <h4 className="font-bold text-sm text-text-primary">벽면 스타일</h4>
-          </div>
-          <div className="space-y-3">
+            {/* 펼치기/접기 아이콘 */}
+            <svg
+              className={`w-4 h-4 text-text-secondary transition-transform duration-200 ${
+                wallPanelExpanded ? 'rotate-180' : ''
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+          
+          {/* 콘텐츠 (접었다 폈다) */}
+          {wallPanelExpanded && (
+            <div className="px-4 pb-4 space-y-3">
             {/* 색상 프리셋 선택 */}
             <div>
               <p className="text-xs text-text-secondary mb-2 font-medium">
@@ -1423,30 +1467,60 @@ export default function RoomBox({
                 <span>금속</span>
               </div>
             </div>
-          </div>
+            </div>
+          )}
         </div>
 
         {/* 바닥 스타일 패널 */}
-        <div className="backdrop-blur-lg p-4 rounded-xl shadow-lg bg-surface/85 border border-border/50 hover:bg-surface/90 transition-all duration-200">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="p-1.5 rounded-lg bg-primary/10">
-              <svg
-                className="w-4 h-4 text-primary"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-                />
-              </svg>
+        <div className="backdrop-blur-lg rounded-xl shadow-lg bg-surface/85 border border-border/50 hover:bg-surface/90 transition-all duration-200">
+          {/* 헤더 (클릭 가능) */}
+          <button
+            onClick={() => setFloorPanelExpanded(!floorPanelExpanded)}
+            className="w-full p-4 text-left flex items-center justify-between hover:bg-primary/5 transition-colors duration-200"
+          >
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-primary/10">
+                <svg
+                  className="w-4 h-4 text-primary"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+                  />
+                </svg>
+              </div>
+              <h4 className="font-bold text-sm text-text-primary">바닥 스타일</h4>
             </div>
-            <h4 className="font-bold text-sm text-text-primary">바닥 스타일</h4>
-          </div>
-          <div className="space-y-3">
+            {/* 펼치기/접기 아이콘 */}
+            <svg
+              className={`w-4 h-4 text-text-secondary transition-transform duration-200 ${
+                floorPanelExpanded ? 'rotate-180' : ''
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+          
+          {/* 콘텐츠 (접었다 폈다) */}
+          {floorPanelExpanded && (
+            <div className="px-4 pb-4 space-y-3"
+                 style={{
+                   animation: floorPanelExpanded ? 'fadeIn 0.3s ease-in-out' : undefined
+                 }}
+            >
             {/* 바닥 색상 프리셋 */}
             <div>
               <p className="text-xs text-text-secondary mb-2 font-medium">
@@ -1519,10 +1593,13 @@ export default function RoomBox({
                 <span>거침</span>
               </div>
             </div>
-          </div>
+            </div>
+          )}
         </div>
+      </div>
 
-        {/* 시각 옵션 패널 */}
+      {/* 시각 옵션 패널 */}
+      <div className="absolute bottom-4 right-4 z-30 w-80 max-w-sm space-y-4">
         <div className="backdrop-blur-lg p-4 rounded-xl shadow-lg bg-surface/85 border border-border/50 hover:bg-surface/90 transition-all duration-200">
           <div className="flex items-center gap-2 mb-3">
             <div className="p-1.5 rounded-lg bg-primary/10">
@@ -1553,8 +1630,11 @@ export default function RoomBox({
               <input
                 type="checkbox"
                 checked={enableSnap}
-                onChange={(e) => setEnableSnap(e.target.checked)}
-                className="w-3 h-3 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
+                onChange={(e) => {
+                  console.log('스냅 기능 변경:', e.target.checked, 'enableSnap:', enableSnap);
+                  setEnableSnap(e.target.checked);
+                }}
+                className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
               />
               <span className="text-text-primary group-hover:text-primary transition-colors duration-200">
                 스냅 기능
@@ -1564,8 +1644,11 @@ export default function RoomBox({
               <input
                 type="checkbox"
                 checked={showSnapGrid}
-                onChange={(e) => setShowSnapGrid(e.target.checked)}
-                className="w-3 h-3 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
+                onChange={(e) => {
+                  console.log('스냅 그리드 변경:', e.target.checked, 'showSnapGrid:', showSnapGrid);
+                  setShowSnapGrid(e.target.checked);
+                }}
+                className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
               />
               <span className="text-text-primary group-hover:text-primary transition-colors duration-200">
                 스냅 그리드
@@ -1575,8 +1658,11 @@ export default function RoomBox({
               <input
                 type="checkbox"
                 checked={showFloorGrid}
-                onChange={(e) => setShowFloorGrid(e.target.checked)}
-                className="w-3 h-3 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
+                onChange={(e) => {
+                  console.log('바닥 그리드 변경:', e.target.checked, 'showFloorGrid:', showFloorGrid);
+                  setShowFloorGrid(e.target.checked);
+                }}
+                className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
               />
               <span className="text-text-primary group-hover:text-primary transition-colors duration-200">
                 바닥 그리드
@@ -1587,7 +1673,7 @@ export default function RoomBox({
                 type="checkbox"
                 checked={showCollisions}
                 onChange={(e) => setShowCollisions(e.target.checked)}
-                className="w-3 h-3 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
+                className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
               />
               <span className="text-text-primary group-hover:text-primary transition-colors duration-200">
                 충돌 표시
@@ -1598,7 +1684,7 @@ export default function RoomBox({
                 type="checkbox"
                 checked={showWindows}
                 onChange={(e) => setShowWindows(e.target.checked)}
-                className="w-3 h-3 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
+                className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
               />
               <span className="text-text-primary group-hover:text-primary transition-colors duration-200">
                 창문 표시
@@ -1609,7 +1695,7 @@ export default function RoomBox({
                 type="checkbox"
                 checked={use3DModels}
                 onChange={(e) => setUse3DModels(e.target.checked)}
-                className="w-3 h-3 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
+                className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
               />
               <span className="text-text-primary group-hover:text-primary transition-colors duration-200">
                 3D 모델
@@ -1620,7 +1706,7 @@ export default function RoomBox({
                 type="checkbox"
                 checked={showHuman}
                 onChange={(e) => setShowHuman(e.target.checked)}
-                className="w-3 h-3 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
+                className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
               />
               <span className="text-text-primary group-hover:text-primary transition-colors duration-200">
                 사람 표시
@@ -1976,7 +2062,7 @@ export default function RoomBox({
 
       {/* 3D Canvas */}
       <div className="relative w-full h-full">
-        <Canvas
+        <SafeCanvas
           camera={{
             position: [w, h, d],
             fov: 50,
@@ -2135,7 +2221,7 @@ export default function RoomBox({
               dampingFactor={0.1}
             />
           </Suspense>
-        </Canvas>
+        </SafeCanvas>
       </div>
 
       {/* 선택된 가구 정보 */}
@@ -2366,8 +2452,8 @@ export default function RoomBox({
       {/* Toast 알림 */}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
-      {/* AI 인테리어 생성 및 3D 캡처 버튼들 - 우측 하단 */}
-      <div className="absolute bottom-4 right-4 z-20 space-y-3">
+      {/* 중앙 하단 버튼들 */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 flex gap-4 items-center">
         {/* 3D 화면 캡처 버튼 */}
         <button
           onClick={handle3DCapture}
@@ -2401,33 +2487,14 @@ export default function RoomBox({
           </div>
         </button>
 
-        {/* 캡처된 이미지 미리보기 */}
-        {capturedScreenshot && (
-          <div className="bg-white rounded-xl shadow-lg p-3 max-w-[200px]">
-            <div className="text-xs font-medium text-gray-600 mb-2">
-              📸 캡처된 이미지
-            </div>
-            <img
-              src={capturedScreenshot.imageData}
-              alt="캡처된 3D 화면"
-              className="w-full h-auto rounded-lg border border-gray-200"
-            />
-            <div className="text-xs text-gray-500 mt-2">
-              {capturedScreenshot.selectedFurniture?.name || "가구 미선택"}
-              <br />
-              <span className="text-green-600">저장됨 ✓</span>
-            </div>
-          </div>
-        )}
-
         {/* AI 인테리어 생성 버튼 */}
         <button
           onClick={handleAIInteriorGenerate}
-          className="group flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+          className="group flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
         >
           <div className="p-2 bg-white/20 rounded-lg group-hover:bg-white/30 transition-colors">
             <svg
-              className="w-6 h-6"
+              className="w-5 h-5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -2441,7 +2508,7 @@ export default function RoomBox({
             </svg>
           </div>
           <div className="text-left">
-            <div className="font-bold text-lg">AI 인테리어 생성</div>
+            <div className="font-bold text-sm">AI 인테리어 생성</div>
             <div className="text-xs text-white/80">
               방 크기 기반 맞춤 디자인
             </div>
@@ -2461,6 +2528,25 @@ export default function RoomBox({
           </svg>
         </button>
       </div>
+
+      {/* 캡처된 이미지 미리보기 - 우상단 */}
+      {capturedScreenshot && (
+        <div className="absolute top-20 right-4 bg-white rounded-xl shadow-lg p-3 w-48 z-30">
+          <div className="text-xs font-medium text-gray-600 mb-2">
+            📸 캡처된 이미지
+          </div>
+          <img
+            src={capturedScreenshot.imageData}
+            alt="캡처된 3D 화면"
+            className="w-full h-auto rounded-lg border border-gray-200"
+          />
+          <div className="text-xs text-gray-500 mt-2">
+            {capturedScreenshot.selectedFurniture?.name || "가구 미선택"}
+            <br />
+            <span className="text-green-600">저장됨 ✓</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

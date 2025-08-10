@@ -5,6 +5,8 @@ import ImageUploader from "../components/ImageUploader";
 import ImageClickArea from "../components/ImageClickArea";
 import RoomResult from "../components/RoomResult";
 import RoomBox from "../components/RoomBox";
+import WebGLErrorBoundary from "../components/WebGLErrorBoundary";
+import WebGLDebugger from "../components/WebGLDebugger";
 import FurniturePlacement from "../components/FurniturePlacement";
 
 const HOUSING_TYPES = [
@@ -648,7 +650,12 @@ function RoomPlannerPage() {
               )}
 
               {activeTab === "3d" && (
-                <div className="w-full">
+                <div className="w-full space-y-4">
+                  {/* WebGL 디버그 정보 (개발용) */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <WebGLDebugger />
+                  )}
+                  
                   <div className="relative">
                     <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
                       <button
@@ -678,16 +685,18 @@ function RoomPlannerPage() {
                           : "min-h-[500px] md:min-h-[600px] lg:min-h-[700px]"
                       }`}
                     >
-                      <RoomBox
-                        width={result.dimensions?.width_cm || result.width_cm}
-                        depth={result.dimensions?.depth_cm || result.depth_cm}
-                        height={result.dimensions?.height_cm || result.height_cm}
-                        isFullscreen={isFullscreen}
-                        uploadedImageFile={image}
-                        uploadedImageUrl={imageUrl}
-                        placedFurniture={placedFurniture}
-                        onFurnitureChange={setPlacedFurniture}
-                      />
+                      <WebGLErrorBoundary>
+                        <RoomBox
+                          width={result.dimensions?.width_cm || result.width_cm}
+                          depth={result.dimensions?.depth_cm || result.depth_cm}
+                          height={result.dimensions?.height_cm || result.height_cm}
+                          isFullscreen={isFullscreen}
+                          uploadedImageFile={image}
+                          uploadedImageUrl={imageUrl}
+                          placedFurniture={placedFurniture}
+                          onFurnitureChange={setPlacedFurniture}
+                        />
+                      </WebGLErrorBoundary>
                     </div>
                   </div>
                 </div>

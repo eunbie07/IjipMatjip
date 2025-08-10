@@ -126,3 +126,7 @@ service-account.json
 **/*env*.json
 **/*env*
 *env*
+
+# Code splitter files
+code_splitter.md
+code_splitter.py

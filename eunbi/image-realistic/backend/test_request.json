@@ -1,0 +1,24 @@
+{
+  "description": "A simple bedroom scene",
+  "room": {
+    "width": 10.0,
+    "depth": 8.0,
+    "height": 3.0
+  },
+  "objects": [
+    {
+      "name": "bed1",
+      "type": "bed",
+      "position": [5.0, 0.5, 4.0],
+      "rotation_y": 0.0,
+      "size": [2.0, 1.0, 2.5]
+    },
+    {
+      "name": "desk1",
+      "type": "desk",
+      "position": [2.0, 0.7, 2.0],
+      "rotation_y": 0.0,
+      "size": [1.5, 0.8, 1.0]
+    }
+  ]
+}

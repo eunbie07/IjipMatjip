@@ -13,6 +13,8 @@ STABILITY_PROMPT = (
 )
 
 REPLICATE_PROMPT = (
+    "Transform to photorealistic interior while preserving the exact layout. "
+    "Do not add, remove, or move any furniture or walls. No built-in wardrobes, no alcoves, no extra doors or windows. "
     "PHOTOREALISTIC interior transformation: maintain exact 3D layout, replace black void with bright modern bedroom. "
     "Add large bright windows with natural daylight, white painted walls, light hardwood flooring. "
     "Transform colored geometric shapes into realistic furniture with proper materials and textures: "
@@ -24,14 +26,53 @@ REPLICATE_PROMPT = (
 )
 
 VERTEX_PROMPT = (
-    "Convert 3D render to photorealistic bedroom photo while preserving exact layout and positions. "
-    "Replace black background with bright, airy modern bedroom: white walls, large windows with natural light, "
-    "warm oak hardwood floors, realistic room proportions and architectural details. "
-    "Transform colored blocks into authentic materials: crisp white cotton bedding with natural texture and wrinkles, "
-    "wood furniture with visible grain and realistic finish, painted walls with subtle texture variations. "
-    "Professional interior photography lighting: soft window light, natural shadows, balanced exposure, "
-    "warm color temperature (4800K), realistic depth of field, eliminate all CGI/3D render artifacts, "
-    "add authentic room elements: baseboards, window trim, light fixtures, wall outlets for realism."
+    "**Transform this 3D room layout into a photorealistic interior while ABSOLUTELY PRESERVING every furniture position and room dimension.** "
+    "CRITICAL LAYOUT PRESERVATION RULES: "
+    "1. EXACT FURNITURE POSITIONS - Maintain precise location, orientation, and scale of every piece "
+    "2. ZERO ADDITIONS/REMOVALS - Do not add new furniture, built-ins, or architectural elements "
+    "3. IDENTICAL ROOM BOUNDARIES - Preserve exact room shape, size, and proportions "
+    "4. SAME SPATIAL RELATIONSHIPS - Maintain distances between all objects exactly as shown "
+    "5. FIXED OBJECT COUNT - Keep the exact same number of items as in the input "
+    "TRANSFORMATION SCOPE (Visual Style Only): "
+    "• Convert geometric/abstract shapes → realistic modern furniture with proper materials "
+    "• Add professional interior lighting with natural shadows and highlights "
+    "• Apply photorealistic textures: cotton bedding with natural wrinkles, wood grain patterns, matte wall paint "
+    "• Create bright, airy atmosphere with large windows and natural daylight (5000K) "
+    "• Use warm residential color palette suitable for modern bedroom/living space "
+    "TARGET PHOTOGRAPHY STYLE: "
+    "• Professional real estate photography (Canon EOS R5, 24-70mm f/2.8, f/5.6, ISO 400) "
+    "• Clean, bright interior with premium finishes "
+    "• Light hardwood flooring, white/cream walls, modern minimalist aesthetic "
+    "• Subtle ambient details: baseboards, window frames, natural lighting gradients "
+    "TECHNICAL OUTPUT: 896x896px, realistic depth of field, anti-CGI processing, warm color grading "
+    "ABSOLUTE PROHIBITION: Moving furniture, changing room layout, adding/removing items, altering spatial relationships, "
+    "built-in storage additions, extra doors/windows, room size modifications."
+)
+
+# 하이브리드 모드 전용 프롬프트 (JSON + 스크린샷)
+VERTEX_HYBRID_PROMPT = (
+    "**PRECISE LAYOUT PRESERVATION: Transform this 3D screenshot into photorealistic interior while maintaining EXACT furniture arrangement.** "
+    "INPUT ANALYSIS: This image contains a 3D room with specific furniture pieces at precise coordinates. "
+    "MANDATORY PRESERVATION: "
+    "• Bed position and orientation - EXACT location as shown "
+    "• Desk/table position and size - EXACT placement as shown "
+    "• Room boundaries and dimensions - EXACT shape and size "
+    "• All spatial relationships between objects - EXACT distances "
+    "• Object count - Do NOT add or remove any furniture "
+    "VISUAL TRANSFORMATION ONLY: "
+    "• Replace 3D render materials with photorealistic textures "
+    "• Add natural interior lighting with soft shadows "
+    "• Convert abstract surfaces to realistic materials: wood grain, fabric textures, painted walls "
+    "• Create modern residential atmosphere with warm daylight (5500K) "
+    "• Apply professional architectural photography aesthetics "
+    "TECHNICAL REQUIREMENTS: "
+    "• Canon EOS R5, 24-70mm f/2.8, professional interior photography "
+    "• Light hardwood flooring with natural grain variation "
+    "• Clean white/cream walls with subtle texture "
+    "• High-end modern furniture with realistic wear patterns "
+    "• Natural depth of field, anti-CGI processing "
+    "STRICT PROHIBITIONS: Furniture relocation, room reshaping, object additions/removals, "
+    "built-in storage, extra architectural elements, spatial relationship changes."
 )
 
 # 기본 프롬프트
@@ -41,21 +82,29 @@ DEFAULT_PROMPT = STABILITY_PROMPT
 NEGATIVE_PROMPT = (
     "3d render, cgi, computer graphics, digital art, artificial render, plastic surfaces, flat shading, "
     "perfect geometry, unnaturally clean surfaces, game engine render, blender render, maya render, "
-    "black background, black void, empty space, floating objects, no walls, no floor, no ceiling, "
-    "colored blocks, geometric primitives, solid colors, uniform textures, perfect edges, "
+    "black background, black void, dark background, empty space, floating objects, no walls, no floor, no ceiling, "
+    "colored blocks, geometric primitives, solid colors, uniform textures, perfect edges, smooth plastic, "
+    "sterile surfaces, artificial materials, fake textures, glossy plastic finish, "
     "cartoon, anime, illustration, stylized, low poly, sketch, drawing, painting, "
     "overexposed, underexposed, harsh lighting, artificial lighting, neon colors, oversaturated, "
     "noise, grain, artifacts, blurry, lowres, compressed, pixelated, distorted, "
     "text, watermark, logo, signature, username, copyright, "
-    "unrealistic proportions, floating furniture, impossible architecture"
+    "unrealistic proportions, floating furniture, impossible architecture, perfect surfaces, "
+    "built-in wardrobe, alcove, niche, extra door, extra window, wall opening"
 )
 
-# 3D 캡처 실사화용: 레이아웃 고정 강조 + 재질·조명 구체화
+# 3D 캡처 실사화용: 어떤 3D 레이아웃이든 침실로 변환
 CAPTURE_TO_REAL_PROMPT = (
-    "Keep the exact room layout and furniture arrangement from the input image. "
-    "Convert CGI look to realistic interior photography. Use physically plausible materials "
-    "(wood grains, fabric fibers, metal reflections), correct perspective, soft natural light, "
-    "balanced white balance, subtle shadows, no over-sharpening."
+    "Transform this 3D room layout into a stunning photorealistic modern bedroom photograph. "
+    "INTERPRET the 3D furniture positions as bedroom elements: "
+    "Convert any sofa/seating area into a comfortable bed with white cotton bedding and realistic wrinkles, "
+    "transform walls to textured white painted bedroom walls with baseboards and crown molding, "
+    "change floor to beautiful light hardwood with natural grain patterns, "
+    "add bedroom-appropriate furniture like nightstands, dresser, or wardrobe in logical positions, "
+    "create large bright windows with natural daylight streaming in, soft ambient bedroom lighting, "
+    "include bedroom details: bedside lamps, artwork, plants, decorative pillows, realistic proportions. "
+    "Professional architectural photography style, Canon 5D Mark IV, warm daylight (5000K), "
+    "natural color grading, eliminate all 3D render and CGI artifacts, achieve magazine-quality bedroom photography."
 )
 
 # 선택 스타일 프리셋
@@ -66,6 +115,6 @@ STYLE_PRESETS = {
     "japanese": "natural wood, tatami-inspired textures, shoji-like diffusion, calm ambiance",
 }
 
-# 권장 기본값 (레이아웃 보존을 위해 낮은 strength)
-DEFAULT_STRENGTH = 0.3
-DEFAULT_GUIDANCE = 9   # Stability cfg_scale 7–10 / Replicate scale 8–12 권장
+# 권장 기본값 (3D 캡처의 경우 더 강한 변환 필요)
+DEFAULT_STRENGTH = 0.7  # 기본 3D 모델을 실사로 변환하려면 높은 strength 필요
+DEFAULT_GUIDANCE = 12   # 더 강한 guidance로 프롬프트 준수 향상
