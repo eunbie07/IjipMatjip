@@ -205,20 +205,29 @@ function displayResults(images, title) {
     out.innerHTML = '';
     (images || []).forEach((url, idx) => {
         const card = document.createElement('div');
-        card.className = 'card';
+        card.className = 'bg-surface rounded-xl border border-border shadow-sm overflow-hidden hover:shadow-lg transition-shadow';
+        
         const img = document.createElement('img');
         img.src = url;
+        img.className = 'w-full h-64 object-cover';
+        
+        const content = document.createElement('div');
+        content.className = 'p-4 space-y-3';
+        
         const info = document.createElement('p');
         info.textContent = title;
-        info.style.fontSize = '12px';
-        info.style.color = '#666';
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `realistic_result_${idx}.png`;
-        a.textContent = '다운로드';
+        info.className = 'text-sm font-medium text-text-primary';
+        
+        const downloadBtn = document.createElement('a');
+        downloadBtn.href = url;
+        downloadBtn.download = `realistic_result_${idx}.png`;
+        downloadBtn.textContent = '다운로드';
+        downloadBtn.className = 'inline-flex items-center justify-center w-full px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-secondary transition-colors';
+        
+        content.appendChild(info);
+        content.appendChild(downloadBtn);
         card.appendChild(img);
-        card.appendChild(info);
-        card.appendChild(a);
+        card.appendChild(content);
         out.appendChild(card);
     });
 }

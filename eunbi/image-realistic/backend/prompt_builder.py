@@ -5,14 +5,19 @@ from prompt_templates import (
     NEGATIVE_PROMPT, STYLE_PRESETS
 )
 
+# 강화된 가구 배치 보존 모드
 STRICT_SUFFIX = (
-    " Do not add or remove furniture, doors, windows or walls. "
-    "Keep exact geometry, scale, and positions. Light should appear to come from an unseen window; "
-    "do not draw new window openings."
+    " CRITICAL FURNITURE LAYOUT PRESERVATION: Do not move, add, or remove ANY furniture. "
+    "Keep EXACT positions, orientations, and sizes of all objects as shown. "
+    "Do not change spatial relationships between furniture pieces. "
+    "Korean minimalist style: natural wood tones, clean lines, neutral colors, NO excessive decoration. "
+    "Soft natural lighting only, NO dramatic effects."
 )
 
+# 경륙적 변환 모드
 INTERPRETIVE_SUFFIX = (
-    " Minor decorative additions are allowed if they do not change the layout."
+    " Minor texture and color changes allowed, but NEVER move furniture positions. "
+    "Keep Korean minimalist aesthetic: subtle colors, natural materials, clean design."
 )
 
 def build_prompt(

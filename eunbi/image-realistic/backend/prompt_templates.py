@@ -1,52 +1,44 @@
 # Provider별 최적화된 프롬프트 (교체본)
 
+# 한국식 인테리어에 최적화된 프롬프트 - 과도한 장식 제거
 STABILITY_PROMPT = (
-    "Transform this 3D render into a photorealistic interior photograph. KEEP exact layout and furniture positions. "
-    "Replace black background with bright modern bedroom setting with large windows, natural sunlight streaming in, "
-    "soft shadows on white walls and light oak hardwood floors. "
-    "Convert colored blocks into realistic modern furniture with actual materials: "
-    "white cotton bedding with natural wrinkles, visible fabric texture, real wood grain patterns, "
-    "matte wall paint with subtle imperfections, realistic proportions and scale. "
-    "Professional real estate photography style, Canon 5D Mark IV, 24-70mm lens, f/5.6, ISO 400, "
-    "natural color grading, warm daylight (5000K), NO CGI or plastic appearance, "
-    "add ambient room details like baseboards, window frames, realistic lighting gradients."
+    "Transform this 3D render into a natural photorealistic interior. PRESERVE exact layout and furniture positions. "
+    "Replace dark background with clean, bright interior space with natural daylight. "
+    "Convert colored shapes into realistic furniture with natural materials: "
+    "soft fabric textures, natural wood grain, simple wall finishes. "
+    "Natural indoor lighting, warm atmosphere, realistic proportions. "
+    "Clean and minimal aesthetic, NO over-decoration, subtle details only."
 )
 
 REPLICATE_PROMPT = (
-    "Transform to photorealistic interior while preserving the exact layout. "
-    "Do not add, remove, or move any furniture or walls. No built-in wardrobes, no alcoves, no extra doors or windows. "
-    "PHOTOREALISTIC interior transformation: maintain exact 3D layout, replace black void with bright modern bedroom. "
-    "Add large bright windows with natural daylight, white painted walls, light hardwood flooring. "
-    "Transform colored geometric shapes into realistic furniture with proper materials and textures: "
-    "soft white cotton bedding with natural fabric wrinkles, visible thread patterns, "
-    "wood furniture with realistic grain and matte finish, proper scale and proportions. "
-    "Professional architectural photography: soft natural lighting, realistic shadows and highlights, "
-    "depth of field, warm color temperature, film grain, ANTI-CGI: no plastic sheen, no perfect surfaces, "
-    "add realistic room details: crown molding, window sills, light switches, subtle wall texture variations."
+    "Transform to photorealistic interior while preserving EXACT layout. "
+    "CRITICAL: Do not add, remove, or move any furniture. Keep exact positions and orientations. "
+    "Replace abstract shapes with realistic furniture using natural materials. "
+    "Add natural daylight, clean walls, simple flooring. "
+    "Natural fabric textures, wood grain, matte finishes. "
+    "Soft natural lighting, realistic but subtle details. "
+    "Korean-inspired minimalism: clean lines, warm wood, neutral colors. "
+    "NO elaborate decoration, NO professional photography effects."
 )
 
 VERTEX_PROMPT = (
-    "**Transform this 3D room layout into a photorealistic interior while ABSOLUTELY PRESERVING every furniture position and room dimension.** "
-    "CRITICAL LAYOUT PRESERVATION RULES: "
-    "1. EXACT FURNITURE POSITIONS - Maintain precise location, orientation, and scale of every piece "
-    "2. ZERO ADDITIONS/REMOVALS - Do not add new furniture, built-ins, or architectural elements "
-    "3. IDENTICAL ROOM BOUNDARIES - Preserve exact room shape, size, and proportions "
-    "4. SAME SPATIAL RELATIONSHIPS - Maintain distances between all objects exactly as shown "
-    "5. FIXED OBJECT COUNT - Keep the exact same number of items as in the input "
-    "TRANSFORMATION SCOPE (Visual Style Only): "
-    "• Convert geometric/abstract shapes → realistic modern furniture with proper materials "
-    "• Add professional interior lighting with natural shadows and highlights "
-    "• Apply photorealistic textures: cotton bedding with natural wrinkles, wood grain patterns, matte wall paint "
-    "• Create bright, airy atmosphere with large windows and natural daylight (5000K) "
-    "• Use warm residential color palette suitable for modern bedroom/living space "
-    "TARGET PHOTOGRAPHY STYLE: "
-    "• Professional real estate photography (Canon EOS R5, 24-70mm f/2.8, f/5.6, ISO 400) "
-    "• Clean, bright interior with premium finishes "
-    "• Light hardwood flooring, white/cream walls, modern minimalist aesthetic "
-    "• Subtle ambient details: baseboards, window frames, natural lighting gradients "
-    "TECHNICAL OUTPUT: 896x896px, realistic depth of field, anti-CGI processing, warm color grading "
-    "ABSOLUTE PROHIBITION: Moving furniture, changing room layout, adding/removing items, altering spatial relationships, "
-    "built-in storage additions, extra doors/windows, room size modifications."
+    "**Transform this 3D room into photorealistic interior while ABSOLUTELY PRESERVING furniture positions.** "
+    "MANDATORY LAYOUT PRESERVATION: "
+    "1. EXACT FURNITURE POSITIONS - Keep precise location and orientation of every item "
+    "2. NO ADDITIONS/REMOVALS - Do not add or remove any furniture or objects "
+    "3. SAME ROOM BOUNDARIES - Preserve exact room shape and dimensions "
+    "4. IDENTICAL SPATIAL RELATIONSHIPS - Maintain all distances between objects "
+    "VISUAL TRANSFORMATION ONLY: "
+    "• Convert abstract shapes into realistic furniture with natural materials "
+    "• Add natural interior lighting and soft shadows "
+    "• Apply Korean-inspired minimalist aesthetic: clean lines, natural wood, neutral colors "
+    "• Create warm, comfortable atmosphere with natural daylight "
+    "• Use simple, natural textures: wood grain, fabric, painted walls "
+    "KOREAN INTERIOR STYLE: "
+    "• Natural wood tones, cream/white walls, minimal decoration "
+    "• Clean, uncluttered design with focus on functionality "
+    "• Warm, inviting lighting without harsh contrasts "
+    "ABSOLUTE PROHIBITION: Moving furniture, changing layout, adding objects, over-decoration."
 )
 
 # 하이브리드 모드 전용 프롬프트 (JSON + 스크린샷)
@@ -78,19 +70,17 @@ VERTEX_HYBRID_PROMPT = (
 # 기본 프롬프트
 DEFAULT_PROMPT = STABILITY_PROMPT
 
-# 네거티브: Stability/Replicate에서 사용 (Vertex에는 쓰지 않음) - 강화된 버전
+# 네거티브: 과도한 장식과 가구 이동 방지
 NEGATIVE_PROMPT = (
-    "3d render, cgi, computer graphics, digital art, artificial render, plastic surfaces, flat shading, "
-    "perfect geometry, unnaturally clean surfaces, game engine render, blender render, maya render, "
-    "black background, black void, dark background, empty space, floating objects, no walls, no floor, no ceiling, "
-    "colored blocks, geometric primitives, solid colors, uniform textures, perfect edges, smooth plastic, "
-    "sterile surfaces, artificial materials, fake textures, glossy plastic finish, "
-    "cartoon, anime, illustration, stylized, low poly, sketch, drawing, painting, "
-    "overexposed, underexposed, harsh lighting, artificial lighting, neon colors, oversaturated, "
-    "noise, grain, artifacts, blurry, lowres, compressed, pixelated, distorted, "
-    "text, watermark, logo, signature, username, copyright, "
-    "unrealistic proportions, floating furniture, impossible architecture, perfect surfaces, "
-    "built-in wardrobe, alcove, niche, extra door, extra window, wall opening"
+    "3d render, cgi, computer graphics, plastic surfaces, artificial materials, "
+    "black background, dark void, floating objects, colored blocks, geometric shapes, "
+    "cartoon, illustration, sketch, oversaturated colors, neon lighting, "
+    "moving furniture, changing positions, adding furniture, removing furniture, "
+    "built-in storage, extra doors, extra windows, wall modifications, "
+    "over-decoration, excessive ornaments, complex patterns, busy textures, "
+    "professional photography equipment, camera settings, technical specifications, "
+    "luxury finishes, premium materials, high-end furniture, elaborate details, "
+    "perfect surfaces, glossy finishes, harsh lighting, dramatic shadows"
 )
 
 # 3D 캡처 실사화용: 어떤 3D 레이아웃이든 침실로 변환
@@ -113,8 +103,10 @@ STYLE_PRESETS = {
     "modern": "neutral palette, matte finishes, clean lines, low contrast lighting", 
     "bohemian": "warm tones, layered textiles, plants, rattan, cozy ambient light",
     "japanese": "natural wood, tatami-inspired textures, shoji-like diffusion, calm ambiance",
+    "korean": "warm wood tones, ondol flooring, clean white walls, minimal furniture, natural lighting, subtle traditional elements",
+    "korean_modern": "light oak wood, cream walls, low profile furniture, floor seating, warm neutral colors, clean minimalism",
 }
 
 # 권장 기본값 (3D 캡처의 경우 더 강한 변환 필요)
-DEFAULT_STRENGTH = 0.7  # 기본 3D 모델을 실사로 변환하려면 높은 strength 필요
-DEFAULT_GUIDANCE = 12   # 더 강한 guidance로 프롬프트 준수 향상
+DEFAULT_STRENGTH = 0.6  # 가구 배치 보존을 위해 strength 감소
+DEFAULT_GUIDANCE = 8    # 자연스러운 결과를 위해 guidance 감소
