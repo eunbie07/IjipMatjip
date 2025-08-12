@@ -8,6 +8,8 @@ import AIDesignPage from "./pages/AIDesignPage";
 import FindHousePage from "./pages/FindHousePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
+import RecommendationPage from "./pages/RecommendationPage";
+import DetailPage from "./pages/DetailPage";
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
             <Route path="/room-planner" element={<RoomPlannerPage />} />
             <Route path="/ai-design" element={<AIDesignPage />} />
             <Route path="/find-house" element={<FindHousePage />} />
+            <Route path="/recommend" element={<RecommendationPage/>} />
+            <Route path="/detail/:propertyId" element={<DetailPage/>} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
           </Routes>
