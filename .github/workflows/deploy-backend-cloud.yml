@@ -3,8 +3,6 @@ name: Deploy Backend Cloud
 on:
   push:
     branches: [dev-eunbi]
-    paths:
-      - 'eunbi/room-measure/backend-cloud/**'
   workflow_dispatch:
 
 # 동시 실행 방지
