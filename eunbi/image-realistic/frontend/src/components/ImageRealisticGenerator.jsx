@@ -3,12 +3,13 @@ import FileUpload from './FileUpload';
 import ResultGrid from './ResultGrid';
 
 const ImageRealisticGenerator = () => {
-  const [provider, setProvider] = useState('composite');
+  const [provider, setProvider] = useState('style-transfer');
   const [style, setStyle] = useState('scandinavian');
   const [jsonFile, setJsonFile] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [control, setControl] = useState('canny');
   const [compositeProvider, setCompositeProvider] = useState('vertex');
+  const [styleTransferProvider, setStyleTransferProvider] = useState('flux'); // 새 기능의 Provider 상태
   const [mode, setMode] = useState('strict');
   const [alpha, setAlpha] = useState(0.6);
   const [results, setResults] = useState([]);
@@ -16,8 +17,10 @@ const ImageRealisticGenerator = () => {
   const [error, setError] = useState('');
 
   const showJsonRow = provider === 'composite' || provider === 'vertex-json' || provider === 'korean-style';
-  const showImageRow = provider === 'composite' || provider.includes('-image') || provider === 'korean-style';
+  const showImageRow = provider === 'composite' || provider.includes('-image') || provider === 'korean-style' || provider === 'style-transfer';
   const showCompositeSettings = provider === 'composite';
+  const showStyleSelection = provider !== 'korean-style';
+  const showStyleTransferSettings = provider === 'style-transfer'; // 새 기능의 설정 표시 여부
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +28,9 @@ const ImageRealisticGenerator = () => {
     setIsLoading(true);
     
     try {
-      if (provider === 'korean-style') {
+      if (provider === 'style-transfer') {
+        await handleStyleTransferSubmit();
+      } else if (provider === 'korean-style') {
         await handleKoreanStyleSubmit();
       } else if (provider === 'composite') {
         await handleCompositeSubmit();
@@ -41,6 +46,31 @@ const ImageRealisticGenerator = () => {
     }
   };
 
+  const handleStyleTransferSubmit = async () => {
+    if (!imageFile) {
+      throw new Error('스타일 변환을 위한 이미지 파일을 선택해주세요.');
+    }
+
+    const fd = new FormData();
+    fd.append('image', imageFile);
+    fd.append('style', style);
+    fd.append('provider', styleTransferProvider); // 선택된 Provider 사용
+
+    const apiUrl = 'http://localhost:8000/api/interior-style-transfer';
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      body: fd,
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`서버 오류: ${res.status} - ${errorText}`);
+    }
+
+    const data = await res.json();
+    setResults(data.images.map(url => ({ url, title: `🎨 AI Style Transfer (${styleTransferProvider}) - ${style}` })));
+  };
+
   const handleKoreanStyleSubmit = async () => {
     if (!jsonFile || !imageFile) {
       throw new Error('JSON 파일과 이미지 파일을 모두 선택해주세요.');
@@ -53,10 +83,10 @@ const ImageRealisticGenerator = () => {
     const fd = new FormData();
     fd.append('scene_json', JSON.stringify(sceneData));
     fd.append('capture', imageFile);
-    fd.append('provider', compositeProvider);
-    fd.append('layout_preservation', 'ultra_strict'); // 최대 보존 모드
+    fd.append('style', 'korean_modern');
+    fd.append('provider', compositeProvider === 'vertex' ? 'vertex' : 'flux');
 
-    const apiUrl = 'http://localhost:8000/api/realistic-room-korean';
+    const apiUrl = 'http://localhost:8000/api/v2/generate-room';
     const res = await fetch(apiUrl, {
       method: 'POST',
       body: fd,
@@ -68,7 +98,7 @@ const ImageRealisticGenerator = () => {
     }
 
     const data = await res.json();
-    setResults(data.images.map(url => ({ url, title: `🇰🇷 Korean Style (${compositeProvider}) - Ultra Strict` })));
+    setResults(data.images.map(url => ({ url, title: `🏗️ V2 Layout-First (${compositeProvider}) - 구조보존` })));
   };
 
   const handleCompositeSubmit = async () => {
@@ -168,19 +198,20 @@ const ImageRealisticGenerator = () => {
     <div className="space-y-8">
       <div className="bg-surface rounded-xl border border-border shadow-sm p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Provider 선택 */}
+          {/* 기능 선택 */}
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-text-primary">Provider</label>
+            <label className="block text-sm font-semibold text-text-primary">기능 선택</label>
             <select
               value={provider}
               onChange={(e) => setProvider(e.target.value)}
               className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             >
-              <option value="korean-style">🇰🇷 Korean Style (추천)</option>
-              <option value="composite">🚀 Composite (JSON + Image)</option>
-              <option value="vertex-json">Vertex AI (JSON)</option>
-              <option value="replicate-image">Replicate (Image)</option>
-              <option value="stability-image">Stability (Image)</option>
+              <option value="style-transfer">🎨 AI 인테리어 스타일 변환 (3D 렌더)</option>
+              <option value="korean-style">🇰🇷 Korean Style (실사화)</option>
+              <option value="composite">🚀 Composite (JSON + Image 실사화)</option>
+              <option value="vertex-json">Vertex AI (JSON 실사화)</option>
+              <option value="replicate-image">Replicate (Image 실사화)</option>
+              <option value="stability-image">Stability (Image 실사화)</option>
             </select>
           </div>
 
@@ -199,7 +230,7 @@ const ImageRealisticGenerator = () => {
           {/* 이미지 업로드 */}
           {showImageRow && (
             <FileUpload
-              label="스크린샷 이미지"
+              label={provider === 'style-transfer' ? "3D 렌더링 이미지" : "스크린샷 이미지"}
               accept="image/*"
               icon="🖼️"
               description="이미지 파일을 선택하세요"
@@ -208,20 +239,38 @@ const ImageRealisticGenerator = () => {
             />
           )}
 
+          {/* 스타일 변환 기능 전용 설정 */}
+          {showStyleTransferSettings && (
+            <div className="space-y-2 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <label className="block text-sm font-semibold text-text-primary">AI Provider (스타일 변환용)</label>
+              <select
+                value={styleTransferProvider}
+                onChange={(e) => setStyleTransferProvider(e.target.value)}
+                className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+              >
+                <option value="flux">🚀 FLUX Ultra (고해상도)</option>
+                <option value="vertex">🔵 Vertex AI</option>
+                <option value="replicate">🔄 Replicate</option>
+              </select>
+            </div>
+          )}
+
           {/* Style 선택 */}
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-text-primary">인테리어 스타일</label>
-            <select
-              value={style}
-              onChange={(e) => setStyle(e.target.value)}
-              className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-            >
-              <option value="scandinavian">🏠 Scandinavian (스칸디나비안)</option>
-              <option value="modern">✨ Modern (모던)</option>
-              <option value="bohemian">🌿 Bohemian (보헤미안)</option>
-              <option value="japanese">🎌 Japanese (일본식)</option>
-            </select>
-          </div>
+          {showStyleSelection && (
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-text-primary">인테리어 스타일</label>
+              <select
+                value={style}
+                onChange={(e) => setStyle(e.target.value)}
+                className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+              >
+                <option value="scandinavian">🏠 Scandinavian (스칸디나비안)</option>
+                <option value="modern">✨ Modern (모던)</option>
+                <option value="bohemian">🌿 Bohemian (보헤미안)</option>
+                <option value="japanese">🎌 Japanese (일본식)</option>
+              </select>
+            </div>
+          )}
 
           {/* Composite 고급 설정 */}
           {showCompositeSettings && (

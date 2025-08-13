@@ -30,6 +30,7 @@ export const ValidPlacementArea = React.memo(function ValidPlacementArea({
   selectedFurnitureSize,
 }) {
   const [roomWidth, roomHeight, roomDepth] = roomSize;
+  // roomHeight는 미래 3D 높이 충돌 감지 기능을 위해 예약됨
   const gridSize = 30;
   const validPositions = [];
 

@@ -71,7 +71,7 @@ async def call_vertex_imagen(image_bytes: bytes, prompt: str, strength: float, g
         return f"data:image/png;base64,{img_base64}"
 
 async def run_pipeline_replicate_to_vertex(
-    img_bytes: bytes, style: str, strength: float, guidance: float
+    img_bytes: bytes, style: str, strength: float, guidance: float, custom_prompt: str = None
 ) -> str:
     """
     A 2-stage pipeline: Replicate's ControlNet for structure, then Vertex AI's Imagen for refinement.
@@ -79,11 +79,14 @@ async def run_pipeline_replicate_to_vertex(
     print("[Pipeline] Starting Replicate -> Vertex AI pipeline...")
     
     # --- Stage 1: Create base structure with Replicate ControlNet ---
-    style_text = STYLE_PRESETS.get(style, "")
-    controlnet_prompt = f"{CAPTURE_TO_REAL_PROMPT} Style: {style_text}".strip()
+    if custom_prompt:
+        controlnet_prompt = custom_prompt
+    else:
+        style_text = STYLE_PRESETS.get(style, "")
+        controlnet_prompt = f"{CAPTURE_TO_REAL_PROMPT} Style: {style_text}".strip()
     
     stage1_urls = await call_replicate_controlnet_structure(
-        img_bytes, prompt=controlnet_prompt, strength=0.8, guidance=10, structure="depth"
+        img_bytes, prompt=controlnet_prompt, strength=strength, guidance=guidance, structure="depth"
     )
     if not stage1_urls:
         raise HTTPException(500, "Stage 1 (ControlNet) failed: No output URL.")
@@ -108,7 +111,7 @@ async def run_pipeline_replicate_to_vertex(
     )
     
     final_image_b64 = await call_vertex_imagen(
-        stage1_bytes, prompt=vertex_refine_prompt, strength=0.4, guidance=12
+        stage1_bytes, prompt=vertex_refine_prompt, strength=0.3, guidance=6
     )
     print("[Pipeline] Stage 2 (Vertex AI) successful!")
     return final_image_b64

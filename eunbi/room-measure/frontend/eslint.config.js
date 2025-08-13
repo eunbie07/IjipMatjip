@@ -15,7 +15,10 @@ export default defineConfig([
     ],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        ...globals.node, // process 전역변수 허용
+      },
       parserOptions: {
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },
@@ -23,7 +26,15 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // 미래 사용 예정 변수들과 3D 관련 변수들 허용
+      'no-unused-vars': ['error', { 
+        varsIgnorePattern: '^[A-Z_]|^(roomHeight|mouse|height|depth|width|y3D?|x3D?|z3D?)$',
+        argsIgnorePattern: '^_|^(error|e|index|event)$'
+      }],
+      // 전역 변수 허용 (Vite 환경)
+      'no-undef': ['error', { typeof: true }],
+      // React Hooks 의존성 배열 경고만 표시
+      'react-hooks/exhaustive-deps': 'warn',
     },
   },
 ])

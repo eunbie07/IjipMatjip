@@ -4025,5 +4025,35 @@
     "created_at": "2025-08-10T15:28:56.331194",
     "updated_at": "2025-08-10T15:28:56.331198",
     "user_id": null
+  },
+  {
+    "scene": {
+      "description": "AI 인테리어 생성을 위한 방 공간",
+      "room": {
+        "width": 415.3,
+        "depth": 373.9,
+        "height": 230
+      },
+      "objects": [
+        {
+          "name": "Bed",
+          "type": "bed",
+          "position": [
+            75,
+            30,
+            100
+          ],
+          "rotation_y": 0,
+          "size": [
+            150,
+            60,
+            200
+          ]
+        }
+      ]
+    },
+    "created_at": "2025-08-12T01:20:16.374219",
+    "updated_at": "2025-08-12T01:20:16.374223",
+    "user_id": null
   }
 ]

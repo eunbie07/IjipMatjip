@@ -15,12 +15,13 @@ import httpx
 import numpy as np
 import cv2
 from PIL import ImageDraw
-from prompt_builder import build_prompt
+from prompt_builder import build_prompt, build_style_transfer_prompt
 from layout_processor import LayoutProcessor
 
 load_dotenv()
 
 app = FastAPI(title="Realistic Room Composite Service")
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -84,7 +85,7 @@ def composite_images_crop_paste(scene: Scene, capture_bytes: bytes, img_size=(10
     """
     room_width_3d = scene.room.width
     room_depth_3d = scene.room.depth
-    padding = 50
+    padding = 80
     
     drawable_width = img_size[0] - 2 * padding
     drawable_height = img_size[1] - 2 * padding
@@ -101,9 +102,10 @@ def composite_images_crop_paste(scene: Scene, capture_bytes: bytes, img_size=(10
     canvas = Image.new("RGB", img_size, "white")
 
     for item in scene.objects:
-        # JSON provides center-point coordinates.
-        center_x = item.position[0] * scale
-        center_y = item.position[2] * scale
+        # 가구는 바닥 평면만 사용: [X, Z] → [X, Y] 매핑 (Y축 높이 무시)
+        center_x = padding + item.position[0] * scale  # X 그대로
+        center_y = padding + item.position[2] * scale  # Z를 Y로 (top-left origin)
+        
         size_x = item.size[0] * scale
         size_y = item.size[2] * scale
 
@@ -165,7 +167,8 @@ async def realistic_room_composite(
     save_image(composite_bytes, 'uploads', f"{request_id}_composite_input.png")
 
     try:
-        prompt_text, _ = build_prompt(provider=provider, style_key=style, mode=mode)
+        # This old endpoint will not use the new dynamic prompt logic
+        prompt_text, _ = build_prompt(provider=provider, style_key=style, mode=mode, furniture_list=[])
         print(f"[INFO] Using prompt: {prompt_text}")
         
         if provider == "flux":
@@ -248,7 +251,7 @@ async def realistic_room_upload(
     print(f"[Upload] 요청 ID: {request_id}, 제공자: {provider}")
     
     try:
-        prompt_text, _ = build_prompt(provider=provider, style_key=style, mode="strict")
+        prompt_text, _ = build_prompt(provider=provider, style_key=style, mode="strict", furniture_list=[])
         
         if provider == "flux":
             final_image_url = await run_pipeline_controlnet_to_flux(
@@ -318,7 +321,8 @@ async def realistic_room_json_only(
     layout_bytes = generate_layout_from_json(scene)
     save_image(layout_bytes, 'uploads', f"{request_id}_layout_from_json.png")
 
-    prompt_text, _ = build_prompt(provider=provider, style_key=style, mode=mode)
+    furniture_list = [obj.type for obj in scene.objects]
+    prompt_text, _ = build_prompt(provider=provider, style_key=style, mode=mode, furniture_list=furniture_list)
 
     if provider == "flux":
         final_image_url = await run_pipeline_controlnet_to_flux(
@@ -367,10 +371,10 @@ def generate_layout_from_json(scene: Scene, img_size=(1024, 1024)) -> bytes:
 
     print(f"[Layout] 방 크기: {room_width_3d:.1f}x{room_depth_3d:.1f}, 통일 스케일: {scale:.4f}")
 
-    # 가구 그리기 (composite와 정확히 동일한 좌표 계산)
+    # 가구 그리기 (바닥 평면 X,Z만 사용, Y축 높이 무시)
     for item in scene.objects:
-        center_x = padding + item.position[0] * scale
-        center_y = padding + item.position[2] * scale
+        center_x = padding + item.position[0] * scale  # X 그대로  
+        center_y = padding + item.position[2] * scale  # Z를 Y로
         size_x = item.size[0] * scale
         size_y = item.size[2] * scale
         
@@ -465,7 +469,8 @@ async def realistic_room_advanced_composite(
     save_image(composite_bytes, 'uploads', f"{request_id}_composite.png")
 
     # 6) AI 파이프라인 실행
-    prompt_text, negative_text = build_prompt(provider=provider, style_key=style, mode=mode)
+    furniture_list = [obj.type for obj in scene.objects]
+    prompt_text, negative_text = build_prompt(provider=provider, style_key=style, mode=mode, furniture_list=furniture_list)
     print(f"[Advanced-Composite] 프롬프트: {prompt_text[:100]}...")
     
     if provider == "flux":
@@ -557,7 +562,8 @@ async def realistic_room_korean_style(
             guidance = 6    # 낮은 가이던스로 자연스러운 결과
         else:
             # 기본 strict 모드
-            prompt_text, _ = build_prompt(provider=provider, style_key="korean_modern", mode="strict")
+            furniture_list = [obj.type for obj in scene.objects]
+            prompt_text, _ = build_prompt(provider=provider, style_key="korean_modern", mode="strict", furniture_list=furniture_list)
             korean_prompt = prompt_text
             strength = 0.6
             guidance = 8
@@ -566,7 +572,7 @@ async def realistic_room_korean_style(
         
         if provider == "vertex":
             final_image_url = await run_pipeline_replicate_to_vertex(
-                composite_bytes, "korean_modern", strength, guidance
+                composite_bytes, "korean_modern", strength, guidance, korean_prompt
             )
         elif provider == "flux":
             final_image_url = await run_pipeline_controlnet_to_flux(
@@ -648,7 +654,18 @@ async def generate_room_v2(
         print(f"[V2] Hybrid input image created for request {request_id}")
 
         # 2. Build a prompt focused on style, as layout is handled by the image
-        prompt_text, _ = build_prompt(provider=provider, style_key=style, mode="strict")
+        scene_data = json.loads(scene_json)
+        if 'scene' not in scene_data:
+            scene_data = {'scene': scene_data}
+        scene_model = Scene.model_validate(scene_data['scene'])
+        furniture_list = [obj.type for obj in scene_model.objects]
+        
+        prompt_text, _ = build_prompt(
+            provider=provider, 
+            style_key=style, 
+            mode="strict", 
+            furniture_list=furniture_list
+        )
         print(f"[V2] Using prompt: {prompt_text}")
 
         # 3. Execute the recommended AI Pipeline
@@ -681,3 +698,60 @@ async def generate_room_v2(
 @app.get("/healthz")
 async def healthz():
     return {"ok": True}
+
+
+@app.post("/api/interior-style-transfer", response_model=I2IResponse)
+async def interior_style_transfer(
+    image: UploadFile = File(...),
+    style: str = Form("modern"),
+    provider: str = Form("flux")
+):
+    """
+    3D 렌더링 이미지의 인테리어 스타일을 변환합니다. (실사화 X)
+    """
+    request_id = str(uuid.uuid4())[:8]
+    img_bytes = await image.read()
+    
+    save_image(img_bytes, 'uploads', f"{request_id}_style_transfer_input.png")
+    print(f"[Style-Transfer] Request ID: {request_id}, Provider: {provider}, Style: {style}")
+    
+    try:
+        # 스타일 변환에 특화된 프롬프트 빌더 사용
+        prompt_text = build_style_transfer_prompt(style_key=style)
+        print(f"[Style-Transfer] Generated Prompt: {prompt_text}")
+        
+        if provider == "flux":
+            final_image_url = await run_pipeline_controlnet_to_flux(
+                img_bytes, prompt_text, strength=0.8, guidance=8
+            )
+        elif provider == "vertex":
+            final_image_url = await run_pipeline_replicate_to_vertex(
+                img_bytes, style, strength=0.7, guidance=10
+            )
+        else:
+            # 기본적으로 Replicate ControlNet 사용
+            controlnet_urls = await call_replicate_controlnet_structure(
+                img_bytes, prompt_text, strength=0.85, guidance=9, structure="depth"
+            )
+            if controlnet_urls:
+                async with httpx.AsyncClient() as client:
+                    resp = await client.get(controlnet_urls[0])
+                    if resp.status_code == 200:
+                        img_b64 = base64.b64encode(resp.content).decode()
+                        final_image_url = f"data:image/png;base64,{img_b64}"
+                    else:
+                        raise HTTPException(500, f"Image download failed: {resp.status_code}")
+            else:
+                raise HTTPException(500, "ControlNet processing failed")
+
+        if final_image_url:
+            save_generated_image(final_image_url, f"{provider}_style_transfer", request_id)
+        
+        return {"images": [final_image_url]}
+        
+    except Exception as e:
+        print(f"[Style-Transfer] Failed - Request ID: {request_id}, Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+

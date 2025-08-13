@@ -110,3 +110,13 @@ STYLE_PRESETS = {
 # 권장 기본값 (3D 캡처의 경우 더 강한 변환 필요)
 DEFAULT_STRENGTH = 0.6  # 가구 배치 보존을 위해 strength 감소
 DEFAULT_GUIDANCE = 8    # 자연스러운 결과를 위해 guidance 감소
+
+# AI 인테리어 스타일 변환 전용 프롬프트
+STYLE_TRANSFER_PROMPT_TEMPLATE = (
+    "A high-quality rendering of a room in a {style} interior design style. "
+    "Strictly adhere to the furniture layout, perspective, and structure from the provided image. "
+    "Change the wall colors, flooring, bedding, and furniture materials to match the {style} aesthetic. "
+    "Do not add, remove, or change the position of any furniture or structural elements. "
+    "The output should look like a 3D render, not a photorealistic image."
+)
+
