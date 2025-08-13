@@ -46,13 +46,13 @@ import { DraggableFurnitureWithCollision } from "./3D/DraggableFurniture";
 import { DraggableHuman } from "./3D/DraggableHuman";
 
 // 분리된 훅들
-import { useRoomState } from "../hooks/useRoomState";
-import { useToast } from "../hooks/useToast";
-import { useFurnitureHandlers } from "../hooks/useFurnitureHandlers";
-import { useKeyboardControls } from "../hooks/useKeyboardControls";
-import { useWallFloorSettings } from "../hooks/useWallFloorSettings";
-import { usePanelStates } from "../hooks/usePanelStates";
-import { useFurnitureConversion } from "../hooks/useFurnitureConversion";
+import { useRoomState } from "../hooks/useRoomState.js";
+import { useToast } from "../hooks/useToast.js";
+import { useFurnitureHandlers } from "../hooks/useFurnitureHandlers.js";
+import { useKeyboardControls } from "../hooks/useKeyboardControls.js";
+import { useWallFloorSettings } from "../hooks/useWallFloorSettings.js";
+import { usePanelStates } from "../hooks/usePanelStates.js";
+import { useFurnitureConversion } from "../hooks/useFurnitureConversion.js";
 
 // 분리된 상수들
 import {
