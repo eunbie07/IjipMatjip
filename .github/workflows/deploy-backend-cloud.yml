@@ -3,9 +3,9 @@ name: Deploy Backend Cloud
 on:
   push:
     branches: [ dev-eunbi ]
-    paths:
-      - 'eunbi/room-measure/backend-cloud/**'
-  workflow_dispatch:
+  #   paths:
+  #     - 'eunbi/room-measure/backend-cloud/**'
+  # workflow_dispatch:
 
 concurrency:
   group: deploy-backend-cloud-${{ github.ref }}
@@ -25,6 +25,7 @@ jobs:
           host: ${{ secrets.EUNBI_NODE_EC2_HOST }}
           username: node1
           key: ${{ secrets.EUNBI_NODE_EC2_SSH_KEY }}
+          envs: GITHUB_SHA              # ← 이 줄 추가 (중요)
           script: |
             set -euo pipefail
             mkdir -p /home/node1/app/eunbi/room-measure/backend-cloud
