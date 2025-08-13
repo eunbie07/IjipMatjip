@@ -1,0 +1,93 @@
+name: Deploy Frontend Main
+
+on:
+  push:
+    branches: [ integration ]
+    paths:
+      - 'frontend-main/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend-main/package-lock.json
+
+      - name: Create .env file
+        run: |
+          cd frontend-main
+          cat > .env << EOF
+          # API URLs
+          VITE_LOCAL_API_BASE=${{ secrets.VITE_LOCAL_API_BASE }}
+          VITE_CLOUD_API_BASE=${{ secrets.VITE_CLOUD_API_BASE }}
+          VITE_AI_INTERIOR_API_BASE=${{ secrets.VITE_AI_INTERIOR_API_BASE }}
+          
+          # API Keys
+          VITE_GEMINI_API_KEY=${{ secrets.VITE_GEMINI_API_KEY }}
+          EOF
+
+      - name: Install dependencies
+        run: |
+          cd frontend-main
+          npm ci
+
+      - name: Build frontend
+        run: |
+          cd frontend-main
+          npm run build
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.EUNBI_NODE_EC2_HOST }}
+          username: node1
+          key: ${{ secrets.EUNBI_NODE_EC2_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            
+            # 프로젝트 업데이트
+            cd /home/node1/app
+            git fetch origin
+            git reset --hard origin/integration
+            
+            # 프론트엔드 배포
+            cd frontend-main
+            
+            # .env 파일 생성 (EC2에서도)
+            cat > .env << EOF
+            # API URLs
+            VITE_LOCAL_API_BASE=${{ secrets.VITE_LOCAL_API_BASE }}
+            VITE_CLOUD_API_BASE=${{ secrets.VITE_CLOUD_API_BASE }}
+            VITE_AI_INTERIOR_API_BASE=${{ secrets.VITE_AI_INTERIOR_API_BASE }}
+            
+            # API Keys
+            VITE_GEMINI_API_KEY=${{ secrets.VITE_GEMINI_API_KEY }}
+            EOF
+            
+            # 의존성 설치 및 빌드
+            npm ci
+            npm run build
+            
+            # Nginx에 배포
+            sudo rm -rf /var/www/html/*
+            sudo cp -r dist/* /var/www/html/
+            sudo chown -R www-data:www-data /var/www/html/
+            
+            # Nginx 재시작
+            sudo systemctl restart nginx
+            
+            echo "Frontend Main 배포 완료!"
+            
+            # 헬스체크
+            sleep 5
+            curl -fsS http://localhost || { echo "Frontend Main 헬스체크 실패"; exit 1; }
