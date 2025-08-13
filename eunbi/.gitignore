@@ -1,0 +1,3 @@
+# eunbi 디렉토리에서만 사용하는 .gitignore
+# 상위 디렉토리의 frontend-main 폴더 무시
+../frontend-main/
