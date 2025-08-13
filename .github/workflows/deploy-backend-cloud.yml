@@ -58,8 +58,15 @@ jobs:
             sudo docker stop room-measure-cloud 2>/dev/null || true
             sudo docker rm room-measure-cloud 2>/dev/null || true
 
-            # 새 이미지 로드
+            # tar 파일 존재 확인
             cd /home/node1
+            if [ ! -f room-measure-cloud.tar ]; then
+              echo "❌ room-measure-cloud.tar 파일을 찾을 수 없습니다!"
+              ls -la /home/node1/
+              exit 1
+            fi
+
+            # 새 이미지 로드
             sudo docker load < room-measure-cloud.tar
 
             # 앱 디렉토리로 이동
