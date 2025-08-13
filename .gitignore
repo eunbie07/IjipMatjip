@@ -139,3 +139,7 @@ code_splitter.py
 ..bfg-report/
 **/.bfg-report/
 bfg-report/
+
+# Obsidian settings
+.obsidian/
+**/.obsidian/

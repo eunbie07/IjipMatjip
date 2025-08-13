@@ -1,730 +1,878 @@
 import React, { useState } from "react";
-import { saveRoomDataAndGenerateAI, getGeneratedImages } from "../utils/api";
-import StyleChangePanel from "./StyleChangePanel";
 
-const INTERIOR_STYLES = [
-  {
-    id: "scandinavian",
+// 검증된 침실 스타일 프리셋들
+const bedroomPresets = {
+  modern_warm: {
+    name: "모던 미니멀 (따뜻한)",
+    description: "깨끗하고 따뜻한 현대적 침실",
+    basePrompt: `
+Modern minimal bedroom with warm neutral tones:
+- Clean lines, minimal furniture, uncluttered surfaces, open spaces
+- Warm beiges, soft creams, light browns, gentle taupes, cozy atmosphere
+- Sleek contemporary furniture, clean geometric shapes, natural materials
+- Large windows, abundant natural light, bright airy atmosphere
+- Platform bed with simple headboard, floating nightstands, built-in storage
+- Light oak wood floors, white/cream walls, minimal decorative items
+- Quality textiles: linen, cotton, soft wool in neutral tones
+- Hidden storage solutions maintaining clean aesthetic`
+  },
+  
+  modern_cool: {
+    name: "모던 미니멀 (쿨톤)",
+    description: "시원하고 깨끗한 현대적 침실",
+    basePrompt: `
+Modern minimal bedroom with cool neutral tones:
+- Clean lines, minimal furniture, open spaces, sophisticated simplicity
+- Cool grays, soft whites, pale blues, crisp clean feeling, modern aesthetic
+- Sleek contemporary furniture, mixed materials, geometric shapes
+- Bright even lighting, large windows, airy atmosphere
+- Platform bed, geometric nightstands, hidden storage solutions
+- Light gray walls, white trim, polished concrete or light wood floors
+- Minimal metal accents, glass elements, monochromatic palette
+- Everything has its place, surfaces kept completely clear`
+  },
+  
+  scandinavian_cozy: {
     name: "스칸디나비안",
-    description: "심플하고 밝은 북유럽 스타일",
+    description: "따뜻하고 자연스러운 북유럽 침실",
+    basePrompt: `
+Scandinavian cozy bedroom with hygge atmosphere:
+- Light woods, cozy textiles, white and natural tones, functional design
+- Pine/birch wood furniture, woven textiles, natural fiber rugs
+- Mid-century inspired pieces, walnut accents, tapered wooden legs
+- Soft warm lighting, table lamps, candles, golden glow ambiance
+- Wooden bed frame, linen bedding, wool throws, multiple pillows
+- Light wooden floors, white walls with wood accents, large windows
+- Plants, books, ceramic items, but kept minimal and purposeful
+- Emphasis on natural materials, comfort, and sustainable living`
   },
-  { id: "modern", name: "모던", description: "깔끔하고 세련된 현대적 스타일" },
-  {
-    id: "industrial",
-    name: "인더스트리얼",
-    description: "도시적이고 개성 있는 스타일",
-  },
-  { id: "cozy", name: "코지", description: "따뜻하고 아늑한 스타일" },
-  {
-    id: "bohemian",
-    name: "보헤미안",
-    description: "자유롭고 자연친화적 스타일",
-  },
-];
-
-const GENERATOR_OPTIONS = [
-  { 
-    id: "dalle", 
-    name: "DALL-E 3", 
-    description: "빠른생성 정확도", 
-    speed: "30초",
-    accuracy: "70%",
-    endpoint: "/generate-interior-dalle"
-  },
-  { 
-    id: "dify", 
-    name: "Dify(Vertex AI)", 
-    description: "빠른 생성", 
-    speed: "30초",
-    accuracy: "75%",
-    endpoint: "/generate-interior"
-  },
-  { 
-    id: "stable_diffusion", 
-    name: "Stable Diffusion", 
-    description: "정확한 위치 제어", 
-    speed: "4분+",
-    accuracy: "80%",
-    endpoint: "/generate-interior-sd"
-  },
-  { 
-    id: "colab", 
-    name: "Colab Inpainting", 
-    description: "99.7% 위치 정확도 🏆", 
-    speed: "1-2분",
-    accuracy: "99.7%",
-    endpoint: "/generate-interior-colab",
-    recommended: true 
-  },
-  { 
-    id: "furniture_style_dalle", 
-    name: "가구 스타일 변경 (DALL-E)", 
-    description: "DALL-E 기반 개별 가구 스타일 변경 🎯", 
-    speed: "1분",
-    accuracy: "90%",
-    endpoint: "/generate-interior-dalle",
-    mode: "furniture_change",
-    recommended: true
-  },
-  { 
-    id: "furniture_style_vertex", 
-    name: "가구 스타일 변경 (Vertex AI)", 
-    description: "Vertex AI 기반 고품질 가구 스타일 변경 ⭐", 
-    speed: "30초",
-    accuracy: "95%",
-    endpoint: "/generate-interior-vertex",
-    mode: "furniture_change",
-    disabled: false, // 활성화!
-    recommended: true
+  
+  contemporary_bold: {
+    name: "컴템포러리",
+    description: "현대적이고 세련된 침실",
+    basePrompt: `
+Contemporary sophisticated bedroom with bold design:
+- Current design trends, mixed materials, bold accents, sophisticated schemes
+- Rich color combinations, dramatic contrasts, luxurious textures
+- Designer furniture, innovative materials, statement pieces
+- Strategic lighting, architectural features, dynamic shadows, accent lighting
+- Upholstered headboard, designer nightstands, luxury finishes
+- Rich textures: velvet, silk, leather, polished stone, metal accents
+- Modern art, curated accessories, plants as design elements
+- High-end materials, attention to detail, magazine-worthy styling`
   }
-];
-
-const FURNITURE_STYLES = {
-  bed: [
-    { id: 'modern_bed', name: '모던 침대', description: '깔끔하고 심플한 디자인' },
-    { id: 'vintage_bed', name: '빈티지 침대', description: '클래식하고 우아한 느낌' },
-    { id: 'minimalist_bed', name: '미니멀 침대', description: '단순하고 기능적인 디자인' },
-    { id: 'luxury_bed', name: '럭셔리 침대', description: '고급스럽고 화려한 스타일' },
-    { id: 'scandinavian_bed', name: '스칸디나비안 침대', description: '밝고 자연친화적인 북유럽 스타일' },
-    { id: 'industrial_bed', name: '인더스트리얼 침대', description: '메탈과 우드의 조합' }
-  ],
-  chair: [
-    { id: 'ergonomic_chair', name: '인체공학 의자', description: '편안함을 위한 설계' },
-    { id: 'vintage_chair', name: '빈티지 의자', description: '레트로한 감성' },
-    { id: 'gaming_chair', name: '게이밍 의자', description: '게임에 특화된 디자인' },
-    { id: 'office_chair', name: '사무용 의자', description: '업무 효율성 중심' },
-    { id: 'accent_chair', name: '액센트 의자', description: '포인트가 되는 디자인' },
-    { id: 'rocking_chair', name: '흔들의자', description: '편안한 휴식을 위한 의자' }
-  ],
-  sofa: [
-    { id: 'sectional_sofa', name: '섹셔널 소파', description: 'L자형 대형 소파' },
-    { id: 'chesterfield_sofa', name: '체스터필드 소파', description: '영국 전통 스타일' },
-    { id: 'modern_sofa', name: '모던 소파', description: '현대적이고 세련된 디자인' },
-    { id: 'recliner_sofa', name: '리클라이너 소파', description: '리클라이닝 기능이 있는 소파' },
-    { id: 'loveseat_sofa', name: '러브시트 소파', description: '2인용 아늑한 소파' },
-    { id: 'velvet_sofa', name: '벨벳 소파', description: '고급스러운 벨벳 소재' }
-  ],
-  desk: [
-    { id: 'executive_desk', name: '임원용 책상', description: '고급스러운 사무용 책상' },
-    { id: 'standing_desk', name: '스탠딩 책상', description: '높이 조절 가능한 책상' },
-    { id: 'gaming_desk', name: '게이밍 책상', description: 'LED와 케이블 정리 기능' },
-    { id: 'vintage_desk', name: '빈티지 책상', description: '클래식한 우드 테이블' }
-  ],
-  table: [
-    { id: 'coffee_table', name: '커피 테이블', description: '거실용 중앙 테이블' },
-    { id: 'dining_table', name: '다이닝 테이블', description: '식사용 테이블' },
-    { id: 'side_table', name: '사이드 테이블', description: '소파 옆 보조 테이블' },
-    { id: 'glass_table', name: '유리 테이블', description: '투명한 유리 소재' }
-  ]
 };
 
-const AIInteriorGenerator = ({ roomData, onImageGenerated, capturedScreenshot, selectedFurniture }) => {
-  const [selectedStyle, setSelectedStyle] = useState("scandinavian");
-  const [selectedGenerator, setSelectedGenerator] = useState("furniture_style_dalle"); // 가구 스타일 변경 DALL-E를 기본값으로
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedImages, setGeneratedImages] = useState([]);
-  const [showResults, setShowResults] = useState(false);
+// 사용 목적별 모드 옵션들
+const moodOptions = {
+  netflix: {
+    name: "Netflix & Chill",
+    description: "영상 감상에 최적화된 아늤한 공간",
+    modifier: `
+
+NETFLIX VIEWING OPTIMIZATION:
+- Bed positioned facing TV wall or projector area for optimal viewing angles
+- Dim ambient lighting: warm LED strips behind TV, soft bedside lamps (2700K)
+- Blackout curtains or smart blinds for optimal screen viewing experience
+- Comfort elements: extra throw pillows, soft blankets, cozy textures
+- Sound optimization: soft furnishings to absorb echo, comfortable acoustics
+- Snack accessibility: bedside storage for beverages and light snacks
+- NO bright lights or reflective surfaces that cause screen glare
+- Cable management for clean, distraction-free environment`
+  },
   
-  // 가구 스타일 변경 관련 상태
-  const [selectedFurnitureStyle, setSelectedFurnitureStyle] = useState("");
-  const [showFurnitureStylePanel, setShowFurnitureStylePanel] = useState(true); // 기본값이 가구 스타일 변경이므로 true
+  focus: {
+    name: "집중/업무",
+    description: "업무와 학습에 집중할 수 있는 공간",
+    modifier: `
 
-  const [currentStep, setCurrentStep] = useState("");
+FOCUS & PRODUCTIVITY OPTIMIZATION:
+- Bright task lighting: LED ceiling panels or desk lamps (4000K-5000K) for alertness
+- Zero visual distractions: clean, organized surfaces, hidden clutter
+- Ergonomic work area: proper desk height, comfortable supportive chair
+- Air quality: plants or air purifier for mental clarity and oxygen
+- Colors that enhance concentration: white, light blue, soft green accents
+- Organized storage: designated places for everything, filing systems
+- Sound control: materials that absorb noise, quiet environment
+- Separation of sleep and work areas to maintain healthy boundaries`
+  },
+  
+  guest: {
+    name: "손님맞이",
+    description: "게스트를 위한 환대하는 공간",
+    modifier: `
 
-  const handleGenerateImage = async () => {
-    if (!roomData || !roomData.dimensions) {
-      alert("방 데이터가 필요합니다. 먼저 방을 측정해주세요.");
-      return;
-    }
+GUEST WELCOMING OPTIMIZATION:
+- Hotel-like cleanliness and professional organization
+- Fresh neutral colors: white, cream, soft gray for universal appeal
+- Quality bedding: crisp white linens, multiple pillow and blanket options
+- Thoughtful amenities: bedside water carafe, reading light, phone charging station
+- Clear surfaces with only essential welcoming items: fresh flowers, welcome note
+- Ample storage: empty closet space, clear drawers for guest belongings
+- Privacy considerations: quality window treatments, door that closes properly
+- Fresh air circulation and subtle, pleasant scent throughout
+- Mirror and good lighting for guests to prepare and feel comfortable`
+  },
+  
+  romantic: {
+    name: "로맨틱",
+    description: "카플을 위한 로맨틱한 공간",
+    modifier: `
 
-    // 가구 스타일 변경 모드 체크
-    if (selectedGenerator.startsWith("furniture_style")) {
-      return handleFurnitureStyleChange();
-    }
+ROMANTIC ATMOSPHERE OPTIMIZATION:
+- Soft romantic lighting: dimmable warm lights, candles, fairy lights (2200K)
+- Luxurious textures: silk pillowcases, velvet throws, cashmere blankets
+- Rich romantic colors: deep reds, soft pinks, gold accents, warm burgundy
+- Fresh flowers: roses, peonies, or seasonal romantic blooms
+- Intimate seating: comfortable reading chair or small loveseat for two
+- Sensory elements: soft music capability, pleasant natural scents
+- Privacy enhancement: layered window treatments, intimate enclosed feeling
+- Special touches: quality wine glasses, books of poetry, meaningful art`
+  }
+};
 
-    setIsGenerating(true);
-    setCurrentStep("AI 인테리어 이미지 생성 중...");
+const AIInteriorGenerator = ({ onImageGenerated, capturedScreenshot }) => {
+  // 새로운 프리셋 기반 상태 변수들
+  const [selectedPreset, setSelectedPreset] = useState('modern_warm'); // 기본 침실 스타일 프리셋
+  const [selectedMood, setSelectedMood] = useState(''); // 사용 목적
+  const [furnitureLayout, setFurnitureLayout] = useState('keep_existing'); // 가구 배치 방식 (기존 유지)
+  const [customPrompt, setCustomPrompt] = useState(''); // 추가 커스텀 요청 (기존 유지)
+  
+  // 실사화 품질 설정
+  const [photoStyle, setPhotoStyle] = useState('architectural'); // 사진 스타일
+  const [lightingMode, setLightingMode] = useState('natural'); // 조명 모드
 
-    try {
-      console.log("Starting AI interior generation with data:", roomData);
+  const [uploadedImage, setUploadedImage] = useState(null); // 업로드된 이미지 파일 (Base64)
+  const [imageUrl, setImageUrl] = useState(''); // 첫 번째 생성된 이미지 URL (AI 디자인)
+  const [realisticImageUrl, setRealisticImageUrl] = useState(''); // 두 번째 생성된 이미지 URL (실사화된 이미지)
+  
+  const [loading, setLoading] = useState(false); // 첫 번째 생성 로딩 상태
+  const [generatingRealistic, setGeneratingRealistic] = useState(false); // 두 번째(실사화) 생성 로딩 상태
+  const [error, setError] = useState(''); // 에러 메시지
 
-      // MongoDB ID가 있으면 기존 ID 사용, 없으면 새로 저장
-      const mongoId = localStorage.getItem('mongoRoomId');
-      let finalRoomData = { ...roomData };
-      
-      if (mongoId) {
-        console.log('기존 MongoDB ID 사용:', mongoId);
-        finalRoomData.mongo_id = mongoId;
-      }
-      
-      const response = await saveRoomDataAndGenerateAI(finalRoomData, selectedStyle, selectedGenerator);
-
-      if (response.success && (response.image_path || response.image_url)) {
-        console.log("DEBUG - Response:", response);
-        console.log("DEBUG - Image URL:", response.image_url);
-        console.log("DEBUG - Image Path:", response.image_path);
-        
-        const newImage = {
-          path: response.image_path,
-          url: response.image_url || response.ai_generation?.image_url, // 대안 경로 추가
-          style: selectedStyle,
-          generated_at: new Date().toISOString(),
-          room_dimensions: roomData.dimensions,
-        };
-
-        console.log("DEBUG - New Image Object:", newImage);
-        setGeneratedImages((prev) => [newImage, ...prev]);
-        setShowResults(true);
-        setCurrentStep("완료!");
-
-        if (onImageGenerated) {
-          onImageGenerated(newImage);
-        }
-      } else {
-        throw new Error(response.message || "AI 이미지 생성에 실패했습니다.");
-      }
-    } catch (error) {
-      console.error("AI 인테리어 생성 오류:", error);
-      setCurrentStep("오류 발생");
-      alert(`AI 인테리어 생성 중 오류가 발생했습니다: ${error.message}`);
-    } finally {
-      setIsGenerating(false);
-      setTimeout(() => setCurrentStep(""), 2000); // 2초 후 상태 초기화
-    }
-  };
-
-  // StyleChangePanel에서 호출될 함수
-  const handleGenerateWithStyle = async (styleChangeData) => {
-    console.log("🎯 StyleChangePanel에서 가구 스타일 변경 요청:", styleChangeData);
-
-    setIsGenerating(true);
-    setCurrentStep("AI 가구 스타일 변경 중...");
-
-    try {
-      // 선택된 생성기에 따라 다른 엔드포인트 사용
-      let generatorType = "dalle"; // 기본값
-      if (selectedGenerator === "furniture_style_vertex") {
-        generatorType = "furniture_style_vertex";
-      } else if (selectedGenerator === "furniture_style_dalle") {
-        generatorType = "furniture_style_dalle";
-      }
-      
-      console.log(`🎯 ${generatorType.toUpperCase()} 생성기로 가구 스타일 변경 처리 중...`);
-      
-      // API 요청 (StyleChangePanel에서 이미 올바른 형식으로 전달됨)
-      const response = await saveRoomDataAndGenerateAI(styleChangeData.roomData, styleChangeData.newStyle, generatorType);
-
-      if (response.success && (response.image_path || response.image_url)) {
-        const newImage = {
-          path: response.image_path,
-          url: response.image_url || response.ai_generation?.image_url,
-          style: styleChangeData.selectedFurniture 
-            ? `${styleChangeData.selectedFurniture.name} - ${styleChangeData.newStyle}`
-            : `전체 가구 - ${styleChangeData.newStyle}`,
-          generated_at: new Date().toISOString(),
-          room_dimensions: roomData.dimensions,
-          furniture_change: true
-        };
-
-        setGeneratedImages((prev) => [newImage, ...prev]);
-        setShowResults(true);
-        setCurrentStep("완료!");
-
-        if (onImageGenerated) {
-          onImageGenerated(newImage);
-        }
-
-        // 성공 시 캡처 데이터 초기화 (재사용 방지)
-        localStorage.removeItem('capturedScreenshot');
-        
-      } else {
-        throw new Error(response.message || "가구 스타일 변경에 실패했습니다.");
-      }
-    } catch (error) {
-      console.error("가구 스타일 변경 오류:", error);
-      setCurrentStep("오류 발생");
-      alert(`가구 스타일 변경 중 오류가 발생했습니다: ${error.message}`);
-    } finally {
-      setIsGenerating(false);
-      setTimeout(() => setCurrentStep(""), 2000);
-    }
-  };
-
-  // 가구 스타일 변경 전용 핸들러 (기존 유지, 하지만 이제 StyleChangePanel 사용 안내)
-  const handleFurnitureStyleChange = async () => {
-    console.log("🔧 가구 스타일 변경 조건 체크:", {
-      capturedScreenshot: !!capturedScreenshot,
-      selectedFurniture: !!selectedFurniture,
-      selectedFurnitureStyle: !!selectedFurnitureStyle,
-      roomData: !!roomData
-    });
-
-    if (!capturedScreenshot || !selectedFurniture || !selectedFurnitureStyle) {
-      alert("3D 캡처, 가구 선택, 스타일 선택이 모두 필요합니다.");
-      return;
-    }
-
-    setIsGenerating(true);
-    setCurrentStep("가구 스타일 변경 중...");
-
-    try {
-      console.log("🎯 가구 스타일 변경 시작:", {
-        screenshot: capturedScreenshot ? "있음" : "없음",
-        furniture: selectedFurniture,
-        style: selectedFurnitureStyle,
-        roomDataDimensions: roomData?.dimensions
+  // 캡쳐 이미지를 업로드 이미지로 변환하는 함수
+  React.useEffect(() => {
+    if (capturedScreenshot && capturedScreenshot.imageData) {
+      // capturedScreenshot.imageData가 base64 문자열인 경우
+      const base64Data = capturedScreenshot.imageData.split(',')[1] || capturedScreenshot.imageData;
+      setUploadedImage({ 
+        data: base64Data, 
+        mimeType: 'image/png'
       });
+    }
+  }, [capturedScreenshot]);
 
-      // 가구 스타일 변경을 위한 특별한 데이터 구성 (기존 roomData 구조 유지)
-      const furnitureStyleData = {
-        // 기존 roomData 구조 유지
-        dimensions: roomData.dimensions,
-        area_sqm: roomData.area_sqm,
-        volume_cum: roomData.volume_cum,
-        furniture_3d: roomData.furniture_3d || [],
-        created_at: new Date().toISOString(),
-        
-        // 가구 스타일 변경 특수 정보 추가
-        mode: "furniture_style_change",
-        screenshot: capturedScreenshot.imageData,
-        selected_furniture: {
-          id: selectedFurniture.id,
-          type: selectedFurniture.type,
-          name: selectedFurniture.name,
-          position: selectedFurniture.position,
-          size: selectedFurniture.size
+  const getFurnitureLayoutPrompt = (layout) => {
+    const layouts = {
+      keep_existing: `
+STRICT FURNITURE CONSTRAINT - KEEP EXISTING ONLY:
+- Count the furniture pieces in the original image EXACTLY
+- If original has bed + desk ONLY, result must have bed + desk ONLY
+- DO NOT ADD: nightstands, side tables, chairs, plants, decorations, lamps, rugs, artwork
+- DO NOT ADD: any furniture pieces not present in the original image
+- ONLY change: colors, materials, textures, wall paint, flooring
+- Keep exact same furniture count and positioning as original
+- Transform ONLY the appearance/style of existing items, never add new items`,
+      
+      add_furniture: "Keep the existing furniture in their current positions, but ADD complementary furniture pieces and accessories that enhance the space. Maintain the current layout while enriching the room with additional items that match the selected style.",
+      
+      style_optimized: "Completely rearrange and add furniture as needed to create the perfect composition for the selected style. Move existing pieces to optimal positions and add complementary pieces that enhance the overall design while maintaining functionality."
+    };
+    return layouts[layout] || layouts.keep_existing;
+  };
+
+  // 첫 번째 이미지 생성 함수 (AI 최적화된 프롬프트)
+  const generateImage = async () => {
+    setLoading(true);
+    setImageUrl(''); // 기존 이미지 URL 초기화
+    setRealisticImageUrl(''); // 실사화 이미지 URL 초기화
+    setError('');
+
+    try {
+      const parts = [];
+      
+      // 이미지 기반으로 인테리어를 생성하도록 명확한 프롬프트 추가
+      if (uploadedImage) {
+        parts.push({ text: '이 이미지를 참고하여 인테리어 디자인을 적용해주세요.' });
+        parts.push({
+          inlineData: {
+            mimeType: uploadedImage.mimeType,
+            data: uploadedImage.data,
+          },
+        });
+      }
+
+      // 새로운 프리셋 기반 프롬프트 생성
+      const selectedPresetData = bedroomPresets[selectedPreset];
+      const selectedMoodData = selectedMood ? moodOptions[selectedMood] : null;
+      const layoutDescription = getFurnitureLayoutPrompt(furnitureLayout);
+      
+      // 전문적인 인테리어 디자인 프롬프트 구성
+      let finalPromptText = `
+Create a professionally designed bedroom space with the following specifications:
+
+BEDROOM STYLE FOUNDATION:
+${selectedPresetData.basePrompt}
+
+FURNITURE LAYOUT STRATEGY:
+${layoutDescription}`;
+
+      // 무드 설정이 있으면 추가
+      if (selectedMoodData) {
+        finalPromptText += selectedMoodData.modifier;
+      }
+
+      // 공통 디자인 요구사항 추가
+      finalPromptText += `\n\nDESIGN REQUIREMENTS:
+- High-quality bedroom interior design suitable for design magazines
+- Balanced composition with proper proportions for bedroom functionality
+- Cohesive color scheme throughout the space promoting rest and relaxation
+- Clean, organized, and visually appealing space
+- Modern interior design standards and best practices
+- Bedroom-specific considerations: privacy, comfort, storage, lighting layers
+
+DESK AND WORKSPACE REQUIREMENTS (if present):
+- Remove ALL items from desk surfaces (monitors, keyboards, papers, decorations, etc.)
+- Keep the existing desk structure but change its style and material to match the selected furniture style
+- Transform the desk design to align with the chosen furniture aesthetic
+- Keep desk surface completely clear and clean
+- Organize and hide all cables and wires
+- Maintain desk positioning but update its appearance to match room style`;
+
+      // 기존 배치 유지 시 추가 제한사항
+      if (furnitureLayout === 'keep_existing') {
+        finalPromptText += `\n\nCRITICAL CONSTRAINT FOR EXISTING LAYOUT:
+- FURNITURE COUNT MUST MATCH ORIGINAL IMAGE EXACTLY
+- If original shows bed + desk only, result must show bed + desk only
+- DO NOT add nightstands, side tables, chairs, plants, lamps, rugs, or any decorative items
+- DO NOT add any furniture pieces not visible in the original uploaded image
+- Focus transformation on: wall colors, flooring materials, existing furniture styling only
+- This is a STRICT requirement - adding furniture violates user preferences`;
+      }
+
+      // 커스텀 요청이 있으면 추가
+      if (customPrompt.trim()) {
+        finalPromptText += `\n\nADDITIONAL REQUIREMENTS:
+${customPrompt.trim()}`;
+      }
+      
+      // 3D 렌더링 품질 지시 (실사화 아님)
+      finalPromptText += `\n\nRENDERING STYLE:
+- 3D architectural rendering style, not photographic
+- Clean digital rendering with smooth surfaces
+- Computer-generated interior visualization
+- Professional 3D modeling quality like SketchUp or Blender
+- Maintain rendering aesthetic, not realistic photography`;
+
+      console.log('Generated Prompt:', finalPromptText); // 디버깅용
+
+      parts.push({ text: finalPromptText });
+
+      const payload = {
+        contents: [{
+            role: "user",
+            parts: parts
+        }],
+        generationConfig: {
+          responseModalities: ['TEXT', 'IMAGE']
         },
-        new_style: selectedFurnitureStyle,
-        
-        // MongoDB ID 유지
-        mongo_id: localStorage.getItem('mongoRoomId')
       };
 
-      // 선택된 생성기에 따라 다른 엔드포인트 사용
-      let generatorType = "dalle"; // 기본값
-      if (selectedGenerator === "furniture_style_vertex") {
-        generatorType = "vertex";
-      } else if (selectedGenerator === "furniture_style_dalle") {
-        generatorType = "dalle";
-      }
-      
-      console.log(`🎯 ${generatorType.toUpperCase()} 생성기로 가구 스타일 변경 처리 중...`);
-      const response = await saveRoomDataAndGenerateAI(furnitureStyleData, selectedFurnitureStyle, generatorType);
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${apiKey}`;
 
-      if (response.success && (response.image_path || response.image_url)) {
-        const newImage = {
-          path: response.image_path,
-          url: response.image_url || response.ai_generation?.image_url,
-          style: `${selectedFurniture.name} - ${FURNITURE_STYLES[selectedFurniture.type]?.find(s => s.id === selectedFurnitureStyle)?.name || selectedFurnitureStyle}`,
-          generated_at: new Date().toISOString(),
-          room_dimensions: roomData.dimensions,
-          furniture_change: true
-        };
+      let attempt = 0;
+      const maxAttempts = 5;
+      while (attempt < maxAttempts) {
+        try {
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
 
-        setGeneratedImages((prev) => [newImage, ...prev]);
-        setShowResults(true);
-        setCurrentStep("완료!");
+          if (!response.ok) {
+            const errorBody = await response.text();
+            console.error('API Error Response Body (First Gen):', errorBody);
+            throw new Error(`HTTP error! status: ${response.status} - ${errorBody}`);
+          }
 
-        if (onImageGenerated) {
-          onImageGenerated(newImage);
+          const result = await response.json();
+          const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+
+          if (base64Data) {
+            setImageUrl(`data:image/png;base64,${base64Data}`);
+            
+            if (onImageGenerated) {
+              onImageGenerated({
+                url: `data:image/png;base64,${base64Data}`,
+                style: bedroomPresets[selectedPreset]?.name || selectedPreset,
+                generated_at: new Date().toISOString()
+              });
+            }
+          } else {
+            setError('인테리어 디자인 생성에 실패했습니다. 설명을 더 구체적으로 입력해보세요.');
+          }
+          break;
+        } catch (err) {
+          console.error(`API 호출 실패 (시도 ${attempt + 1}, First Gen):`, err);
+          if (attempt < maxAttempts - 1) {
+            const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+            await new Promise(res => setTimeout(res, delay));
+          } else {
+            setError(`인테리어 디자인 생성에 실패했습니다. 네트워크 연결을 확인하거나 잠시 후 다시 시도해주세요. (오류: ${err.message})`);
+          }
         }
-
-        // 성공 시 캡처 데이터 초기화 (재사용 방지)
-        localStorage.removeItem('capturedScreenshot');
-        
-      } else {
-        throw new Error(response.message || "가구 스타일 변경에 실패했습니다.");
+        attempt++;
       }
-    } catch (error) {
-      console.error("가구 스타일 변경 오류:", error);
-      setCurrentStep("오류 발생");
-      alert(`가구 스타일 변경 중 오류가 발생했습니다: ${error.message}`);
+    } catch (err) {
+      console.error('이미지 생성 중 오류 발생:', err);
+      setError('이미지 생성 중 알 수 없는 오류가 발생했습니다.');
     } finally {
-      setIsGenerating(false);
-      setTimeout(() => setCurrentStep(""), 2000);
+      setLoading(false);
     }
   };
 
-  const loadExistingImages = async () => {
+  // 두 번째 이미지 생성 함수 (실사화)
+  const generateRealisticImage = async () => {
+    if (!imageUrl) {
+      setError('먼저 인테리어 이미지를 생성해주세요.');
+      return;
+    }
+    setGeneratingRealistic(true);
+    setRealisticImageUrl(''); // 기존 실사화 이미지 초기화
+    setError('');
+
     try {
-      const response = await getGeneratedImages();
-      if (response.success && response.images) {
-        setGeneratedImages(response.images);
-        setShowResults(true);
+      const parts = [];
+      const base64Image = imageUrl.split(',')[1]; // data URL에서 base64 데이터 추출
+
+      // 잡지급 인테리어 사진을 위한 전문적인 프롬프트 (설정 기반)
+      const getPhotoStyleSpecs = (style) => {
+        const styles = {
+          architectural: "Architectural Digest style - clean, spacious, dramatic lighting",
+          lifestyle: "Elle Decor lifestyle - warm, lived-in, cozy atmosphere",
+          luxury: "Luxe Interiors - high-end, opulent, designer showcase",
+          minimal: "Modern minimalist - clean lines, negative space, zen aesthetic",
+          editorial: "Vogue Living editorial - artistic angles, creative composition"
+        };
+        return styles[style] || styles.architectural;
+      };
+
+      const getLightingSpecs = (mode) => {
+        const lighting = {
+          natural: "Natural window lighting as primary source, warm golden hour ambiance (2700K-3000K)",
+          studio: "Professional studio lighting setup with key, fill, and rim lights",
+          moody: "Dramatic low-key lighting with deep shadows and selective illumination",
+          bright: "High-key lighting with minimal shadows, clean and airy feeling"
+        };
+        return lighting[mode] || lighting.natural;
+      };
+
+      const professionalPrompt = `
+Transform this interior design into a PREMIUM, MAGAZINE-QUALITY architectural photography shot worthy of ${getPhotoStyleSpecs(photoStyle)}.
+
+PHOTOGRAPHY SPECIFICATIONS:
+- Professional DSLR camera quality (Canon 5D Mark IV with L-series lens)
+- Wide-angle perspective (14-24mm) for expansive spatial feeling
+- Perfect composition using rule of thirds and leading lines
+- Tack-sharp focus with subtle depth of field bokeh
+- Professional color grading and post-processing
+
+LIGHTING SETUP:
+- ${getLightingSpecs(lightingMode)}
+- Soft shadows with professional fill lighting to eliminate harsh contrasts
+- Subtle ambient lighting from practical fixtures
+- Perfect white balance and color temperature consistency
+
+ULTRA-REALISTIC MATERIAL TEXTURES:
+- Fabric: Visible weave patterns, natural draping, realistic textile behavior
+- Wood: Authentic grain patterns, natural imperfections, proper aging
+- Metal: Realistic patina, brushed finishes, authentic reflective properties
+- Stone/Marble: Natural veining, mineral patterns, realistic surface variations
+- Leather: Visible grain texture, natural aging, realistic wear patterns
+- Glass: Perfect reflections, refractions, and transparency effects
+
+PROFESSIONAL FINISHING TOUCHES:
+- Color grading matching luxury interior magazines
+- Atmospheric depth with subtle environmental effects
+- Natural imperfections that prove authenticity
+- Strategic styling with designer accessories and plants
+- Lived-in details without clutter
+- Perfect symmetry and visual balance
+
+QUALITY STANDARDS:
+- 8K resolution equivalent detail
+- Print-ready commercial photography quality  
+- Zero CGI artifacts or artificial elements
+- Professional retouching standards
+- Magazine cover-worthy composition
+
+Final result must be indistinguishable from a $5000/day professional interior photographer's portfolio work.
+      `;
+      
+      parts.push({ text: professionalPrompt });
+      parts.push({
+        inlineData: {
+          mimeType: 'image/png', // 또는 imageUrl의 실제 MIME 타입 사용
+          data: base64Image,
+        },
+      });
+
+      const payload = {
+        contents: [{
+            role: "user",
+            parts: parts
+        }],
+        generationConfig: {
+          responseModalities: ['TEXT', 'IMAGE']
+        },
+      };
+
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${apiKey}`;
+
+      let attempt = 0;
+      const maxAttempts = 5;
+      while (attempt < maxAttempts) {
+        try {
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            const errorBody = await response.text();
+            console.error('API Error Response Body (Realistic Gen):', errorBody);
+            throw new Error(`HTTP error! status: ${response.status} - ${errorBody}`);
+          }
+
+          const result = await response.json();
+          const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+
+          if (base64Data) {
+            setRealisticImageUrl(`data:image/png;base64,${base64Data}`);
+          } else {
+            setError('실사화 이미지 생성에 실패했습니다. 다시 시도해주세요.');
+          }
+          break;
+        } catch (err) {
+          console.error(`API 호출 실패 (시도 ${attempt + 1}, Realistic Gen):`, err);
+          if (attempt < maxAttempts - 1) {
+            const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+            await new Promise(res => setTimeout(res, delay));
+          } else {
+            setError(`실사화 이미지 생성에 실패했습니다. 네트워크 연결을 확인하거나 잠시 후 다시 시도해주세요. (오류: ${err.message})`);
+          }
+        }
+        attempt++;
       }
-    } catch (error) {
-      console.error("이미지 목록 조회 오류:", error);
+
+    } catch (err) {
+      console.error('실사화 이미지 생성 중 오류 발생:', err);
+      setError('실사화 이미지 생성 중 알 수 없는 오류가 발생했습니다.');
+    } finally {
+      setGeneratingRealistic(false);
     }
   };
+
+  // 이미지 파일 업로드 핸들러
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result.split(',')[1];
+        setUploadedImage({ data: base64String, mimeType: file.type });
+        setError(''); // 파일 업로드 시 이전 오류 메시지 초기화
+        setImageUrl(''); // 새 이미지 업로드 시 기존 생성 이미지 초기화
+        setRealisticImageUrl(''); // 새 이미지 업로드 시 실사화 이미지 초기화
+      };
+      reader.onerror = () => {
+        setError('파일을 읽는 데 실패했습니다.');
+        setUploadedImage(null);
+      };
+      reader.readAsDataURL(file); // 파일을 Base64로 읽기
+    } else {
+      setUploadedImage(null);
+      setError('이미지 파일만 업로드할 수 있습니다.');
+    }
+  };
+
 
   return (
-    <div className="mt-8 p-6 bg-surface rounded-xl border border-border shadow-lg">
-      <h3 className="text-xl font-bold mb-4 text-text-primary flex items-center gap-2">
-        AI 인테리어 디자인 생성
-      </h3>
-
-      {/* 현재 상태 안내 */}
-      <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-        <div className="flex items-center gap-2 text-green-800 font-medium mb-2">
-          ✅ <span>가구 스타일 변경 기능 모두 사용 가능!</span>
-        </div>
-        <div className="text-sm text-green-700">
-          • <strong>DALL-E 기반 가구 스타일 변경</strong> - 완전 작동 중 🎯<br/>
-          • <strong>Vertex AI 기반 가구 스타일 변경</strong> - 고품질 생성 완료! ⭐
-        </div>
-      </div>
-
-      {/* AI 생성기 선택 */}
-      <div className="mb-6">
-        <h4 className="font-semibold mb-3 text-text-primary">AI 생성기 선택</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {GENERATOR_OPTIONS.map((generator) => (
-            <button
-              key={generator.id}
-              onClick={() => {
-                if (!generator.disabled) {
-                  setSelectedGenerator(generator.id);
-                  if (generator.mode === "furniture_change") {
-                    setShowFurnitureStylePanel(true);
-                  } else {
-                    setShowFurnitureStylePanel(false);
-                  }
-                }
-              }}
-              disabled={generator.disabled}
-              className={`p-3 rounded-lg border transition-all text-left relative ${
-                generator.disabled
-                  ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
-                  : selectedGenerator === generator.id
-                  ? "border-primary bg-primary/10 text-primary font-semibold"
-                  : "border-border bg-background text-text-secondary hover:border-primary/50 hover:bg-primary/5"
-              }`}
-            >
-              {generator.recommended && (
-                <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                  추천
-                </span>
-              )}
-              {generator.mode === "furniture_change" && !generator.disabled && (
-                <span className="absolute -top-2 -left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-                  NEW
-                </span>
-              )}
-              {generator.disabled && (
-                <span className="absolute -top-2 -left-2 bg-gray-500 text-white text-xs px-2 py-1 rounded-full">
-                  준비중
-                </span>
-              )}
-              <div className="font-medium text-sm">{generator.name}</div>
-              <div className="text-xs mt-1 opacity-75">{generator.description}</div>
-              <div className="text-xs mt-1 opacity-60">⏱ {generator.speed}</div>
-              {generator.accuracy && (
-                <div className="text-xs mt-1 opacity-60">🎯 {generator.accuracy}</div>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 가구 스타일 변경 패널 */}
-      {showFurnitureStylePanel && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h4 className="font-semibold mb-3 text-blue-800 flex items-center gap-2">
-            🎯 가구 스타일 변경
-          </h4>
+    <div className="bg-background min-h-auto">
+      <div className="space-y-8">
+        <div className="bg-surface rounded-xl border border-border shadow-sm p-6">
+          <h3 className="text-xl font-bold mb-4 text-text-primary">
+            AI 인테리어 디자인 생성기
+          </h3>
           
-          {!capturedScreenshot ? (
-            <div className="text-center p-4 bg-white rounded-lg border-2 border-dashed border-blue-300">
-              <div className="text-blue-600 mb-2">📸</div>
-              <div className="text-sm text-blue-700 font-medium mb-1">
-                먼저 3D 화면을 캡처해주세요
-              </div>
-              <div className="text-xs text-blue-600">
-                RoomBox에서 "3D 화면 캡처" 버튼을 클릭하세요
-              </div>
-            </div>
-          ) : !selectedFurniture ? (
-            <div className="text-center p-4 bg-white rounded-lg border-2 border-dashed border-yellow-300">
-              <div className="text-yellow-600 mb-2">🛏️</div>
-              <div className="text-sm text-yellow-700 font-medium mb-1">
-                변경할 가구를 선택해주세요
-              </div>
-              <div className="text-xs text-yellow-600">
-                3D 화면에서 가구를 클릭하여 선택하세요
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* 선택된 가구 정보 */}
-              <div className="bg-white p-3 rounded-lg border">
-                <div className="text-sm font-medium text-gray-700 mb-1">
-                  선택된 가구
-                </div>
-                <div className="text-lg font-bold text-blue-600">
-                  {selectedFurniture.name}
-                </div>
-                <div className="text-xs text-gray-500">
-                  타입: {selectedFurniture.type}
-                </div>
-              </div>
-
-              {/* 가구 스타일 선택 */}
-              {FURNITURE_STYLES[selectedFurniture.type] ? (
-                <div>
-                  <div className="text-sm font-medium text-gray-700 mb-2">
-                    새로운 스타일 선택
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {FURNITURE_STYLES[selectedFurniture.type].map((style) => (
-                      <button
-                        key={style.id}
-                        onClick={() => setSelectedFurnitureStyle(style.id)}
-                        className={`p-3 rounded-lg border transition-all text-left ${
-                          selectedFurnitureStyle === style.id
-                            ? 'border-blue-500 bg-blue-50 text-blue-700'
-                            : 'border-gray-200 hover:border-blue-300 hover:bg-blue-25'
-                        }`}
-                      >
-                        <div className="font-medium text-sm">{style.name}</div>
-                        <div className="text-xs mt-1 opacity-75">{style.description}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-orange-50 border border-orange-200 p-3 rounded-lg">
-                  <div className="text-sm text-orange-800">
-                    이 가구 타입({selectedFurniture.type})은 아직 스타일 변경을 지원하지 않습니다
-                  </div>
+          <form onSubmit={(e) => { e.preventDefault(); generateImage(); }} className="space-y-6">
+            {/* 이미지 업로드 (캡쳐된 이미지가 있으면 표시) */}
+            <div className="space-y-2">
+              <label htmlFor="image-upload" className="block text-sm font-semibold text-text-primary">
+                인테리어에 참고할 이미지 {capturedScreenshot ? '(3D 캡처됨)' : '업로드 (선택 사항)'}
+              </label>
+              {!capturedScreenshot && (
+                <input
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                  onChange={handleImageUpload}
+                  disabled={loading || generatingRealistic}
+                />
+              )}
+              {uploadedImage && (
+                <div className="mt-4 border border-border rounded-xl overflow-hidden shadow-sm">
+                  <img
+                    src={`data:${uploadedImage.mimeType};base64,${uploadedImage.data}`}
+                    alt={capturedScreenshot ? "3D 캡처된 이미지" : "업로드된 이미지 미리보기"}
+                    className="w-full h-auto max-h-60 object-contain rounded-xl"
+                  />
+                  <p className="text-center text-text-secondary text-sm mt-2 p-2">
+                    {capturedScreenshot ? "3D 캡처된 이미지" : "업로드된 이미지 미리보기"}
+                  </p>
                 </div>
               )}
             </div>
-          )}
-        </div>
-      )}
 
-      {/* 스타일 선택 */}
-      <div className="mb-6">
-        <h4 className="font-semibold mb-3 text-text-primary">🎨 스타일 선택</h4>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          {INTERIOR_STYLES.map((style) => (
+            {/* 기본 침실 스타일 */}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-text-primary">
+                기본 침실 스타일
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {Object.entries(bedroomPresets).map(([key, preset]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setSelectedPreset(key)}
+                    className={`p-4 border rounded-xl text-left transition-all duration-200 ${
+                      selectedPreset === key 
+                        ? 'border-primary bg-blue-50 shadow-md' 
+                        : 'border-border hover:border-primary hover:bg-window-fill'
+                    }`}
+                    disabled={loading || generatingRealistic}
+                  >
+                    <h4 className="font-semibold text-text-primary">{preset.name}</h4>
+                    <p className="text-sm text-text-secondary mt-1">{preset.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 사용 목적 */}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-text-primary">
+                사용 목적 (선택사항)
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedMood('')}
+                  className={`p-3 border rounded-xl text-sm font-medium transition-all duration-200 ${
+                    selectedMood === '' 
+                      ? 'border-primary bg-window-fill text-text-primary' 
+                      : 'border-border text-text-secondary hover:border-primary'
+                  }`}
+                  disabled={loading || generatingRealistic}
+                >
+                  기본
+                </button>
+                {Object.entries(moodOptions).map(([key, mood]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setSelectedMood(key)}
+                    className={`p-3 border rounded-xl text-sm font-medium transition-all duration-200 ${
+                      selectedMood === key 
+                        ? 'border-primary bg-blue-50 text-primary' 
+                        : 'border-border text-text-secondary hover:border-primary'
+                    }`}
+                    disabled={loading || generatingRealistic}
+                  >
+                    {mood.name}
+                  </button>
+                ))}
+              </div>
+              {selectedMood && moodOptions[selectedMood] && (
+                <p className="text-sm text-text-secondary mt-2">
+                  {moodOptions[selectedMood].description}
+                </p>
+              )}
+            </div>
+
+            {/* 가구 배치 방식 */}
+            <div className="space-y-2">
+              <label htmlFor="furniture-layout" className="block text-sm font-semibold text-text-primary">
+                가구 배치 방식
+              </label>
+              <select
+                id="furniture-layout"
+                value={furnitureLayout}
+                onChange={(e) => setFurnitureLayout(e.target.value)}
+                className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                disabled={loading || generatingRealistic}
+              >
+                <option value="keep_existing">기존 배치 유지 (스타일만 변경)</option>
+                <option value="add_furniture">기존 배치 + 가구 추가</option>
+                <option value="style_optimized">완전 최적화 (가구 추가/재배치)</option>
+              </select>
+              <p className="text-sm text-text-secondary mt-2">
+                <strong>기존 배치 유지</strong>: 현재 가구 위치 그대로, 디자인만 변경<br/>
+                <strong>기존 배치 + 가구 추가</strong>: 현재 가구 위치는 유지하되, 추가 가구/소품으로 공간 풍성하게<br/>
+                <strong>완전 최적화</strong>: 가구 재배치 + 추가로 스타일에 완벽하게 맞춤
+              </p>
+            </div>
+
+            {/* 추가 커스텀 요청 */}
+            <div className="space-y-2">
+              <label htmlFor="custom-prompt" className="block text-sm font-semibold text-text-primary">
+                추가 요청 (선택사항)
+              </label>
+              <textarea
+                id="custom-prompt"
+                rows="3"
+                className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                placeholder="예: '책상을 창문 쪽으로 배치', '식물을 많이 넣어주세요', '아늑한 독서 공간 만들어주세요'"
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                disabled={loading || generatingRealistic}
+              />
+            </div>
+
+            {/* 선택된 조합 미리보기 */}
+            <div className="p-4 bg-window-fill border border-window-stroke rounded-xl">
+              <h4 className="font-semibold text-text-primary mb-2">선택된 조합</h4>
+              <div className="text-sm text-text-secondary">
+                <p>
+                  <strong>스타일:</strong> {bedroomPresets[selectedPreset]?.name}
+                </p>
+                {selectedMood && (
+                  <p>
+                    <strong>목적:</strong> {moodOptions[selectedMood]?.name}
+                  </p>
+                )}
+                <p>
+                  <strong>배치:</strong> {
+                    furnitureLayout === 'keep_existing' ? '기존 배치 유지' :
+                    furnitureLayout === 'add_furniture' ? '기존 배치 + 가구 추가' :
+                    '완전 최적화'
+                  }
+                </p>
+              </div>
+            </div>
+
+            {/* 에러 메시지 */}
+            {error && (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-800">
+                오류: {error}
+              </div>
+            )}
+
+            {/* 생성 버튼 */}
             <button
-              key={style.id}
-              onClick={() => setSelectedStyle(style.id)}
-              className={`p-3 rounded-lg border transition-all text-left ${
-                selectedStyle === style.id
-                  ? "border-primary bg-primary/10 text-primary font-semibold"
-                  : "border-border bg-background text-text-secondary hover:border-primary/50 hover:bg-primary/5"
-              }`}
+              type="submit"
+              disabled={loading || generatingRealistic}
+              className="w-full bg-primary text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-secondary transition-colors shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <div className="font-medium text-sm">{style.name}</div>
-              <div className="text-xs mt-1 opacity-75">{style.description}</div>
+              {loading ? '생성 중...' : '1단계: 인테리어 디자인 생성하기'}
             </button>
-          ))}
+          </form>
         </div>
-      </div>
 
-      {/* 생성 버튼 */}
-      <div className="flex gap-3 mb-6">
-        <button
-          onClick={handleGenerateImage}
-          disabled={
-            isGenerating || 
-            !roomData || 
-            (selectedGenerator.startsWith("furniture_style") && !capturedScreenshot)
-          }
-          className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
-            isGenerating || 
-            !roomData || 
-            (selectedGenerator.startsWith("furniture_style") && !capturedScreenshot)
-              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-              : "bg-primary text-white hover:bg-primary/90 shadow-lg hover:shadow-xl"
-          }`}
-        >
-          {isGenerating ? (
-            <span className="flex items-center justify-center gap-2">
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              {selectedGenerator.startsWith("furniture_style") ? "가구 스타일 변경 중..." : "AI 이미지 생성 중..."}
-            </span>
-          ) : selectedGenerator.startsWith("furniture_style") ? (
-            `가구 스타일 변경하기 (${selectedGenerator.includes('vertex') ? 'Vertex AI' : 'DALL-E'})`
-          ) : (
-            `${GENERATOR_OPTIONS.find((g) => g.id === selectedGenerator)?.name}로 ${
-              INTERIOR_STYLES.find((s) => s.id === selectedStyle)?.name
-            } 스타일 생성`
-          )}
-        </button>
+        {/* 생성된 이미지 결과 */}
+        {imageUrl && (
+          <div className="bg-surface rounded-xl border border-border shadow-sm p-6">
+            <h2 className="text-2xl font-bold text-text-primary mb-4 text-center">
+              1단계: 생성된 인테리어 디자인
+            </h2>
+            <div className="relative w-full overflow-hidden rounded-xl shadow-lg border border-border">
+              <img
+                src={imageUrl}
+                alt="생성된 AI 인테리어 디자인 이미지"
+                className="w-full h-auto object-cover rounded-xl transition-transform duration-300 hover:scale-105"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://placehold.co/600x400/CCCCCC/333333?text=이미지+로딩+실패';
+                  setError('인테리어 디자인 이미지 로드에 실패했습니다.');
+                }}
+              />
+            </div>
+            <p className="text-center text-text-secondary text-sm mt-4">
+              AI가 만들어낸 인테리어 디자인입니다.
+            </p>
 
-        <button
-          onClick={loadExistingImages}
-          className="px-4 py-3 border border-primary text-primary rounded-lg hover:bg-primary/10 transition-all"
-        >
-          이전 결과 보기
-        </button>
-      </div>
+            {/* 실사화 품질 설정 - 1단계 완료 후에만 표시 */}
+            <div className="mt-6 p-4 bg-window-fill border border-window-stroke rounded-xl">
+              <h3 className="text-lg font-semibold text-text-primary mb-3">실사화 품질 설정</h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="photo-style" className="block text-text-primary font-medium mb-2">
+                    사진 스타일
+                  </label>
+                  <select
+                    id="photo-style"
+                    value={photoStyle}
+                    onChange={(e) => setPhotoStyle(e.target.value)}
+                    className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                    disabled={loading || generatingRealistic}
+                  >
+                    <option value="architectural">Architectural Digest - 건축적</option>
+                    <option value="lifestyle">Elle Decor - 라이프스타일</option>
+                    <option value="luxury">Luxe Interiors - 럭셔리</option>
+                    <option value="minimal">Modern Minimal - 미니멀</option>
+                    <option value="editorial">Vogue Living - 에디토리얼</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label htmlFor="lighting-mode" className="block text-text-primary font-medium mb-2">
+                    조명 모드
+                  </label>
+                  <select
+                    id="lighting-mode"
+                    value={lightingMode}
+                    onChange={(e) => setLightingMode(e.target.value)}
+                    className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                    disabled={loading || generatingRealistic}
+                  >
+                    <option value="natural">자연광 - 골든아워</option>
+                    <option value="studio">스튜디오 조명</option>
+                    <option value="moody">무드 조명 - 극적</option>
+                    <option value="bright">밝은 조명 - 깔끔</option>
+                  </select>
+                </div>
+              </div>
+              
+              <p className="text-sm text-primary mt-2">
+                설정에 따라 Architectural Digest, Elle Decor 수준의 전문 인테리어 사진이 생성됩니다.
+              </p>
+            </div>
 
-      {/* 진행 상황 표시 */}
-      {isGenerating && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-center gap-2 text-blue-700 font-medium mb-3">
-            <div className="w-4 h-4 border-2 border-blue-700 border-t-transparent rounded-full animate-spin"></div>
-            {selectedGenerator.startsWith("furniture_style") 
-              ? `AI가 가구 스타일을 변경하고 있습니다... (${selectedGenerator.includes('vertex') ? 'Vertex AI' : 'DALL-E'})`
-              : "AI가 인테리어를 디자인하고 있습니다..."
-            }
-          </div>
+            {/* 2단계: 실사화 버튼 */}
+            <button
+              onClick={generateRealisticImage}
+              className={`w-full py-4 px-6 rounded-xl font-semibold text-lg text-white transition-colors shadow-lg hover:shadow-xl mt-6 ${
+                generatingRealistic
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-primary hover:bg-secondary'
+              }`}
+              disabled={generatingRealistic || loading}
+            >
+              {generatingRealistic ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12V4a8 8 0 018 8z"></path>
+                  </svg>
+                  실사 방 사진 생성 중...
+                </span>
+              ) : (
+                '2단계: 실제 방 사진처럼 만들기'
+              )}
+            </button>
 
-          {/* 단계별 진행 상황 */}
-          <div className="text-sm text-blue-600 space-y-1">
-            {selectedGenerator.startsWith("furniture_style") ? (
-              // 가구 스타일 변경 진행 상황
-              <>
-                <div className={`flex items-center gap-2 ${currentStep.includes("변경") && !currentStep.includes("완료") ? "text-blue-700 font-semibold" : ""}`}>
-                  {currentStep === "완료!" ? "✅" : "⏳"}
-                  <span>
-                    1단계: {selectedFurniture?.name} → {FURNITURE_STYLES[selectedFurniture?.type]?.find(s => s.id === selectedFurnitureStyle)?.name || selectedFurnitureStyle} 스타일 변경
-                  </span>
+            {/* 실사화된 이미지 결과 */}
+            {realisticImageUrl && (
+              <div className="mt-8">
+                <h2 className="text-2xl font-bold text-text-primary mb-4 text-center">
+                  2단계: 실사화된 방 사진
+                </h2>
+                <div className="relative w-full overflow-hidden rounded-xl shadow-lg border border-border">
+                  <img
+                    src={realisticImageUrl}
+                    alt="실사화된 AI 인테리어 이미지"
+                    className="w-full h-auto object-cover rounded-xl transition-transform duration-300 hover:scale-105"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://placehold.co/600x400/CCCCCC/333333?text=이미지+로딩+실패';
+                      setError('실사화 이미지 로드에 실패했습니다.');
+                    }}
+                  />
                 </div>
-                <div className={`flex items-center gap-2 ${currentStep === "완료!" ? "text-green-700 font-semibold" : ""}`}>
-                  {currentStep === "완료!" ? "✅" : "⏳"}
-                  <span>2단계: {selectedGenerator.includes('vertex') ? 'Vertex AI' : 'DALL-E'}로 고품질 이미지 생성</span>
-                </div>
-              </>
-            ) : (
-              // 일반 인테리어 생성 진행 상황
-              <>
-                <div className={`flex items-center gap-2 ${currentStep.includes("AI") && !currentStep.includes("완료") ? "text-blue-700 font-semibold" : ""}`}>
-                  {currentStep === "완료!" ? "✅" : "⏳"}
-                  <span>
-                    1단계:{" "}
-                    {INTERIOR_STYLES.find((s) => s.id === selectedStyle)?.name}{" "}
-                    스타일 AI 이미지 생성
-                  </span>
-                </div>
-                <div className={`flex items-center gap-2 ${currentStep === "완료!" ? "text-green-700 font-semibold" : ""}`}>
-                  {currentStep === "완료!" ? "✅" : "⏳"}
-                  <span>2단계: 고품질 이미지 렌더링 및 결과 표시</span>
-                </div>
-              </>
+                <p className="text-center text-text-secondary text-sm mt-4">
+                  AI가 만들어낸 실제와 같은 인테리어 사진입니다.
+                </p>
+              </div>
             )}
           </div>
+        )}
 
-          {/* 현재 단계 표시 */}
-          {currentStep && (
-            <div className="mt-3 p-2 bg-blue-100 rounded text-sm text-blue-800 font-medium">
-              현재 진행: {currentStep}
-            </div>
-          )}
-        </div>
-      )}
 
-      {/* 생성된 이미지 결과 */}
-      {showResults && generatedImages.length > 0 && (
-        <div className="border-t border-border pt-6">
-          <h4 className="font-semibold mb-4 text-text-primary">
-            생성된 AI 인테리어 디자인
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {generatedImages.map((image, index) => (
-              <div
-                key={index}
-                className="bg-background rounded-lg border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
-                  {image.url ? (
-                    <img
-                      src={image.url}
-                      alt={`${
-                        INTERIOR_STYLES.find((s) => s.id === image.style)?.name
-                      } 스타일 인테리어`}
-                      className="w-full h-full object-cover"
-                      onLoad={() => {
-                        console.log("이미지 로드 성공:", image.url);
-                      }}
-                      onError={(e) => {
-                        console.error("이미지 로드 실패:", image.url);
-                        console.error(
-                          "원인: 파일이 존재하지 않거나 서버에서 접근할 수 없습니다."
-                        );
-                        // 이미지 로드 실패 시 대체 UI 표시
-                        e.target.style.display = "none";
-                        e.target.nextElementSibling.style.display = "flex";
-                      }}
-                    />
-                  ) : null}
-                  <div
-                    className="text-center text-text-secondary"
-                    style={{
-                      display: image.url ? "none" : "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: "100%",
-                      height: "100%",
-                    }}
-                  >
-                    <div className="text-4xl mb-2">🎨</div>
-                    <div className="text-sm">
-                      {INTERIOR_STYLES.find((s) => s.id === image.style)
-                        ?.name || image.style}{" "}
-                      스타일
-                    </div>
-                    <div className="text-xs mt-1 text-text-tertiary">
-                      {image.generated_at &&
-                        new Date(image.generated_at).toLocaleString()}
-                    </div>
-                  </div>
+        
+        {/* 통합 사용 가이드 */}
+        <div className="mt-12 p-6 bg-blue-50 border border-blue-200 rounded-xl">
+          <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
+            💡 AI 인테리어 디자이너 사용법
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 1단계: 기본 설정 */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-blue-800 mb-3">1단계: 기본 설정</h4>
+              <div className="space-y-2 text-sm text-blue-700">
+                <div className="flex items-start gap-2">
+                  <span className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">📷</span>
+                  <span><strong>이미지 준비:</strong> 3D 캡처 이미지 또는 방 사진을 업로드하세요</span>
                 </div>
-                <div className="p-3">
-                  <div className="text-sm font-medium text-text-primary mb-1">
-                    {INTERIOR_STYLES.find((s) => s.id === image.style)?.name}{" "}
-                    디자인
-                  </div>
-                  <div className="text-xs text-text-secondary">
-                    {image.room_dimensions &&
-                      `${
-                        Math.round(
-                          (((image.room_dimensions.width_cm / 100) *
-                            image.room_dimensions.depth_cm) /
-                            100) *
-                            100
-                        ) / 100
-                      }㎡`}
-                  </div>
+                <div className="flex items-start gap-2">
+                  <span className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">🎨</span>
+                  <span><strong>스타일 선택:</strong> 4가지 침실 스타일 중 선택 (모던, 스칸디나비안 등)</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">🎯</span>
+                  <span><strong>목적 설정:</strong> Netflix, 업무, 손님맞이, 로맨틱 등 용도 선택</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">🏠</span>
+                  <span><strong>가구 배치:</strong> 기존 유지 또는 최적화 방식 선택</span>
                 </div>
               </div>
-            ))}
+            </div>
+
+            {/* 2단계: AI 생성 */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-blue-800 mb-3">2단계: AI 생성</h4>
+              <div className="space-y-2 text-sm text-blue-700">
+                <div className="flex items-start gap-2">
+                  <span className="w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">1</span>
+                  <span><strong>디자인 생성:</strong> "1단계: 인테리어 디자인 생성하기" 클릭 (30초)</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">⚙️</span>
+                  <span><strong>실사화 설정:</strong> 사진 스타일과 조명 모드 조정</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">2</span>
+                  <span><strong>실사화 생성:</strong> "2단계: 실제 방 사진처럼 만들기" 클릭 (1분)</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">✨</span>
+                  <span><strong>결과 완성:</strong> 잡지급 품질의 인테리어 사진 완성!</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* 가구 스타일 변경 패널 (furniture_style 생성기 선택시만 표시) */}
-      {selectedGenerator.startsWith("furniture_style") && (
-        <div className="mt-8">
-          <StyleChangePanel
-            screenshotData={capturedScreenshot?.imageData}
-            roomData={roomData}
-            onStyleChange={(furnitureId, style) => {
-              console.log(`가구 ${furnitureId} 스타일이 ${style}로 변경됨`);
-            }}
-            onGenerateWithStyle={handleGenerateWithStyle}
-          />
-        </div>
-      )}
-
-      {/* 도움말 */}
-      <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-        <div className="text-sm text-text-secondary">
-          <div className="font-medium mb-1">💡 사용법</div>
-          <ul className="list-disc list-inside space-y-1 text-xs">
-            <li>원하는 인테리어 스타일을 선택하세요</li>
-            <li>"생성" 버튼을 클릭하여 AI 디자인을 요청하세요</li>
-            <li>생성까지 약 30초-1분 정도 소요됩니다</li>
-            <li>여러 스타일로 생성해서 비교해보세요</li>
-          </ul>
+          {/* 추가 팁 */}
+          <div className="mt-6 p-4 bg-blue-100 rounded-lg">
+            <h5 className="font-semibold text-blue-800 mb-2">🎯 프로 팁</h5>
+            <div className="text-sm text-blue-700 space-y-1">
+              <p>• <strong>여러 스타일 시도:</strong> 같은 방으로 다양한 스타일과 목적을 테스트해보세요</p>
+              <p>• <strong>실사화 품질:</strong> Architectural Digest, Elle Decor 수준의 전문 사진 생성</p>
+              <p>• <strong>커스텀 요청:</strong> "추가 요청"란에 구체적인 요구사항을 입력하세요</p>
+              <p>• <strong>가구 배치:</strong> "기존 배치 유지"로 현재 가구만 스타일 변경 가능</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+
   );
 };
 

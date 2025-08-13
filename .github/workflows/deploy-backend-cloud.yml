@@ -1,0 +1,110 @@
+# name: Deploy Backend Cloud
+
+# on:
+#   push:
+#     branches: [dev-eunbi]
+#     paths:
+#       - 'eunbi/room-measure/backend-cloud/**'
+#   workflow_dispatch:
+
+# # 동시 실행 방지
+# concurrency:
+#   group: deploy-backend-cloud-${{ github.ref }}
+#   cancel-in-progress: true
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Build Docker image
+#         run: |
+#           cd eunbi/room-measure/backend-cloud
+#           docker build -t room-measure-cloud:${{ github.sha }} .
+#           docker save room-measure-cloud:${{ github.sha }} > room-measure-cloud.tar
+
+#       - name: Copy Docker image to EC2
+#         uses: appleboy/scp-action@v0.1.4
+#         with:
+#           host: ${{ secrets.EUNBI_NODE_EC2_HOST }}
+#           username: node1
+#           key: ${{ secrets.EUNBI_NODE_EC2_SSH_KEY }}
+#           source: "eunbi/room-measure/backend-cloud/room-measure-cloud.tar"
+#           target: "/home/node1/"
+
+#       - name: Copy app files to EC2
+#         uses: appleboy/scp-action@v0.1.4
+#         with:
+#           host: ${{ secrets.EUNBI_NODE_EC2_HOST }}
+#           username: node1
+#           key: ${{ secrets.EUNBI_NODE_EC2_SSH_KEY }}
+#           source: "eunbi/room-measure/backend-cloud/"
+#           target: "/home/node1/app/"
+
+#       - name: Deploy on EC2
+#         uses: appleboy/ssh-action@v0.1.5
+#         with:
+#           host: ${{ secrets.EUNBI_NODE_EC2_HOST }}
+#           username: node1
+#           key: ${{ secrets.EUNBI_NODE_EC2_SSH_KEY }}
+#           script: |
+#             set -euo pipefail
+
+#             # 디렉토리 보장
+#             mkdir -p /home/node1/app/eunbi/room-measure/backend-cloud
+
+#             # 기존 컨테이너 정리 (sudo 사용)
+#             sudo docker stop room-measure-cloud 2>/dev/null || true
+#             sudo docker rm room-measure-cloud 2>/dev/null || true
+
+#             # 새 이미지 로드
+#             cd /home/node1
+#             sudo docker load < room-measure-cloud.tar
+
+#             # 앱 디렉토리로 이동
+#             cd /home/node1/app/eunbi/room-measure/backend-cloud
+
+#             # .env 파일 확인 및 생성
+#             if [ ! -f .env ]; then
+#               if [ -f .env.example ]; then
+#                 cp .env.example .env
+#                 echo "⚠️ .env.example을 복사했습니다. 환경변수를 설정해주세요."
+#               else
+#                 echo "❌ .env와 .env.example이 모두 없습니다."
+#                 exit 1
+#               fi
+#             fi
+
+#             # 컨테이너 실행 (sudo 사용)
+#             sudo docker run -d \
+#               --name room-measure-cloud \
+#               -p 3000:3000 \
+#               --env-file .env \
+#               --restart unless-stopped \
+#               room-measure-cloud:${{ github.sha }}
+
+#             # 헬스체크
+#             echo "⏳ 서비스 시작 대기 중..."
+#             sleep 10
+            
+#             # 헬스체크 실패 시 로그 출력
+#             if ! curl -fsS http://localhost:3000/health; then
+#               echo "❌ 헬스체크 실패! 컨테이너 로그:"
+#               sudo docker logs --tail=50 room-measure-cloud
+#               exit 1
+#             fi
+
+#             echo "✅ 헬스체크 성공!"
+
+#             # 정리
+#             rm -f /home/node1/room-measure-cloud.tar
+#             sudo docker image prune -f
+
+#       - name: Deployment notification
+#         run: |
+#           echo "🚀 배포 완료!"
+#           echo "🌐 URL: http://${{ secrets.EUNBI_NODE_EC2_HOST }}:3000"
+#           echo "🔍 헬스체크: http://${{ secrets.EUNBI_NODE_EC2_HOST }}:3000/health"

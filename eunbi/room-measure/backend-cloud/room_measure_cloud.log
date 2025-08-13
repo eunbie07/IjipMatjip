@@ -241,3 +241,9 @@
 2025-08-12 01:45:30,623 - main - INFO - Request 4403782064 completed in 0.002s - Status: 200
 2025-08-12 01:45:30,716 - main - INFO - Request 4403781488: GET http://localhost:3000/openapi.json
 2025-08-12 01:45:30,805 - main - INFO - Request 4403781488 completed in 0.089s - Status: 200
+2025-08-13 19:55:24,185 - main - INFO - Request 4403788400: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-13 19:55:24,190 - main - INFO - Request 4403788400 completed in 0.006s - Status: 200
+2025-08-13 19:55:24,193 - main - INFO - Request 4403977808: POST http://localhost:3000/save-room-layout-guest
+2025-08-13 19:55:24,707 - main - INFO - MongoDB에 저장 완료: 689c6f1c1dac734b67a77511
+2025-08-13 19:55:24,712 - main - INFO - 방 레이아웃 저장 완료 (게스트 - MongoDB)
+2025-08-13 19:55:24,714 - main - INFO - Request 4403977808 completed in 0.520s - Status: 200
