@@ -1,0 +1,65 @@
+name: Deploy Backend Cloud
+
+on:
+  push:
+    branches: [ dev-eunbi ]
+    paths:
+      - 'eunbi/room-measure/backend-cloud/**'
+      - '.github/workflows/deploy-backend-cloud.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.EUNBI_DOCKERHUB_USERNAME }}
+          password: ${{ secrets.EUNBI_DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        run: |
+          cd eunbi/room-measure/backend-cloud
+          IMAGE_TAG=${GITHUB_SHA}
+          docker build -t eunbie/room-measure-cloud:$IMAGE_TAG .
+          docker push eunbie/room-measure-cloud:$IMAGE_TAG
+
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.EUNBI_NODE_EC2_HOST }}
+          username: node1
+          key: ${{ secrets.EUNBI_NODE_EC2_SSH_KEY }}
+          envs: GITHUB_SHA
+          script: |
+            set -euo pipefail
+
+            IMAGE_TAG=${GITHUB_SHA}
+            docker stop room-measure-cloud 2>/dev/null || true
+            docker rm room-measure-cloud 2>/dev/null || true
+
+            docker pull eunbie/room-measure-cloud:$IMAGE_TAG
+
+            cd /home/node1/app/eunbi/room-measure/backend-cloud
+            if [ ! -f .env ]; then
+              if [ -f .env.example ]; then
+                cp .env.example .env
+              else
+                echo ".env 파일이 필요합니다"; exit 1
+              fi
+            fi
+
+            docker run -d \
+              --name room-measure-cloud \
+              -p 3000:3000 \
+              --env-file .env \
+              --restart unless-stopped \
+              eunbie/room-measure-cloud:$IMAGE_TAG
+
+            sleep 10
+            curl -fsS http://localhost:3000/health || { echo "헬스체크 실패"; docker logs --tail=50 room-measure-cloud; exit 1; }

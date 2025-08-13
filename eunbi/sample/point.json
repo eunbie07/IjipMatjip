@@ -1,0 +1,52 @@
+{
+    "_id": {
+      "$oid": "68983c271dac734b67a7750f"
+    },
+    "scene": {
+      "description": "AI 인테리어 생성을 위한 방 공간",
+      "room": {
+        "width": 402.6,
+        "depth": 429.1,
+        "height": 230
+      },
+      "objects": [
+        {
+          "name": "Bed",
+          "type": "bed",
+          "position": [
+            100,
+            30,
+            105
+          ],
+          "rotation_y": 0,
+          "size": [
+            150,
+            60,
+            200
+          ]
+        },
+        {
+          "name": "Desk",
+          "type": "desk",
+          "position": [
+            342.6,
+            37.5,
+            31.7164
+          ],
+          "rotation_y": 0,
+          "size": [
+            120,
+            75,
+            60
+          ]
+        }
+      ]
+    },
+    "created_at": {
+      "$date": "2025-08-10T06:28:55.844Z"
+    },
+    "updated_at": null,
+    "user_id": null,
+    "saved_at": "2025-08-10 15:28:55",
+    "format_version": "2.0.0"
+  }

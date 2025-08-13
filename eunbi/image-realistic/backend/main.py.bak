@@ -1,0 +1,173 @@
+import os, base64, io, uuid, asyncio, json
+from typing import List, Tuple
+from datetime import datetime
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from PIL import Image
+from dotenv import load_dotenv
+
+from prompt_templates import DEFAULT_STRENGTH, DEFAULT_GUIDANCE
+from vertex_ai import run_pipeline_controlnet_to_flux
+from prompt_builder import build_prompt
+
+load_dotenv()
+
+app = FastAPI(title="Realistic Room Composite Service")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- Pydantic Models ---
+class FurnitureItem(BaseModel):
+    name: str
+    type: str
+    position: Tuple[float, float, float]
+    rotation_y: float
+    size: Tuple[float, float, float]
+
+class Room(BaseModel):
+    width: float
+    depth: float
+    height: float
+
+class Scene(BaseModel):
+    description: str
+    room: Room
+    objects: List[FurnitureItem]
+
+class I2IResponse(BaseModel):
+    images: List[str]
+
+# --- Helper Functions ---
+def save_image(image_bytes: bytes, folder: str, filename: str) -> str:
+    os.makedirs(folder, exist_ok=True)
+    filepath = os.path.join(folder, filename)
+    with open(filepath, 'wb') as f:
+        f.write(image_bytes)
+    print(f"[Storage] Saved: {filepath}")
+    return filepath
+
+def save_generated_image(image_data: str, provider: str, request_id: str) -> str:
+    try:
+        if image_data.startswith('http'):
+            response = httpx.get(image_data)
+            response.raise_for_status()
+            image_bytes = response.content
+        elif image_data.startswith('data:image'):
+            image_bytes = base64.b64decode(image_data.split(',')[1])
+        else:
+            image_bytes = base64.b64decode(image_data)
+        
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"{timestamp}_{request_id}_{provider}.png"
+        return save_image(image_bytes, 'outputs', filename)
+    except Exception as e:
+        print(f"[Storage] Failed to save image: {e}")
+        return None
+
+def composite_images_crop_paste(scene: Scene, capture_bytes: bytes, img_size=(1024, 1024)) -> bytes:
+    """
+    Uses JSON coordinates to crop parts of the capture image and paste them onto a new canvas.
+    This is the core logic to ensure the layout is preserved.
+    """
+    room_width_3d = scene.room.width
+    room_depth_3d = scene.room.depth
+    padding = 50
+    
+    drawable_width = img_size[0] - 2 * padding
+    drawable_height = img_size[1] - 2 * padding
+    
+    scale = min(drawable_width / room_width_3d, drawable_height / room_depth_3d) if room_width_3d > 0 and room_depth_3d > 0 else 1
+
+    capture_img = Image.open(io.BytesIO(capture_bytes)).convert("RGBA")
+    
+    # The capture image is a direct screenshot of the 3D scene.
+    # We assume its content corresponds to the room dimensions.
+    scaled_capture_size = (int(room_width_3d * scale), int(room_depth_3d * scale))
+    capture_img_resized = capture_img.resize(scaled_capture_size, Image.LANCZOS)
+
+    canvas = Image.new("RGB", img_size, "white")
+
+    for item in scene.objects:
+        # JSON provides center-point coordinates.
+        center_x = item.position[0] * scale
+        center_y = item.position[2] * scale
+        size_x = item.size[0] * scale
+        size_y = item.size[2] * scale
+
+        # Calculate the crop box based on the scaled capture image dimensions.
+        crop_left = int(center_x - size_x / 2)
+        crop_top = int(center_y - size_y / 2)
+        crop_right = int(center_x + size_x / 2)
+        crop_bottom = int(center_y + size_y / 2)
+        
+        crop_box = (
+            max(0, crop_left), 
+            max(0, crop_top), 
+            min(capture_img_resized.width, crop_right), 
+            min(capture_img_resized.height, crop_bottom)
+        )
+        
+        if crop_box[0] >= crop_box[2] or crop_box[1] >= crop_box[3]:
+            continue
+
+        cropped_part = capture_img_resized.crop(crop_box)
+
+        # Calculate the paste position on the main canvas, including padding.
+        paste_x = padding + crop_left
+        paste_y = padding + crop_top
+        
+        canvas.paste(cropped_part, (paste_x, paste_y), cropped_part)
+
+    buf = io.BytesIO()
+    canvas.save(buf, format="PNG")
+    return buf.getvalue()
+
+# --- Main Endpoint ---
+@app.post("/api/realistic-room-composite", response_model=I2IResponse)
+async def realistic_room_composite(
+    scene_json: str = Form(...),
+    capture: UploadFile = File(...),
+    style: str = Form("scandinavian"),
+    provider: str = Form("flux"),
+    mode: str = Form("strict")
+):
+    request_id = str(uuid.uuid4())[:8]
+    try:
+        scene = Scene.model_validate_json(scene_json)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid scene_json: {e}")
+
+    cap_bytes = await capture.read()
+
+    # Use the new, correct 'crop and paste' compositing method
+    composite_bytes = composite_images_crop_paste(scene, cap_bytes)
+
+    # Save intermediate files for debugging
+    save_image(cap_bytes, 'uploads', f"{request_id}_capture.png")
+    save_image(composite_bytes, 'uploads', f"{request_id}_composite_input.png")
+
+    prompt_text, _ = build_prompt(provider=provider, style_key=style, mode=mode)
+    
+    if provider == "flux":
+        final_image_url = await run_pipeline_controlnet_to_flux(
+            composite_bytes, prompt_text, DEFAULT_STRENGTH, DEFAULT_GUIDANCE
+        )
+    else:
+        raise HTTPException(status_code=400, detail=f"Provider '{provider}' is not supported.")
+    
+    if not final_image_url:
+        raise HTTPException(500, "Image generation failed, no URL returned.")
+    
+    save_generated_image(final_image_url, f"{provider}_composite", request_id)
+
+    return {"images": [final_image_url]}
+
+@app.get("/healthz")
+async def healthz():
+    return {"ok": True}

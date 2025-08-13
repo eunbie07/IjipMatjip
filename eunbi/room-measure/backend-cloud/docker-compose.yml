@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  room-measure-cloud:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - POSTGRES_HOST=${POSTGRES_HOST:-localhost}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-user_auth}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - MONGO_HOST=${MONGO_HOST:-13.55.21.100}
+      - JWT_SECRET=${JWT_SECRET}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - room-measure-network
+
+networks:
+  room-measure-network:
+    driver: bridge

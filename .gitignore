@@ -1,0 +1,145 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.example
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+## .env
+.env
+
+## c program
+c/*
+c/*.o
+!c/**/*.c
+!c/**/*.h
+!c/**/*.a
+!c/**/Makefile*
+
+## Java
+**/*.class
+
+## Scala
+scala/**/project
+scala/**/target
+
+## Maven
+maven/**/target
+
+## nodejs
+**/node_modules
+**/package-lock.json
+**/.serverless
+
+## python
+.idea
+secret.json
+**/.venv
+**/__pycache__/
+**/secret.json
+venv/
+.venv/
+**/**/**/.venv
+
+## mongodb
+mongodb/backup
+
+## oracle
+oracle/node/dbConfig.js
+oracle/**/node_modules
+oracle/**/package-lock.json
+
+## docker
+docker/mysql/mysql*
+docker/mongodb/mongo*
+
+
+react/**/.git
+nestjs/**/.git
+
+test/project/mongosh-2.0.2-linux-x64/
+
+test/project/mongosh-2.0.2-linux-x64/bin/mongosh
+test/project/mongosh-2.0.2-linux-x64/bin/mongosh_crypt_v1.so
+
+test/project/mongosh-2.0.2-linux-x64/
+
+**/node_modules
+**/package-lock.json
+**/.serverless
+
+**/secret.yaml
+
+keys/*.json
+google-vision-key.json
+service-account-*.json
+
+# 환경변수 파일
+.env
+.env.local
+.env.production
+
+service-account-key.json
+
+# Claude settings
+.claude/
+.claude/**
+**/.claude/
+**/.claude/**
+*.claude
+claude_*
+
+# Git templates
+.gitmessage
+
+# Google Cloud credentials
+**/key.json
+**/key.json.example
+**/service-account*.json
+service-account.json
+**/google-credentials*.json
+**/*key*.json
+**/*key*
+*key*
+
+
+# Environment files
+**/*env*.json
+**/*env*
+*env*
+
+# Code splitter files
+code_splitter.md
+code_splitter.py
+
+# Test files
+**/test1.jsx
+**/test*.jsx
+
+# BFG Report files (contains sensitive git history information)
+..bfg-report/
+**/.bfg-report/
+bfg-report/
+
+# Obsidian settings
+.obsidian/
+**/.obsidian/

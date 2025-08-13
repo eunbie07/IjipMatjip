@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+python-multipart
+httpx
+python-dotenv
+Pillow
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+numpy
+opencv-python

@@ -1,0 +1,253 @@
+2025-08-04 13:41:30,087 - main - INFO - Request 1982398496992: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-04 13:41:30,087 - main - INFO - Request 1982398496992 completed in 0.000s - Status: 200
+2025-08-04 13:41:30,100 - main - INFO - Request 1982398509856: POST http://localhost:3000/save-room-layout-guest
+2025-08-04 13:41:30,552 - main - INFO - MongoDBÔøΩÔøΩ ÔøΩÔøΩÔøΩÔøΩ ÔøΩœ∑ÔøΩ: 689039fa46f9b427c9096d5c
+2025-08-04 13:41:30,562 - main - INFO - ÔøΩÔøΩ ÔøΩÔøΩÔøΩÃæ∆øÔøΩ ÔøΩÔøΩÔøΩÔøΩ ÔøΩœ∑ÔøΩ (ÔøΩ‘ΩÔøΩ∆Æ - MongoDB)
+2025-08-04 13:41:30,565 - main - INFO - Request 1982398509856 completed in 0.464s - Status: 200
+2025-08-04 13:41:36,404 - main - INFO - Request 1982398512592: POST http://localhost:3000/save-room-layout-guest
+2025-08-04 13:41:36,553 - main - INFO - MongoDBÔøΩÔøΩ ÔøΩÔøΩÔøΩÔøΩ ÔøΩœ∑ÔøΩ: 68903a0046f9b427c9096d5d
+2025-08-04 13:41:36,558 - main - INFO - ÔøΩÔøΩ ÔøΩÔøΩÔøΩÃæ∆øÔøΩ ÔøΩÔøΩÔøΩÔøΩ ÔøΩœ∑ÔøΩ (ÔøΩ‘ΩÔøΩ∆Æ - MongoDB)
+2025-08-04 13:41:36,559 - main - INFO - Request 1982398512592 completed in 0.156s - Status: 200
+2025-08-06 12:22:24,300 - main - INFO - Request 2704080363520: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-06 12:22:24,300 - main - INFO - Request 2704080363520 completed in 0.000s - Status: 200
+2025-08-06 12:22:24,302 - main - INFO - Request 2704080356080: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 12:22:24,302 - main - ERROR - Validation error: [{'type': 'missing', 'loc': ('body', 'scene'), 'msg': 'Field required', 'input': {'room_dimensions': {'width_cm': 332.5, 'height_cm': 230, 'depth_cm': 418.6}, 'furniture_3d': [{'name': 'Bed', 'type': 'bed', 'position': [75, 30, 100], 'rotation': [0, 0, 0]}, {'name': 'Desk', 'type': 'desk', 'position': [272.5, 37.5, 107.8596], 'rotation': [0, 0, 0]}], 'area_sqm': 13.91845, 'volume_cum': 32.012435, 'created_at': '2025-08-06T03:22:17.989Z', 'ai_generation_request': True}}]
+2025-08-06 12:22:24,302 - main - INFO - Request 2704080356080 completed in 0.000s - Status: 422
+2025-08-06 12:26:43,147 - main - INFO - Request 1971863279168: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 12:26:43,611 - main - INFO - MongoDBÔøΩÔøΩ ÔøΩÔøΩÔøΩÔøΩ ÔøΩœ∑ÔøΩ: 6892cb73966337bf7b1b4bb1
+2025-08-06 12:26:43,614 - main - INFO - ÔøΩÔøΩ ÔøΩÔøΩÔøΩÃæ∆øÔøΩ ÔøΩÔøΩÔøΩÔøΩ ÔøΩœ∑ÔøΩ (ÔøΩ‘ΩÔøΩ∆Æ - MongoDB)
+2025-08-06 12:26:43,614 - main - INFO - Request 1971863279168 completed in 0.467s - Status: 200
+2025-08-06 12:30:17,942 - main - INFO - Request 1971863486288: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 12:30:18,076 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892cc49966337bf7b1b4bb2
+2025-08-06 12:30:18,092 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 12:30:18,092 - main - INFO - Request 1971863486288 completed in 0.150s - Status: 200
+2025-08-06 15:26:48,480 - main - INFO - Request 1630882116672: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-06 15:26:48,485 - main - INFO - Request 1630882116672 completed in 0.005s - Status: 200
+2025-08-06 15:26:48,491 - main - INFO - Request 1630882118400: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:26:49,091 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f5a840e6a598d7386848
+2025-08-06 15:26:49,098 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:26:49,101 - main - INFO - Request 1630882118400 completed in 0.610s - Status: 200
+2025-08-06 15:26:52,368 - main - INFO - Request 1630882117584: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:26:52,509 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f5ac40e6a598d7386849
+2025-08-06 15:26:52,515 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:26:52,516 - main - INFO - Request 1630882117584 completed in 0.148s - Status: 200
+2025-08-06 15:27:46,231 - main - INFO - Request 1630882443776: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:27:46,372 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f5e240e6a598d738684a
+2025-08-06 15:27:46,380 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:27:46,381 - main - INFO - Request 1630882443776 completed in 0.150s - Status: 200
+2025-08-06 15:28:15,160 - main - INFO - Request 1630882442192: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:28:15,308 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f5ff40e6a598d738684b
+2025-08-06 15:28:15,317 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:28:15,317 - main - INFO - Request 1630882442192 completed in 0.157s - Status: 200
+2025-08-06 15:28:17,242 - main - INFO - Request 1630882446896: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:28:17,382 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f60140e6a598d738684c
+2025-08-06 15:28:17,392 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:28:17,393 - main - INFO - Request 1630882446896 completed in 0.151s - Status: 200
+2025-08-06 15:29:35,002 - main - INFO - Request 1630882442336: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:29:35,148 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f64f40e6a598d738684d
+2025-08-06 15:29:35,154 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:29:35,154 - main - INFO - Request 1630882442336 completed in 0.153s - Status: 200
+2025-08-06 15:30:56,154 - main - INFO - Request 1630882442240: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:30:56,296 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f6a040e6a598d738684e
+2025-08-06 15:30:56,310 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:30:56,310 - main - INFO - Request 1630882442240 completed in 0.155s - Status: 200
+2025-08-06 15:30:59,486 - main - INFO - Request 1630882436048: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:30:59,629 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f6a340e6a598d738684f
+2025-08-06 15:30:59,637 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:30:59,638 - main - INFO - Request 1630882436048 completed in 0.151s - Status: 200
+2025-08-06 15:34:26,329 - main - INFO - Request 1630882107312: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:34:26,468 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f77240e6a598d7386850
+2025-08-06 15:34:26,475 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:34:26,476 - main - INFO - Request 1630882107312 completed in 0.148s - Status: 200
+2025-08-06 15:36:19,461 - main - INFO - Request 1630882610352: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:36:19,603 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f7e340e6a598d7386851
+2025-08-06 15:36:19,610 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:36:19,612 - main - INFO - Request 1630882610352 completed in 0.151s - Status: 200
+2025-08-06 15:36:21,649 - main - INFO - Request 1630882605696: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:36:21,791 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f7e540e6a598d7386852
+2025-08-06 15:36:21,801 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:36:21,801 - main - INFO - Request 1630882605696 completed in 0.152s - Status: 200
+2025-08-06 15:38:49,019 - main - INFO - Request 1630882447328: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-06 15:38:49,019 - main - INFO - Request 1630882447328 completed in 0.000s - Status: 200
+2025-08-06 15:38:49,023 - main - INFO - Request 1630882446320: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:38:49,166 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f87940e6a598d7386853
+2025-08-06 15:38:49,176 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:38:49,176 - main - INFO - Request 1630882446320 completed in 0.153s - Status: 200
+2025-08-06 15:38:54,143 - main - INFO - Request 1630882437296: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:38:54,284 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f87e40e6a598d7386854
+2025-08-06 15:38:54,290 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:38:54,291 - main - INFO - Request 1630882437296 completed in 0.148s - Status: 200
+2025-08-06 15:41:38,683 - main - INFO - Request 1630882437440: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:41:38,952 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f92240e6a598d7386855
+2025-08-06 15:41:38,960 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:41:38,961 - main - INFO - Request 1630882437440 completed in 0.278s - Status: 200
+2025-08-06 15:42:24,417 - main - INFO - Request 1630882599264: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:42:24,566 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f95040e6a598d7386856
+2025-08-06 15:42:24,577 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:42:24,577 - main - INFO - Request 1630882599264 completed in 0.159s - Status: 200
+2025-08-06 15:42:27,487 - main - INFO - Request 1630882609536: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:42:27,628 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f95340e6a598d7386857
+2025-08-06 15:42:27,640 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:42:27,640 - main - INFO - Request 1630882609536 completed in 0.153s - Status: 200
+2025-08-06 15:43:19,934 - main - INFO - Request 1630882609008: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:43:20,266 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f98740e6a598d7386858
+2025-08-06 15:43:20,274 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:43:20,275 - main - INFO - Request 1630882609008 completed in 0.341s - Status: 200
+2025-08-06 15:44:39,393 - main - INFO - Request 1630882433840: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:44:39,534 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892f9d740e6a598d7386859
+2025-08-06 15:44:39,549 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:44:39,550 - main - INFO - Request 1630882433840 completed in 0.157s - Status: 200
+2025-08-06 15:48:11,341 - main - INFO - Request 1630882444064: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:48:11,482 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892faab40e6a598d738685a
+2025-08-06 15:48:11,490 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:48:11,491 - main - INFO - Request 1630882444064 completed in 0.150s - Status: 200
+2025-08-06 15:48:16,021 - main - INFO - Request 1630882442432: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 15:48:16,171 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6892fab040e6a598d738685b
+2025-08-06 15:48:16,181 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 15:48:16,181 - main - INFO - Request 1630882442432 completed in 0.160s - Status: 200
+2025-08-06 16:24:16,695 - main - INFO - Request 1630882598592: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-06 16:24:16,696 - main - INFO - Request 1630882598592 completed in 0.000s - Status: 200
+2025-08-06 16:24:16,698 - main - INFO - Request 1630882608912: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 16:24:16,840 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6893032040e6a598d738685c
+2025-08-06 16:24:16,851 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 16:24:16,851 - main - INFO - Request 1630882608912 completed in 0.152s - Status: 200
+2025-08-06 16:24:19,811 - main - INFO - Request 1630882603056: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 16:24:19,956 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6893032340e6a598d738685d
+2025-08-06 16:24:19,964 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 16:24:19,966 - main - INFO - Request 1630882603056 completed in 0.156s - Status: 200
+2025-08-06 16:29:55,793 - main - INFO - Request 1630882578944: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 16:29:55,935 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6893047340e6a598d738685e
+2025-08-06 16:29:55,947 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 16:29:55,947 - main - INFO - Request 1630882578944 completed in 0.154s - Status: 200
+2025-08-06 18:42:56,195 - main - INFO - Request 1630882443104: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-06 18:42:56,196 - main - INFO - Request 1630882443104 completed in 0.001s - Status: 200
+2025-08-06 18:42:56,198 - main - INFO - Request 1630882436864: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 18:42:56,340 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 689323a040e6a598d738685f
+2025-08-06 18:42:56,351 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 18:42:56,351 - main - INFO - Request 1630882436864 completed in 0.152s - Status: 200
+2025-08-06 18:49:25,245 - main - INFO - Request 1630882437008: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 18:49:25,393 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6893252540e6a598d7386860
+2025-08-06 18:49:25,403 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 18:49:25,403 - main - INFO - Request 1630882437008 completed in 0.158s - Status: 200
+2025-08-06 19:07:36,997 - main - INFO - Request 1630882596144: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-06 19:07:36,998 - main - INFO - Request 1630882596144 completed in 0.002s - Status: 200
+2025-08-06 19:07:37,001 - main - INFO - Request 1630882610784: POST http://localhost:3000/save-room-layout-guest
+2025-08-06 19:07:37,141 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6893296940e6a598d7386861
+2025-08-06 19:07:37,151 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-06 19:07:37,153 - main - INFO - Request 1630882610784 completed in 0.152s - Status: 200
+2025-08-07 02:48:41,847 - main - INFO - Request 2264774616288: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-07 02:48:41,848 - main - INFO - Request 2264774616288 completed in 0.001s - Status: 200
+2025-08-07 02:48:41,851 - main - INFO - Request 2264774617776: POST http://localhost:3000/save-room-layout-guest
+2025-08-07 02:48:42,373 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 68939579d0babdae7895909d
+2025-08-07 02:48:42,380 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-07 02:48:42,380 - main - INFO - Request 2264774617776 completed in 0.530s - Status: 200
+2025-08-07 05:17:15,531 - main - INFO - Request 2264775031936: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-07 05:17:15,536 - main - INFO - Request 2264775031936 completed in 0.006s - Status: 200
+2025-08-07 05:17:15,543 - main - INFO - Request 2264775025168: POST http://localhost:3000/save-room-layout-guest
+2025-08-07 05:17:16,013 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6893b84bd0babdae7895909e
+2025-08-07 05:17:16,030 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-07 05:17:16,031 - main - INFO - Request 2264775025168 completed in 0.488s - Status: 200
+2025-08-07 12:07:37,280 - main - INFO - Request 1657504032448: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-07 12:07:37,283 - main - INFO - Request 1657504032448 completed in 0.003s - Status: 200
+2025-08-07 12:07:37,289 - main - INFO - Request 1657504032496: POST http://localhost:3000/save-room-layout-guest
+2025-08-07 12:07:37,981 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6894187965d9731eda1f2780
+2025-08-07 12:07:37,996 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-07 12:07:37,996 - main - INFO - Request 1657504032496 completed in 0.707s - Status: 200
+2025-08-07 12:14:41,523 - main - INFO - Request 1657504446176: POST http://localhost:3000/save-room-layout-guest
+2025-08-07 12:14:41,722 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 68941a2165d9731eda1f2781
+2025-08-07 12:14:41,728 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-07 12:14:41,731 - main - INFO - Request 1657504446176 completed in 0.208s - Status: 200
+2025-08-07 12:30:02,690 - main - INFO - Request 1657504440560: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-07 12:30:02,693 - main - INFO - Request 1657504440560 completed in 0.004s - Status: 200
+2025-08-07 12:30:02,696 - main - INFO - Request 1657504442000: POST http://localhost:3000/save-room-layout-guest
+2025-08-07 12:30:02,918 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 68941dba65d9731eda1f2782
+2025-08-07 12:30:02,933 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-07 12:30:02,933 - main - INFO - Request 1657504442000 completed in 0.237s - Status: 200
+2025-08-07 14:08:22,924 - main - INFO - Request 1657504447520: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-07 14:08:22,924 - main - INFO - Request 1657504447520 completed in 0.001s - Status: 200
+2025-08-07 14:08:22,930 - main - INFO - Request 1657504030528: POST http://localhost:3000/save-room-layout-guest
+2025-08-07 14:08:23,157 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 689434c665d9731eda1f2783
+2025-08-07 14:08:23,180 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-07 14:08:23,182 - main - INFO - Request 1657504030528 completed in 0.252s - Status: 200
+2025-08-07 16:54:09,308 - main - INFO - Request 1657504516384: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-07 16:54:09,311 - main - INFO - Request 1657504516384 completed in 0.004s - Status: 200
+2025-08-07 16:54:09,328 - main - INFO - Request 1657504526896: POST http://localhost:3000/save-room-layout-guest
+2025-08-07 16:54:09,599 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 68945ba165d9731eda1f2784
+2025-08-07 16:54:09,625 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-07 16:54:09,626 - main - INFO - Request 1657504526896 completed in 0.298s - Status: 200
+2025-08-07 20:42:54,412 - main - INFO - Request 2394939336240: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-07 20:42:54,413 - main - INFO - Request 2394939336240 completed in 0.001s - Status: 200
+2025-08-07 20:42:54,415 - main - INFO - Request 2394939333168: POST http://localhost:3000/save-room-layout-guest
+2025-08-07 20:42:55,017 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6894913e0605b90aa15e9a46
+2025-08-07 20:42:55,055 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-07 20:42:55,057 - main - INFO - Request 2394939333168 completed in 0.640s - Status: 200
+2025-08-08 14:59:36,483 - main - INFO - Request 2394939741856: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-08 14:59:36,490 - main - INFO - Request 2394939741856 completed in 0.008s - Status: 200
+2025-08-08 14:59:36,496 - main - INFO - Request 2394939745792: POST http://localhost:3000/save-room-layout-guest
+2025-08-08 14:59:37,098 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 689592480605b90aa15e9a47
+2025-08-08 14:59:37,115 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-08 14:59:37,117 - main - INFO - Request 2394939745792 completed in 0.621s - Status: 200
+2025-08-08 15:19:52,887 - main - INFO - Request 2394939836800: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-08 15:19:52,894 - main - INFO - Request 2394939836800 completed in 0.006s - Status: 200
+2025-08-08 15:19:52,897 - main - INFO - Request 2394939847648: POST http://localhost:3000/save-room-layout-guest
+2025-08-08 15:19:53,110 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 689597080605b90aa15e9a48
+2025-08-08 15:19:53,124 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-08 15:19:53,125 - main - INFO - Request 2394939847648 completed in 0.227s - Status: 200
+2025-08-08 15:23:32,583 - main - INFO - Request 2394939838048: POST http://localhost:3000/save-room-layout-guest
+2025-08-08 15:23:32,760 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 689597e40605b90aa15e9a49
+2025-08-08 15:23:32,768 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-08 15:23:32,769 - main - INFO - Request 2394939838048 completed in 0.186s - Status: 200
+2025-08-08 15:34:40,017 - main - INFO - Request 2394939745600: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-08 15:34:40,017 - main - INFO - Request 2394939745600 completed in 0.000s - Status: 200
+2025-08-08 15:34:40,021 - main - INFO - Request 2394939750832: POST http://localhost:3000/save-room-layout-guest
+2025-08-08 15:34:40,180 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 68959a800605b90aa15e9a4a
+2025-08-08 15:34:40,191 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-08 15:34:40,191 - main - INFO - Request 2394939750832 completed in 0.170s - Status: 200
+2025-08-08 15:46:24,051 - main - INFO - Request 2394939849184: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-08 15:46:24,052 - main - INFO - Request 2394939849184 completed in 0.001s - Status: 200
+2025-08-08 15:46:24,060 - main - INFO - Request 2394939835216: POST http://localhost:3000/save-room-layout-guest
+2025-08-08 15:46:24,217 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 68959d400605b90aa15e9a4b
+2025-08-08 15:46:24,232 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-08 15:46:24,233 - main - INFO - Request 2394939835216 completed in 0.174s - Status: 200
+2025-08-08 16:59:17,700 - main - INFO - Request 2394939846496: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-08 16:59:17,700 - main - INFO - Request 2394939846496 completed in 0.003s - Status: 200
+2025-08-08 16:59:17,707 - main - INFO - Request 2394939850000: POST http://localhost:3000/save-room-layout-guest
+2025-08-08 16:59:17,880 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6895ae550605b90aa15e9a4c
+2025-08-08 16:59:17,908 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-08 16:59:17,913 - main - INFO - Request 2394939850000 completed in 0.201s - Status: 200
+2025-08-08 16:59:25,952 - main - INFO - Request 2394939848992: POST http://localhost:3000/save-room-layout-guest
+2025-08-08 16:59:26,168 - main - INFO - MongoDBø° ¿˙¿Â øœ∑·: 6895ae5d0605b90aa15e9a4d
+2025-08-08 16:59:26,186 - main - INFO - πÊ ∑π¿Ãæ∆øÙ ¿˙¿Â øœ∑· (∞‘Ω∫∆Æ - MongoDB)
+2025-08-08 16:59:26,186 - main - INFO - Request 2394939848992 completed in 0.234s - Status: 200
+2025-08-10 12:30:23,964 - main - INFO - Request 4365572560: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-10 12:30:23,966 - main - INFO - Request 4365572560 completed in 0.002s - Status: 200
+2025-08-10 12:30:23,968 - main - INFO - Request 4365576160: POST http://localhost:3000/save-room-layout-guest
+2025-08-10 12:30:24,432 - main - INFO - MongoDBÏóê Ï†ÄÏû• ÏôÑÎ£å: 6898124fcc9102abbe9b4784
+2025-08-10 12:30:24,448 - main - INFO - Î∞© Î†àÏù¥ÏïÑÏõÉ Ï†ÄÏû• ÏôÑÎ£å (Í≤åÏä§Ìä∏ - MongoDB)
+2025-08-10 12:30:24,449 - main - INFO - Request 4365576160 completed in 0.480s - Status: 200
+2025-08-10 15:28:55,868 - main - INFO - Request 4403360208: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-10 15:28:55,869 - main - INFO - Request 4403360208 completed in 0.001s - Status: 200
+2025-08-10 15:28:55,870 - main - INFO - Request 4403357472: POST http://localhost:3000/save-room-layout-guest
+2025-08-10 15:28:56,331 - main - INFO - MongoDBÏóê Ï†ÄÏû• ÏôÑÎ£å: 68983c271dac734b67a7750f
+2025-08-10 15:28:56,334 - main - INFO - Î∞© Î†àÏù¥ÏïÑÏõÉ Ï†ÄÏû• ÏôÑÎ£å (Í≤åÏä§Ìä∏ - MongoDB)
+2025-08-10 15:28:56,335 - main - INFO - Request 4403357472 completed in 0.464s - Status: 200
+2025-08-12 01:20:15,899 - main - INFO - Request 4403359392: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-12 01:20:15,903 - main - INFO - Request 4403359392 completed in 0.004s - Status: 200
+2025-08-12 01:20:15,905 - main - INFO - Request 4403361552: POST http://localhost:3000/save-room-layout-guest
+2025-08-12 01:20:16,374 - main - INFO - MongoDBÏóê Ï†ÄÏû• ÏôÑÎ£å: 689a183f1dac734b67a77510
+2025-08-12 01:20:16,379 - main - INFO - Î∞© Î†àÏù¥ÏïÑÏõÉ Ï†ÄÏû• ÏôÑÎ£å (Í≤åÏä§Ìä∏ - MongoDB)
+2025-08-12 01:20:16,380 - main - INFO - Request 4403361552 completed in 0.475s - Status: 200
+2025-08-12 01:45:30,621 - main - INFO - Request 4403782064: GET http://localhost:3000/docs
+2025-08-12 01:45:30,623 - main - INFO - Request 4403782064 completed in 0.002s - Status: 200
+2025-08-12 01:45:30,716 - main - INFO - Request 4403781488: GET http://localhost:3000/openapi.json
+2025-08-12 01:45:30,805 - main - INFO - Request 4403781488 completed in 0.089s - Status: 200
+2025-08-13 19:55:24,185 - main - INFO - Request 4403788400: OPTIONS http://localhost:3000/save-room-layout-guest
+2025-08-13 19:55:24,190 - main - INFO - Request 4403788400 completed in 0.006s - Status: 200
+2025-08-13 19:55:24,193 - main - INFO - Request 4403977808: POST http://localhost:3000/save-room-layout-guest
+2025-08-13 19:55:24,707 - main - INFO - MongoDBÏóê Ï†ÄÏû• ÏôÑÎ£å: 689c6f1c1dac734b67a77511
+2025-08-13 19:55:24,712 - main - INFO - Î∞© Î†àÏù¥ÏïÑÏõÉ Ï†ÄÏû• ÏôÑÎ£å (Í≤åÏä§Ìä∏ - MongoDB)
+2025-08-13 19:55:24,714 - main - INFO - Request 4403977808 completed in 0.520s - Status: 200
+2025-08-13 21:32:37,989 - main - INFO - Request 4403977472: GET http://localhost:3000/
+2025-08-13 21:32:38,010 - main - INFO - Request 4403977472 completed in 0.021s - Status: 200
+2025-08-13 21:32:38,072 - main - INFO - Request 4403980256: GET http://localhost:3000/favicon.ico
+2025-08-13 21:32:38,074 - main - INFO - Request 4403980256 completed in 0.002s - Status: 404
