@@ -1,20 +1,11 @@
 import React, { useState } from 'react';
 
 function App() {
-  // 임시로 기존 변수 유지 (UI 오류 방지)
-  const [overallStyle, setOverallStyle] = useState(''); // 전체적인 스타일
-  const [furniture, setFurniture] = useState('');     // 가구 (침대, 서랍장 등)
-  const [wallpaper, setWallpaper] = useState('');     // 벽지
-  const [floor, setFloor] = useState('');             // 바닥
-  const [deskDetails, setDeskDetails] = useState(''); // 책상 관련 상세 지시
-  
-  // AI 최적화된 입력 상태 변수들 (향후 사용)
-  const [roomStyle, setRoomStyle] = useState('modern_minimal'); // 룸 스타일 프리셋
-  const [colorPalette, setColorPalette] = useState('warm_neutral'); // 색상 팔레트
-  const [furnitureStyle, setFurnitureStyle] = useState('contemporary'); // 가구 스타일
-  const [lightingType, setLightingType] = useState('natural_bright'); // 조명 타입
-  const [furnitureLayout, setFurnitureLayout] = useState('keep_existing'); // 가구 배치 방식
-  const [customPrompt, setCustomPrompt] = useState(''); // 추가 커스텀 요청
+  // 새로운 프리셋 기반 상태 변수들
+  const [selectedPreset, setSelectedPreset] = useState('modern_warm'); // 기본 침실 스타일 프리셋
+  const [selectedMood, setSelectedMood] = useState(''); // 사용 목적
+  const [furnitureLayout, setFurnitureLayout] = useState('keep_existing'); // 가구 배치 방식 (기존 유지)
+  const [customPrompt, setCustomPrompt] = useState(''); // 추가 커스텀 요청 (기존 유지)
   
   // 실사화 품질 설정
   const [photoStyle, setPhotoStyle] = useState('architectural'); // 사진 스타일
@@ -51,51 +42,135 @@ function App() {
     }
   };
 
-  // AI 최적화된 프롬프트 생성 함수들
-  const getRoomStylePrompt = (style) => {
-    const styles = {
-      modern_minimal: "Clean lines, minimal furniture, open spaces, neutral colors, uncluttered surfaces",
-      scandinavian: "Light woods, cozy textiles, white and natural tones, hygge atmosphere, functional design",
-      industrial: "Exposed brick, metal accents, concrete floors, Edison bulbs, raw materials, urban loft feel",
-      bohemian: "Rich textiles, plants, warm colors, eclectic mix, vintage pieces, artistic elements",
-      classic_traditional: "Elegant furniture, rich fabrics, symmetrical layout, timeless pieces, refined details",
-      contemporary: "Current trends, mixed materials, bold accents, sleek design, sophisticated color schemes",
-      rustic_farmhouse: "Natural wood, vintage elements, comfortable furniture, earthy tones, cozy atmosphere"
-    };
-    return styles[style] || styles.modern_minimal;
+  // 검증된 침실 스타일 프리셋들
+  const bedroomPresets = {
+    modern_warm: {
+      name: "🔲 모던 미니멀 (따뜻한)",
+      description: "깨끗하고 따뜻한 현대적 침실",
+      basePrompt: `
+Modern minimal bedroom with warm neutral tones:
+- Clean lines, minimal furniture, uncluttered surfaces, open spaces
+- Warm beiges, soft creams, light browns, gentle taupes, cozy atmosphere
+- Sleek contemporary furniture, clean geometric shapes, natural materials
+- Large windows, abundant natural light, bright airy atmosphere
+- Platform bed with simple headboard, floating nightstands, built-in storage
+- Light oak wood floors, white/cream walls, minimal decorative items
+- Quality textiles: linen, cotton, soft wool in neutral tones
+- Hidden storage solutions maintaining clean aesthetic`
+    },
+    
+    modern_cool: {
+      name: "🔲 모던 미니멀 (쿨톤)",
+      description: "시원하고 깨끗한 현대적 침실",
+      basePrompt: `
+Modern minimal bedroom with cool neutral tones:
+- Clean lines, minimal furniture, open spaces, sophisticated simplicity
+- Cool grays, soft whites, pale blues, crisp clean feeling, modern aesthetic
+- Sleek contemporary furniture, mixed materials, geometric shapes
+- Bright even lighting, large windows, airy atmosphere
+- Platform bed, geometric nightstands, hidden storage solutions
+- Light gray walls, white trim, polished concrete or light wood floors
+- Minimal metal accents, glass elements, monochromatic palette
+- Everything has its place, surfaces kept completely clear`
+    },
+    
+    scandinavian_cozy: {
+      name: "🌲 스칸디나비안",
+      description: "따뜻하고 자연스러운 북유럽 침실",
+      basePrompt: `
+Scandinavian cozy bedroom with hygge atmosphere:
+- Light woods, cozy textiles, white and natural tones, functional design
+- Pine/birch wood furniture, woven textiles, natural fiber rugs
+- Mid-century inspired pieces, walnut accents, tapered wooden legs
+- Soft warm lighting, table lamps, candles, golden glow ambiance
+- Wooden bed frame, linen bedding, wool throws, multiple pillows
+- Light wooden floors, white walls with wood accents, large windows
+- Plants, books, ceramic items, but kept minimal and purposeful
+- Emphasis on natural materials, comfort, and sustainable living`
+    },
+    
+    contemporary_bold: {
+      name: "✨ 컴템포러리",
+      description: "현대적이고 세련된 침실",
+      basePrompt: `
+Contemporary sophisticated bedroom with bold design:
+- Current design trends, mixed materials, bold accents, sophisticated schemes
+- Rich color combinations, dramatic contrasts, luxurious textures
+- Designer furniture, innovative materials, statement pieces
+- Strategic lighting, architectural features, dynamic shadows, accent lighting
+- Upholstered headboard, designer nightstands, luxury finishes
+- Rich textures: velvet, silk, leather, polished stone, metal accents
+- Modern art, curated accessories, plants as design elements
+- High-end materials, attention to detail, magazine-worthy styling`
+    }
   };
 
-  const getColorPalettePrompt = (palette) => {
-    const palettes = {
-      warm_neutral: "Warm beiges, soft creams, light browns, gentle taupes, cozy atmosphere",
-      cool_neutral: "Cool grays, soft whites, pale blues, crisp clean feeling, modern aesthetic",
-      earth_tones: "Rich browns, deep greens, warm terracotta, natural stone colors, organic feel",
-      monochrome: "Black, white, and gray palette, high contrast, sophisticated minimalism",
-      jewel_tones: "Deep emerald, sapphire blue, rich burgundy, luxurious and dramatic",
-      pastels: "Soft pinks, light lavender, mint green, powder blue, gentle and calming"
-    };
-    return palettes[palette] || palettes.warm_neutral;
-  };
+  // 사용 목적별 모드 옵션들
+  const moodOptions = {
+    netflix: {
+      name: "🍿 Netflix & Chill",
+      description: "영상 감상에 최적화된 아늤한 공간",
+      modifier: `
 
-  const getFurnitureStylePrompt = (style) => {
-    const styles = {
-      contemporary: "Sleek modern furniture, clean geometric shapes, mixed materials, current design trends",
-      mid_century: "1950s-60s inspired, walnut wood, tapered legs, iconic design pieces, retro modern",
-      traditional: "Classic furniture styles, rich fabrics, ornate details, timeless elegance",
-      minimalist: "Essential furniture only, simple forms, functional design, maximum negative space",
-      eclectic: "Mixed furniture styles, unique pieces, artistic combinations, personal expression"
-    };
-    return styles[style] || styles.contemporary;
-  };
+NETFLIX VIEWING OPTIMIZATION:
+- Bed positioned facing TV wall or projector area for optimal viewing angles
+- Dim ambient lighting: warm LED strips behind TV, soft bedside lamps (2700K)
+- Blackout curtains or smart blinds for optimal screen viewing experience
+- Comfort elements: extra throw pillows, soft blankets, cozy textures
+- Sound optimization: soft furnishings to absorb echo, comfortable acoustics
+- Snack accessibility: bedside storage for beverages and light snacks
+- NO bright lights or reflective surfaces that cause screen glare
+- Cable management for clean, distraction-free environment`
+    },
+    
+    focus: {
+      name: "📚 집중/업무",
+      description: "업무와 학습에 집중할 수 있는 공간",
+      modifier: `
 
-  const getLightingPrompt = (type) => {
-    const types = {
-      natural_bright: "Large windows, abundant natural light, bright and airy atmosphere",
-      warm_ambient: "Soft warm lighting, table lamps, cozy evening atmosphere, golden glow",
-      dramatic_accent: "Strategic lighting, highlighted features, architectural lighting, dynamic shadows",
-      soft_diffused: "Even, gentle lighting throughout, no harsh shadows, comfortable brightness"
-    };
-    return types[type] || types.natural_bright;
+FOCUS & PRODUCTIVITY OPTIMIZATION:
+- Bright task lighting: LED ceiling panels or desk lamps (4000K-5000K) for alertness
+- Zero visual distractions: clean, organized surfaces, hidden clutter
+- Ergonomic work area: proper desk height, comfortable supportive chair
+- Air quality: plants or air purifier for mental clarity and oxygen
+- Colors that enhance concentration: white, light blue, soft green accents
+- Organized storage: designated places for everything, filing systems
+- Sound control: materials that absorb noise, quiet environment
+- Separation of sleep and work areas to maintain healthy boundaries`
+    },
+    
+    guest: {
+      name: "🏨 손님맞이",
+      description: "게스트를 위한 환대하는 공간",
+      modifier: `
+
+GUEST WELCOMING OPTIMIZATION:
+- Hotel-like cleanliness and professional organization
+- Fresh neutral colors: white, cream, soft gray for universal appeal
+- Quality bedding: crisp white linens, multiple pillow and blanket options
+- Thoughtful amenities: bedside water carafe, reading light, phone charging station
+- Clear surfaces with only essential welcoming items: fresh flowers, welcome note
+- Ample storage: empty closet space, clear drawers for guest belongings
+- Privacy considerations: quality window treatments, door that closes properly
+- Fresh air circulation and subtle, pleasant scent throughout
+- Mirror and good lighting for guests to prepare and feel comfortable`
+    },
+    
+    romantic: {
+      name: "💕 로맨틱",
+      description: "카플을 위한 로맨틱한 공간",
+      modifier: `
+
+ROMANTIC ATMOSPHERE OPTIMIZATION:
+- Soft romantic lighting: dimmable warm lights, candles, fairy lights (2200K)
+- Luxurious textures: silk pillowcases, velvet throws, cashmere blankets
+- Rich romantic colors: deep reds, soft pinks, gold accents, warm burgundy
+- Fresh flowers: roses, peonies, or seasonal romantic blooms
+- Intimate seating: comfortable reading chair or small loveseat for two
+- Sensory elements: soft music capability, pleasant natural scents
+- Privacy enhancement: layered window treatments, intimate enclosed feeling
+- Special touches: quality wine glasses, books of poetry, meaningful art`
+    }
   };
 
   const getFurnitureLayoutPrompt = (layout) => {
@@ -131,42 +206,38 @@ function App() {
         });
       }
 
-      // AI 최적화된 구조화 프롬프트 생성
-      const styleDescription = getRoomStylePrompt(roomStyle);
-      const colorDescription = getColorPalettePrompt(colorPalette);
-      const furnitureDescription = getFurnitureStylePrompt(furnitureStyle);
-      const lightingDescription = getLightingPrompt(lightingType);
+      // 새로운 프리셋 기반 프롬프트 생성
+      const selectedPresetData = bedroomPresets[selectedPreset];
+      const selectedMoodData = selectedMood ? moodOptions[selectedMood] : null;
       const layoutDescription = getFurnitureLayoutPrompt(furnitureLayout);
       
       // 전문적인 인테리어 디자인 프롬프트 구성
       let finalPromptText = `
-Create a professionally designed interior space with the following specifications:
+Create a professionally designed bedroom space with the following specifications:
 
-STYLE FOUNDATION:
-${styleDescription}
-
-COLOR PALETTE:
-${colorDescription}
-
-FURNITURE DESIGN:
-${furnitureDescription}
-
-LIGHTING ATMOSPHERE:
-${lightingDescription}
+BEDROOM STYLE FOUNDATION:
+${selectedPresetData.basePrompt}
 
 FURNITURE LAYOUT STRATEGY:
-${layoutDescription}
+${layoutDescription}`;
 
-DESIGN REQUIREMENTS:
-- High-quality interior design suitable for design magazines
-- Balanced composition with proper proportions
-- Cohesive color scheme throughout the space
-- Functional and aesthetically pleasing furniture arrangement
+      // 무드 설정이 있으면 추가
+      if (selectedMoodData) {
+        finalPromptText += selectedMoodData.modifier;
+      }
+
+      // 공통 디자인 요구사항 추가
+      finalPromptText += `\n\nDESIGN REQUIREMENTS:
+- High-quality bedroom interior design suitable for design magazines
+- Balanced composition with proper proportions for bedroom functionality
+- Cohesive color scheme throughout the space promoting rest and relaxation
+- Functional and aesthetically pleasing furniture arrangement optimized for bedroom use
 - Professional styling with appropriate accessories and decor
 - Clean, organized, and visually appealing space
 - Modern interior design standards and best practices
+- Bedroom-specific considerations: privacy, comfort, storage, lighting layers
 
-DESK AND WORKSPACE REQUIREMENTS:
+DESK AND WORKSPACE REQUIREMENTS (if present):
 - Remove ALL items from desk surfaces (monitors, keyboards, papers, decorations, etc.)
 - Keep the existing desk structure but change its style and material to match the selected furniture style
 - Transform the desk design to align with the chosen furniture aesthetic
@@ -441,90 +512,69 @@ Final result must be indistinguishable from a $5000/day professional interior ph
           )}
         </div>
 
-        {/* AI 최적화된 드롭다운 선택 필드들 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          
-          {/* 룸 스타일 */}
-          <div>
-            <label htmlFor="room-style" className="block text-gray-700 text-lg font-semibold mb-2">
-              🏠 인테리어 스타일:
-            </label>
-            <select
-              id="room-style"
-              value={roomStyle}
-              onChange={(e) => setRoomStyle(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-              disabled={loading || generatingRealistic}
-            >
-              <option value="modern_minimal">🔲 모던 미니멀</option>
-              <option value="scandinavian">🌲 스칸디나비안</option>
-              <option value="industrial">🏭 인더스트리얼</option>
-              <option value="bohemian">🎨 보헤미안</option>
-              <option value="classic_traditional">👑 클래식</option>
-              <option value="contemporary">✨ 컨템포러리</option>
-              <option value="rustic_farmhouse">🏡 러스틱</option>
-            </select>
+        {/* 새로운 프리셋 기반 선택 필드들 */}
+        
+        {/* 1단계: 기본 침실 스타일 */}
+        <div className="mb-6">
+          <label className="block text-gray-700 text-lg font-semibold mb-3">
+            🏠 기본 침실 스타일:
+          </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {Object.entries(bedroomPresets).map(([key, preset]) => (
+              <button
+                key={key}
+                onClick={() => setSelectedPreset(key)}
+                className={`p-4 border rounded-lg text-left transition-all duration-200 ${
+                  selectedPreset === key 
+                    ? 'border-blue-500 bg-blue-50 shadow-md' 
+                    : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+                }`}
+                disabled={loading || generatingRealistic}
+              >
+                <h4 className="font-semibold text-gray-800">{preset.name}</h4>
+                <p className="text-sm text-gray-600 mt-1">{preset.description}</p>
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* 색상 팔레트 */}
-          <div>
-            <label htmlFor="color-palette" className="block text-gray-700 text-lg font-semibold mb-2">
-              🎨 색상 팔레트:
-            </label>
-            <select
-              id="color-palette"
-              value={colorPalette}
-              onChange={(e) => setColorPalette(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+        {/* 2단계: 사용 목적 */}
+        <div className="mb-6">
+          <label className="block text-gray-700 text-lg font-semibold mb-3">
+            🎯 사용 목적 (선택사항):
+          </label>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <button
+              onClick={() => setSelectedMood('')}
+              className={`p-3 border rounded-lg text-sm font-medium transition-all duration-200 ${
+                selectedMood === '' 
+                  ? 'border-gray-500 bg-gray-100 text-gray-800' 
+                  : 'border-gray-300 text-gray-600 hover:border-gray-400'
+              }`}
               disabled={loading || generatingRealistic}
             >
-              <option value="warm_neutral">🤎 따뜻한 뉴트럴</option>
-              <option value="cool_neutral">🩶 쿨 뉴트럴</option>
-              <option value="earth_tones">🌿 어스톤</option>
-              <option value="monochrome">⚫ 모노크롬</option>
-              <option value="jewel_tones">💎 주얼톤</option>
-              <option value="pastels">🌸 파스텔</option>
-            </select>
+              기본
+            </button>
+            {Object.entries(moodOptions).map(([key, mood]) => (
+              <button
+                key={key}
+                onClick={() => setSelectedMood(key)}
+                className={`p-3 border rounded-lg text-sm font-medium transition-all duration-200 ${
+                  selectedMood === key 
+                    ? 'border-purple-500 bg-purple-50 text-purple-800' 
+                    : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                }`}
+                disabled={loading || generatingRealistic}
+              >
+                {mood.name}
+              </button>
+            ))}
           </div>
-
-          {/* 가구 스타일 */}
-          <div>
-            <label htmlFor="furniture-style" className="block text-gray-700 text-lg font-semibold mb-2">
-              🛋️ 가구 스타일:
-            </label>
-            <select
-              id="furniture-style"
-              value={furnitureStyle}
-              onChange={(e) => setFurnitureStyle(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-              disabled={loading || generatingRealistic}
-            >
-              <option value="contemporary">✨ 컨템포러리</option>
-              <option value="mid_century">📻 미드센추리</option>
-              <option value="traditional">👑 전통적</option>
-              <option value="minimalist">🔳 미니멀리스트</option>
-              <option value="eclectic">🎭 절충적</option>
-            </select>
-          </div>
-
-          {/* 조명 타입 */}
-          <div>
-            <label htmlFor="lighting-type" className="block text-gray-700 text-lg font-semibold mb-2">
-              💡 조명 분위기:
-            </label>
-            <select
-              id="lighting-type"
-              value={lightingType}
-              onChange={(e) => setLightingType(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-              disabled={loading || generatingRealistic}
-            >
-              <option value="natural_bright">☀️ 자연광 밝은</option>
-              <option value="warm_ambient">🕯️ 따뜻한 엠비언트</option>
-              <option value="dramatic_accent">🎭 드라마틱</option>
-              <option value="soft_diffused">💫 부드러운 확산</option>
-            </select>
-          </div>
+          {selectedMood && moodOptions[selectedMood] && (
+            <p className="text-sm text-gray-500 mt-2">
+              💡 {moodOptions[selectedMood].description}
+            </p>
+          )}
         </div>
 
         {/* 가구 배치 전략 */}
@@ -562,6 +612,24 @@ Final result must be indistinguishable from a $5000/day professional interior ph
             onChange={(e) => setCustomPrompt(e.target.value)}
             disabled={loading || generatingRealistic}
           />
+        </div>
+
+        {/* 선택된 조합 미리보기 */}
+        <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
+          <h4 className="font-semibold text-blue-800 mb-2">🎨 선택된 조합</h4>
+          <div className="text-sm text-blue-700">
+            <p>
+              <strong>스타일:</strong> {bedroomPresets[selectedPreset]?.name}
+            </p>
+            {selectedMood && (
+              <p>
+                <strong>목적:</strong> {moodOptions[selectedMood]?.name}
+              </p>
+            )}
+            <p>
+              <strong>배치:</strong> {furnitureLayout === 'keep_existing' ? '기존 배치 유지' : '스타일 최적화'}
+            </p>
+          </div>
         </div>
 
 
