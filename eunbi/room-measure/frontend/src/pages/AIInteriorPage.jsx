@@ -7,18 +7,26 @@ const AIInteriorPage = () => {
   const [capturedScreenshot, setCapturedScreenshot] = useState(null);
 
 
-  // 로컬 스토리지에서 캡처 데이터 복원
+  // 라우트 state와 로컬 스토리지에서 캡처 데이터 복원
   useEffect(() => {
-    const savedScreenshot = localStorage.getItem('capturedScreenshot');
-    if (savedScreenshot) {
-      try {
-        const parsed = JSON.parse(savedScreenshot);
-        setCapturedScreenshot(parsed);
-      } catch (error) {
-        console.error('캡처 데이터 파싱 실패:', error);
+    // 먼저 라우트 state에서 확인
+    if (location.state?.capturedScreenshot) {
+      setCapturedScreenshot(location.state.capturedScreenshot);
+      // localStorage에도 저장 (백업용)
+      localStorage.setItem('capturedScreenshot', JSON.stringify(location.state.capturedScreenshot));
+    } else {
+      // 라우트 state에 없으면 localStorage에서 복원
+      const savedScreenshot = localStorage.getItem('capturedScreenshot');
+      if (savedScreenshot) {
+        try {
+          const parsed = JSON.parse(savedScreenshot);
+          setCapturedScreenshot(parsed);
+        } catch (error) {
+          console.error('캡처 데이터 파싱 실패:', error);
+        }
       }
     }
-  }, []);
+  }, [location.state]);
 
 
   // 3D 캡처 핸들러 (RoomBox에서 호출 가능하도록)

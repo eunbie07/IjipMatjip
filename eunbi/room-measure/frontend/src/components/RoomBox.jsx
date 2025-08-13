@@ -177,7 +177,8 @@ export default function RoomBox({
     navigate,
     showInfo,
     showSuccess,
-    showError
+    showError,
+    setCapturedScreenshot
   );
 
   // 3D 캡처 관련 상태
