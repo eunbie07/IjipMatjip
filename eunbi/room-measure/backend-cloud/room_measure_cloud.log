@@ -247,3 +247,7 @@
 2025-08-13 19:55:24,707 - main - INFO - MongoDB에 저장 완료: 689c6f1c1dac734b67a77511
 2025-08-13 19:55:24,712 - main - INFO - 방 레이아웃 저장 완료 (게스트 - MongoDB)
 2025-08-13 19:55:24,714 - main - INFO - Request 4403977808 completed in 0.520s - Status: 200
+2025-08-13 21:32:37,989 - main - INFO - Request 4403977472: GET http://localhost:3000/
+2025-08-13 21:32:38,010 - main - INFO - Request 4403977472 completed in 0.021s - Status: 200
+2025-08-13 21:32:38,072 - main - INFO - Request 4403980256: GET http://localhost:3000/favicon.ico
+2025-08-13 21:32:38,074 - main - INFO - Request 4403980256 completed in 0.002s - Status: 404

@@ -3,6 +3,9 @@ name: Deploy Backend Cloud
 on:
   push:
     branches: [ dev-eunbi ]
+    paths:
+      - 'eunbi/room-measure/backend-cloud/**'
+      - '.github/workflows/deploy-backend-cloud.yml'
   workflow_dispatch:
 
 jobs:
