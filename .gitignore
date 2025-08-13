@@ -134,3 +134,8 @@ code_splitter.py
 # Test files
 **/test1.jsx
 **/test*.jsx
+
+# BFG Report files (contains sensitive git history information)
+..bfg-report/
+**/.bfg-report/
+bfg-report/

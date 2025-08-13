@@ -175,8 +175,19 @@ ROMANTIC ATMOSPHERE OPTIMIZATION:
 
   const getFurnitureLayoutPrompt = (layout) => {
     const layouts = {
-      keep_existing: "Maintain the existing furniture layout and positioning. Only update furniture styles and materials to match the selected aesthetic. Keep the same arrangement and spatial relationships.",
-      style_optimized: "Rearrange and add furniture as needed to create the perfect composition for the selected style. Add complementary pieces that enhance the overall design while maintaining functionality."
+      keep_existing: `
+STRICT FURNITURE CONSTRAINT - KEEP EXISTING ONLY:
+- Count the furniture pieces in the original image EXACTLY
+- If original has bed + desk ONLY, result must have bed + desk ONLY
+- DO NOT ADD: nightstands, side tables, chairs, plants, decorations, lamps, rugs, artwork
+- DO NOT ADD: any furniture pieces not present in the original image
+- ONLY change: colors, materials, textures, wall paint, flooring
+- Keep exact same furniture count and positioning as original
+- Transform ONLY the appearance/style of existing items, never add new items`,
+      
+      add_furniture: "Keep the existing furniture in their current positions, but ADD complementary furniture pieces and accessories that enhance the space. Maintain the current layout while enriching the room with additional items that match the selected style.",
+      
+      style_optimized: "Completely rearrange and add furniture as needed to create the perfect composition for the selected style. Move existing pieces to optimal positions and add complementary pieces that enhance the overall design while maintaining functionality."
     };
     return layouts[layout] || layouts.keep_existing;
   };
@@ -231,8 +242,6 @@ ${layoutDescription}`;
 - High-quality bedroom interior design suitable for design magazines
 - Balanced composition with proper proportions for bedroom functionality
 - Cohesive color scheme throughout the space promoting rest and relaxation
-- Functional and aesthetically pleasing furniture arrangement optimized for bedroom use
-- Professional styling with appropriate accessories and decor
 - Clean, organized, and visually appealing space
 - Modern interior design standards and best practices
 - Bedroom-specific considerations: privacy, comfort, storage, lighting layers
@@ -244,6 +253,16 @@ DESK AND WORKSPACE REQUIREMENTS (if present):
 - Keep desk surface completely clear and clean
 - Organize and hide all cables and wires
 - Maintain desk positioning but update its appearance to match room style`;
+
+      // 기존 배치 유지 시 추가 제한사항
+      if (furnitureLayout === 'keep_existing') {
+        finalPromptText += `\n\nCRITICAL CONSTRAINT FOR EXISTING LAYOUT:
+- FURNITURE COUNT MUST MATCH ORIGINAL IMAGE EXACTLY
+- If original shows bed + desk only, result must show bed + desk only
+- DO NOT add nightstands, side tables, chairs, plants, lamps, rugs, or any decorative items
+- DO NOT add any furniture pieces not visible in the original uploaded image
+- Focus transformation on: wall colors, flooring materials, existing furniture styling only
+- This is a STRICT requirement - adding furniture violates user preferences`;
 
       // 커스텀 요청이 있으면 추가
       if (customPrompt.trim()) {
@@ -590,11 +609,13 @@ Final result must be indistinguishable from a $5000/day professional interior ph
             disabled={loading || generatingRealistic}
           >
             <option value="keep_existing">🔄 기존 배치 유지 (스타일만 변경)</option>
-            <option value="style_optimized">✨ 스타일에 맞게 최적화 (가구 추가/재배치)</option>
+            <option value="add_furniture">➕ 기존 배치 + 가구 추가</option>
+            <option value="style_optimized">✨ 완전 최적화 (가구 추가/재배치)</option>
           </select>
           <p className="text-sm text-gray-500 mt-2">
-            • <strong>기존 배치 유지</strong>: 현재 가구 위치를 그대로 두고 디자인만 변경<br/>
-            • <strong>스타일 최적화</strong>: 선택한 스타일에 맞게 가구를 추가하거나 재배치
+            • <strong>기존 배치 유지</strong>: 현재 가구 위치 그대로, 디자인만 변경<br/>
+            • <strong>기존 배치 + 가구 추가</strong>: 현재 가구 위치는 유지하되, 추가 가구/소품으로 공간 풍성하게<br/>
+            • <strong>완전 최적화</strong>: 가구 재배치 + 추가로 스타일에 완벽하게 맞춤
           </p>
         </div>
 
@@ -627,7 +648,11 @@ Final result must be indistinguishable from a $5000/day professional interior ph
               </p>
             )}
             <p>
-              <strong>배치:</strong> {furnitureLayout === 'keep_existing' ? '기존 배치 유지' : '스타일 최적화'}
+              <strong>배치:</strong> {
+                furnitureLayout === 'keep_existing' ? '기존 배치 유지' :
+                furnitureLayout === 'add_furniture' ? '기존 배치 + 가구 추가' :
+                '완전 최적화'
+              }
             </p>
           </div>
         </div>
