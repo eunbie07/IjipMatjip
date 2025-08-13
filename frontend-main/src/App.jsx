@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import HomePage from "./pages/HomePage";
 import RoomPlannerPage from "./pages/RoomPlannerPage";
 import AIDesignPage from "./pages/AIDesignPage";
+import AIInteriorPage from "./pages/AIInteriorPage";
 import FindHousePage from "./pages/FindHousePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -22,6 +23,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/room-planner" element={<RoomPlannerPage />} />
             <Route path="/ai-design" element={<AIDesignPage />} />
+            <Route path="/ai-interior" element={<AIInteriorPage />} />
             <Route path="/find-house" element={<FindHousePage />} />
             <Route path="/recommend" element={<RecommendationPage/>} />
             <Route path="/detail/:propertyId" element={<DetailPage/>} />
