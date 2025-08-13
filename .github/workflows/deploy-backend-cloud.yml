@@ -5,7 +5,7 @@ on:
     branches: [dev-eunbi]
   workflow_dispatch:
 
-# 동시 실행 방지
+## 동시 실행 방지
 concurrency:
   group: deploy-backend-cloud-${{ github.ref }}
   cancel-in-progress: true
