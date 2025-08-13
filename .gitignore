@@ -130,3 +130,7 @@ service-account.json
 # Code splitter files
 code_splitter.md
 code_splitter.py
+
+# Test files
+**/test1.jsx
+**/test*.jsx
