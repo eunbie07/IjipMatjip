@@ -77,26 +77,46 @@ export const createAIInteriorHandler = (
         capturedScreenshot: captureData,
       };
 
-      // MongoDB 저장
-      const { saveRoomLayoutToMongoDB } = await import("./api");
-      const saveResult = await saveRoomLayoutToMongoDB(saveData);
+      try {
+        // MongoDB 저장 시도
+        const { saveRoomLayoutToMongoDB } = await import("./api");
+        const saveResult = await saveRoomLayoutToMongoDB(saveData);
 
-      console.log("MongoDB 저장 성공:", saveResult);
+        console.log("MongoDB 저장 성공:", saveResult);
 
-      // localStorage에도 저장 (백업용)
-      localStorage.setItem("currentRoomData", JSON.stringify(roomData));
-      localStorage.setItem("mongoRoomId", saveResult.layout_id);
+        // localStorage에도 저장 (백업용)
+        localStorage.setItem("currentRoomData", JSON.stringify(roomData));
+        localStorage.setItem("mongoRoomId", saveResult.layout_id);
 
-      showSuccess("방 데이터 저장 완료!");
+        showSuccess("방 데이터 저장 완료!");
 
-      // AI 인테리어 페이지로 네비게이션 (MongoDB ID 포함)
-      navigate("/ai-interior", {
-        state: {
-          roomData,
-          mongoId: saveResult.layout_id,
-          capturedScreenshot: captureData,
-        },
-      });
+        // AI 인테리어 페이지로 네비게이션 (MongoDB ID 포함)
+        navigate("/ai-interior", {
+          state: {
+            roomData,
+            mongoId: saveResult.layout_id,
+            capturedScreenshot: captureData,
+          },
+        });
+
+      } catch (saveError) {
+        console.warn("MongoDB 저장 실패, 로컬 저장으로 진행:", saveError);
+        showSuccess("서버 저장 실패, 로컬 데이터로 진행합니다.");
+
+        // MongoDB 저장이 실패해도 로컬 데이터로 진행
+        const tempId = 'local_' + Date.now();
+        localStorage.setItem("currentRoomData", JSON.stringify(roomData));
+        localStorage.setItem("mongoRoomId", tempId);
+
+        // AI 인테리어 페이지로 네비게이션 (로컬 ID 사용)
+        navigate("/ai-interior", {
+          state: {
+            roomData,
+            mongoId: tempId,
+            capturedScreenshot: captureData,
+          },
+        });
+      }
 
       showInfo("AI 인테리어 디자이너로 이동합니다...");
     } catch (error) {
