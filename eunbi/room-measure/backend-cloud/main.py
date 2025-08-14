@@ -515,6 +515,13 @@ async def save_room_layout(
             # 데이터베이스 연결 실패시 JSON 파일로 저장
             layout_dict = layout_data.dict()
             layout_dict['user_id'] = current_user_id
+            
+            # datetime 객체를 문자열로 변환
+            if layout_dict.get('created_at'):
+                layout_dict['created_at'] = layout_dict['created_at'].isoformat()
+            if layout_dict.get('updated_at'):
+                layout_dict['updated_at'] = layout_dict['updated_at'].isoformat()
+            
             success = storage_service.save_room_layout(layout_dict)
             
             if success:
@@ -528,9 +535,16 @@ async def save_room_layout(
         
         # MySQL에 저장
         with conn.cursor() as cursor:
+            # datetime 객체를 문자열로 변환
+            layout_dict = layout_data.dict()
+            if layout_dict.get('created_at'):
+                layout_dict['created_at'] = layout_dict['created_at'].isoformat()
+            if layout_dict.get('updated_at'):
+                layout_dict['updated_at'] = layout_dict['updated_at'].isoformat()
+            
             cursor.execute(
                 "INSERT INTO room_layouts (user_id, layout_data, created_at) VALUES (%s, %s, %s)",
-                (current_user_id, json.dumps(layout_data.dict()), datetime.now())
+                (current_user_id, json.dumps(layout_dict), datetime.now())
             )
             layout_id = cursor.lastrowid
             
@@ -550,6 +564,12 @@ async def save_room_layout_guest(layout_data: RoomLayoutData):
     try:
         layout_dict = layout_data.dict()
         layout_dict['user_id'] = None  # 게스트 사용자
+        
+        # datetime 객체를 문자열로 변환
+        if layout_dict.get('created_at'):
+            layout_dict['created_at'] = layout_dict['created_at'].isoformat()
+        if layout_dict.get('updated_at'):
+            layout_dict['updated_at'] = layout_dict['updated_at'].isoformat()
         
         # MongoDB 우선 저장 시도
         mongodb_success, mongodb_result = mongodb_service.save_room_layout(layout_dict.copy())
