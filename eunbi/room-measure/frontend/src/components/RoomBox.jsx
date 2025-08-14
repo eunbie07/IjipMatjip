@@ -7,7 +7,7 @@ import React, {
   useEffect,
 } from "react";
 import { useNavigate } from "react-router-dom";
-import SafeCanvas from './SafeCanvas';
+import SafeCanvas from "./SafeCanvas";
 import {
   OrbitControls,
   Text as DreiText,
@@ -71,7 +71,6 @@ import { createScreenshotCapture } from "../utils/screenshotCapture";
 import { createAIInteriorHandler } from "../utils/aiInteriorUtils";
 import { extractMeshesToSeparateFiles } from "../utils/glbExtractor";
 import { createWindowDetectionHandler } from "../utils/windowDetection";
-
 
 // 분리된 3D 컴포넌트들
 import SnapGrid from "./3D/SnapGrid";
@@ -143,7 +142,14 @@ export default function RoomBox({
   const roomArea = useMemo(() => (w * d) / 10000, [w, d]);
 
   // 가구 변환 로직 (isUpdatingFromDragRef 먼저 정의)
-  const { convertedFurniture, isUpdatingFromDragRef } = useFurnitureConversion(placedFurniture, setFurniture, isDragging);
+  const { convertedFurniture, isUpdatingFromDragRef } = useFurnitureConversion(
+    placedFurniture,
+    setFurniture,
+    isDragging
+  );
+
+  // 3D 캡처 관련 상태 (먼저 선언)
+  const [capturedScreenshot, setCapturedScreenshot] = useState(null);
 
   // 가구 핸들러들
   const {
@@ -154,7 +160,7 @@ export default function RoomBox({
     handleRotateFurniture,
     handleDeleteFurniture,
     handleAddFurniture,
-    updatePlacedFurniturePositionOnDragEnd
+    updatePlacedFurniturePositionOnDragEnd,
   } = useFurnitureHandlers(
     placementMode,
     setPlacementMode,
@@ -181,10 +187,6 @@ export default function RoomBox({
     setCapturedScreenshot
   );
 
-  // 3D 캡처 관련 상태
-  const [capturedScreenshot, setCapturedScreenshot] = useState(null);
-
-
   // 3D 화면 캡처 핸들러
   const handle3DCapture = createScreenshotCapture(
     furniture,
@@ -203,10 +205,16 @@ export default function RoomBox({
   const [use3DModels, setUse3DModels] = useState(false);
 
   // 벽면/바닥 스타일 설정
-  const { wallSettings, setWallSettings, floorSettings, setFloorSettings } = useWallFloorSettings();
+  const { wallSettings, setWallSettings, floorSettings, setFloorSettings } =
+    useWallFloorSettings();
 
   // 패널 확장 상태
-  const { wallPanelExpanded, setWallPanelExpanded, floorPanelExpanded, setFloorPanelExpanded } = usePanelStates();
+  const {
+    wallPanelExpanded,
+    setWallPanelExpanded,
+    floorPanelExpanded,
+    setFloorPanelExpanded,
+  } = usePanelStates();
 
   const controlsRef = useRef();
 
@@ -233,7 +241,6 @@ export default function RoomBox({
     showWarning,
     showError
   );
-
 
   const selectedFurnitureData = useMemo(
     () => furniture.find((f) => f.id === selectedFurniture),
@@ -507,12 +514,14 @@ export default function RoomBox({
                   />
                 </svg>
               </div>
-              <h4 className="font-bold text-sm text-text-primary">벽면 스타일</h4>
+              <h4 className="font-bold text-sm text-text-primary">
+                벽면 스타일
+              </h4>
             </div>
             {/* 펼치기/접기 아이콘 */}
             <svg
               className={`w-4 h-4 text-text-secondary transition-transform duration-200 ${
-                wallPanelExpanded ? 'rotate-180' : ''
+                wallPanelExpanded ? "rotate-180" : ""
               }`}
               fill="none"
               stroke="currentColor"
@@ -526,113 +535,117 @@ export default function RoomBox({
               />
             </svg>
           </button>
-          
+
           {/* 콘텐츠 (접었다 폈다) */}
           {wallPanelExpanded && (
             <div className="px-4 pb-4 space-y-3">
-            {/* 색상 프리셋 선택 */}
-            <div>
-              <p className="text-xs text-text-secondary mb-2 font-medium">
-                벽 색상
-              </p>
-              <div className="grid grid-cols-5 gap-1">
-                {Object.entries(wallPresets).map(([key, preset]) => (
-                  <button
-                    key={key}
-                    onClick={() =>
-                      setWallSettings({
-                        ...wallSettings,
-                        color: preset.color,
-                        roughness: preset.roughness,
-                        metalness: preset.metalness,
-                      })
-                    }
-                    className={`w-8 h-8 rounded-lg border-2 transition-all duration-200 hover:scale-110 ${
-                      wallSettings.color === preset.color
-                        ? "border-primary shadow-lg"
-                        : "border-white/30 hover:border-white/60"
-                    }`}
-                    style={{ backgroundColor: preset.color }}
-                    title={preset.name}
-                  />
-                ))}
+              {/* 색상 프리셋 선택 */}
+              <div>
+                <p className="text-xs text-text-secondary mb-2 font-medium">
+                  벽 색상
+                </p>
+                <div className="grid grid-cols-5 gap-1">
+                  {Object.entries(wallPresets).map(([key, preset]) => (
+                    <button
+                      key={key}
+                      onClick={() =>
+                        setWallSettings({
+                          ...wallSettings,
+                          color: preset.color,
+                          roughness: preset.roughness,
+                          metalness: preset.metalness,
+                        })
+                      }
+                      className={`w-8 h-8 rounded-lg border-2 transition-all duration-200 hover:scale-110 ${
+                        wallSettings.color === preset.color
+                          ? "border-primary shadow-lg"
+                          : "border-white/30 hover:border-white/60"
+                      }`}
+                      style={{ backgroundColor: preset.color }}
+                      title={preset.name}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* 커스텀 색상 선택 */}
-            <div>
-              <p className="text-xs text-text-secondary mb-2 font-medium">
-                커스텀 색상
-              </p>
-              <input
-                type="color"
-                value={wallSettings.color}
-                onChange={(e) =>
-                  setWallSettings({ ...wallSettings, color: e.target.value })
-                }
-                className="w-full h-8 rounded-lg border border-border bg-background cursor-pointer"
-              />
-            </div>
-
-            {/* 재질 조절 */}
-            <div>
-              <p className="text-xs text-text-secondary mb-2 font-medium">
-                거칠기 ({wallSettings.roughness.toFixed(1)})
-              </p>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                value={wallSettings.roughness}
-                onChange={(e) =>
-                  setWallSettings({
-                    ...wallSettings,
-                    roughness: parseFloat(e.target.value),
-                  })
-                }
-                className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer slider"
-                style={{
-                  background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
-                    wallSettings.roughness * 100
-                  }%, #e5e7eb ${wallSettings.roughness * 100}%, #e5e7eb 100%)`,
-                }}
-              />
-              <div className="flex justify-between text-xs text-text-secondary mt-1">
-                <span>매끄러움</span>
-                <span>거침</span>
+              {/* 커스텀 색상 선택 */}
+              <div>
+                <p className="text-xs text-text-secondary mb-2 font-medium">
+                  커스텀 색상
+                </p>
+                <input
+                  type="color"
+                  value={wallSettings.color}
+                  onChange={(e) =>
+                    setWallSettings({ ...wallSettings, color: e.target.value })
+                  }
+                  className="w-full h-8 rounded-lg border border-border bg-background cursor-pointer"
+                />
               </div>
-            </div>
 
-            {/* 금속성 조절 */}
-            <div>
-              <p className="text-xs text-text-secondary mb-2 font-medium">
-                금속성 ({wallSettings.metalness.toFixed(2)})
-              </p>
-              <input
-                type="range"
-                min="0"
-                max="0.5"
-                step="0.01"
-                value={wallSettings.metalness}
-                onChange={(e) =>
-                  setWallSettings({
-                    ...wallSettings,
-                    metalness: parseFloat(e.target.value),
-                  })
-                }
-                className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer slider"
-                style={{
-                  background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
-                    wallSettings.metalness * 200
-                  }%, #e5e7eb ${wallSettings.metalness * 200}%, #e5e7eb 100%)`,
-                }}
-              />
-              <div className="flex justify-between text-xs text-text-secondary mt-1">
-                <span>매트</span>
-                <span>금속</span>
+              {/* 재질 조절 */}
+              <div>
+                <p className="text-xs text-text-secondary mb-2 font-medium">
+                  거칠기 ({wallSettings.roughness.toFixed(1)})
+                </p>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={wallSettings.roughness}
+                  onChange={(e) =>
+                    setWallSettings({
+                      ...wallSettings,
+                      roughness: parseFloat(e.target.value),
+                    })
+                  }
+                  className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer slider"
+                  style={{
+                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
+                      wallSettings.roughness * 100
+                    }%, #e5e7eb ${
+                      wallSettings.roughness * 100
+                    }%, #e5e7eb 100%)`,
+                  }}
+                />
+                <div className="flex justify-between text-xs text-text-secondary mt-1">
+                  <span>매끄러움</span>
+                  <span>거침</span>
+                </div>
               </div>
-            </div>
+
+              {/* 금속성 조절 */}
+              <div>
+                <p className="text-xs text-text-secondary mb-2 font-medium">
+                  금속성 ({wallSettings.metalness.toFixed(2)})
+                </p>
+                <input
+                  type="range"
+                  min="0"
+                  max="0.5"
+                  step="0.01"
+                  value={wallSettings.metalness}
+                  onChange={(e) =>
+                    setWallSettings({
+                      ...wallSettings,
+                      metalness: parseFloat(e.target.value),
+                    })
+                  }
+                  className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer slider"
+                  style={{
+                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
+                      wallSettings.metalness * 200
+                    }%, #e5e7eb ${
+                      wallSettings.metalness * 200
+                    }%, #e5e7eb 100%)`,
+                  }}
+                />
+                <div className="flex justify-between text-xs text-text-secondary mt-1">
+                  <span>매트</span>
+                  <span>금속</span>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -660,12 +673,14 @@ export default function RoomBox({
                   />
                 </svg>
               </div>
-              <h4 className="font-bold text-sm text-text-primary">바닥 스타일</h4>
+              <h4 className="font-bold text-sm text-text-primary">
+                바닥 스타일
+              </h4>
             </div>
             {/* 펼치기/접기 아이콘 */}
             <svg
               className={`w-4 h-4 text-text-secondary transition-transform duration-200 ${
-                floorPanelExpanded ? 'rotate-180' : ''
+                floorPanelExpanded ? "rotate-180" : ""
               }`}
               fill="none"
               stroke="currentColor"
@@ -679,86 +694,94 @@ export default function RoomBox({
               />
             </svg>
           </button>
-          
+
           {/* 콘텐츠 (접었다 폈다) */}
           {floorPanelExpanded && (
-            <div className="px-4 pb-4 space-y-3"
-                 style={{
-                   animation: floorPanelExpanded ? 'fadeIn 0.3s ease-in-out' : undefined
-                 }}
+            <div
+              className="px-4 pb-4 space-y-3"
+              style={{
+                animation: floorPanelExpanded
+                  ? "fadeIn 0.3s ease-in-out"
+                  : undefined,
+              }}
             >
-            {/* 바닥 색상 프리셋 */}
-            <div>
-              <p className="text-xs text-text-secondary mb-2 font-medium">
-                바닥 재질
-              </p>
-              <div className="grid grid-cols-5 gap-1">
-                {Object.entries(floorPresets).map(([key, preset]) => (
-                  <button
-                    key={key}
-                    onClick={() =>
-                      setFloorSettings({
-                        color: preset.color,
-                        roughness: preset.roughness,
-                        metalness: preset.metalness,
-                      })
-                    }
-                    className={`w-8 h-8 rounded-lg border-2 transition-all duration-200 hover:scale-110 ${
-                      floorSettings.color === preset.color
-                        ? "border-primary shadow-lg"
-                        : "border-white/30 hover:border-white/60"
-                    }`}
-                    style={{ backgroundColor: preset.color }}
-                    title={preset.name}
-                  />
-                ))}
+              {/* 바닥 색상 프리셋 */}
+              <div>
+                <p className="text-xs text-text-secondary mb-2 font-medium">
+                  바닥 재질
+                </p>
+                <div className="grid grid-cols-5 gap-1">
+                  {Object.entries(floorPresets).map(([key, preset]) => (
+                    <button
+                      key={key}
+                      onClick={() =>
+                        setFloorSettings({
+                          color: preset.color,
+                          roughness: preset.roughness,
+                          metalness: preset.metalness,
+                        })
+                      }
+                      className={`w-8 h-8 rounded-lg border-2 transition-all duration-200 hover:scale-110 ${
+                        floorSettings.color === preset.color
+                          ? "border-primary shadow-lg"
+                          : "border-white/30 hover:border-white/60"
+                      }`}
+                      style={{ backgroundColor: preset.color }}
+                      title={preset.name}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* 커스텀 바닥 색상 */}
-            <div>
-              <p className="text-xs text-text-secondary mb-2 font-medium">
-                커스텀 색상
-              </p>
-              <input
-                type="color"
-                value={floorSettings.color}
-                onChange={(e) =>
-                  setFloorSettings({ ...floorSettings, color: e.target.value })
-                }
-                className="w-full h-8 rounded-lg border border-border bg-background cursor-pointer"
-              />
-            </div>
-
-            {/* 바닥 거칠기 */}
-            <div>
-              <p className="text-xs text-text-secondary mb-2 font-medium">
-                바닥 거칠기 ({floorSettings.roughness.toFixed(1)})
-              </p>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                value={floorSettings.roughness}
-                onChange={(e) =>
-                  setFloorSettings({
-                    ...floorSettings,
-                    roughness: parseFloat(e.target.value),
-                  })
-                }
-                className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer slider"
-                style={{
-                  background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
-                    floorSettings.roughness * 100
-                  }%, #e5e7eb ${floorSettings.roughness * 100}%, #e5e7eb 100%)`,
-                }}
-              />
-              <div className="flex justify-between text-xs text-text-secondary mt-1">
-                <span>매끄러움</span>
-                <span>거침</span>
+              {/* 커스텀 바닥 색상 */}
+              <div>
+                <p className="text-xs text-text-secondary mb-2 font-medium">
+                  커스텀 색상
+                </p>
+                <input
+                  type="color"
+                  value={floorSettings.color}
+                  onChange={(e) =>
+                    setFloorSettings({
+                      ...floorSettings,
+                      color: e.target.value,
+                    })
+                  }
+                  className="w-full h-8 rounded-lg border border-border bg-background cursor-pointer"
+                />
               </div>
-            </div>
+
+              {/* 바닥 거칠기 */}
+              <div>
+                <p className="text-xs text-text-secondary mb-2 font-medium">
+                  바닥 거칠기 ({floorSettings.roughness.toFixed(1)})
+                </p>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={floorSettings.roughness}
+                  onChange={(e) =>
+                    setFloorSettings({
+                      ...floorSettings,
+                      roughness: parseFloat(e.target.value),
+                    })
+                  }
+                  className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer slider"
+                  style={{
+                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
+                      floorSettings.roughness * 100
+                    }%, #e5e7eb ${
+                      floorSettings.roughness * 100
+                    }%, #e5e7eb 100%)`,
+                  }}
+                />
+                <div className="flex justify-between text-xs text-text-secondary mt-1">
+                  <span>매끄러움</span>
+                  <span>거침</span>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -984,7 +1007,12 @@ export default function RoomBox({
                 type="checkbox"
                 checked={enableSnap}
                 onChange={(e) => {
-                  console.log('스냅 기능 변경:', e.target.checked, 'enableSnap:', enableSnap);
+                  console.log(
+                    "스냅 기능 변경:",
+                    e.target.checked,
+                    "enableSnap:",
+                    enableSnap
+                  );
                   setEnableSnap(e.target.checked);
                 }}
                 className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
@@ -998,7 +1026,12 @@ export default function RoomBox({
                 type="checkbox"
                 checked={showSnapGrid}
                 onChange={(e) => {
-                  console.log('스냅 그리드 변경:', e.target.checked, 'showSnapGrid:', showSnapGrid);
+                  console.log(
+                    "스냅 그리드 변경:",
+                    e.target.checked,
+                    "showSnapGrid:",
+                    showSnapGrid
+                  );
                   setShowSnapGrid(e.target.checked);
                 }}
                 className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
@@ -1012,7 +1045,12 @@ export default function RoomBox({
                 type="checkbox"
                 checked={showFloorGrid}
                 onChange={(e) => {
-                  console.log('바닥 그리드 변경:', e.target.checked, 'showFloorGrid:', showFloorGrid);
+                  console.log(
+                    "바닥 그리드 변경:",
+                    e.target.checked,
+                    "showFloorGrid:",
+                    showFloorGrid
+                  );
                   setShowFloorGrid(e.target.checked);
                 }}
                 className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
@@ -1403,7 +1441,12 @@ export default function RoomBox({
         )}
 
         {/* 뷰 컨트롤 */}
-        <ViewPresets onViewChange={(preset) => handleViewChange(preset, controlsRef, setActiveView)} roomSize={roomSize} />
+        <ViewPresets
+          onViewChange={(preset) =>
+            handleViewChange(preset, controlsRef, setActiveView)
+          }
+          roomSize={roomSize}
+        />
 
         {/* 공간 분석 */}
         <SpaceUtilization
@@ -1444,14 +1487,16 @@ export default function RoomBox({
               environmentIntensity={0.8}
               environmentRotation={[0, Math.PI / 4, 0]}
             />
-            <color attach="background" args={['#e0f2fe']} />
+            <color attach="background" args={["#e0f2fe"]} />
 
             {/* 바닥 */}
             <mesh
               position={[w / 2, 0, d / 2]}
               rotation={[-Math.PI / 2, 0, 0]}
               receiveShadow
-              onClick={(event) => handleFloorClick(event, measurementMode, setMeasurePoints)}
+              onClick={(event) =>
+                handleFloorClick(event, measurementMode, setMeasurePoints)
+              }
             >
               <planeGeometry args={[w, d]} />
               <meshPhysicalMaterial
@@ -1489,7 +1534,6 @@ export default function RoomBox({
               roughness={wallSettings.roughness}
               metalness={wallSettings.metalness}
             />
-
 
             <SnapGrid roomSize={roomSize} visible={showSnapGrid} />
             <FloorGrid roomSize={roomSize} visible={showFloorGrid} />
