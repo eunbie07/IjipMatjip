@@ -1745,7 +1745,7 @@ export default function RoomBox({
       {capturedScreenshot && (
         <div className="absolute top-20 right-4 bg-white rounded-xl shadow-lg p-3 w-48 z-30">
           <div className="text-xs font-medium text-gray-600 mb-2">
-            📸 캡처된 이미지
+            캡처된 이미지
           </div>
           <img
             src={capturedScreenshot.imageData}
