@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import client from '../api/client';
 import InfrastructureMap from '../components/houses/InfrastructureMap';
 import { getPhotoUrl } from '../hooks/getPhotoUrl'
 
@@ -65,11 +65,11 @@ const DetailPage = () => {
       setLoading(true);
       try {
         // TODO: 실제 AI 리포트 생성 API 호출 , 현재 더미 데이터
-        const reportPromise = axios.post('/api/report/generate',{
+        const reportPromise = client.post('/api/report/generate',{
           property_data : estateData,
           user_preferences: searchConditions
         })
-        const infraPromise = axios.post('/api/infrastructure',{
+        const infraPromise = client.post('/api/infrastructure',{
           latitude: estateData.latitude,
           longitude: estateData.longitude,
           radius_km:1.0
@@ -78,7 +78,7 @@ const DetailPage = () => {
         const promises = [reportPromise]
 
         if(searchConditions?.commute?.address){
-          promises.push(axios.post('/api/geocode', {address: searchConditions.commute.address}))
+          promises.push(client.post('/api/geocode', {address: searchConditions.commute.address}))
         }
 
         promises.push(infraPromise)
@@ -92,7 +92,7 @@ const DetailPage = () => {
 
         if(searchConditions?.commute?.address){
           const workCoords = results[resultIndex].data;
-          const directionsRes = await axios.post('/api/directions', {
+          const directionsRes = await client.post('/api/directions', {
             origin:{lat: estateData.latitude, lng: estateData.longitude},
             destination: workCoords,
           })
