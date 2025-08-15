@@ -40,7 +40,7 @@ const Navbar = () => {
               href="/ai-interior"
               className="px-4 py-2 text-text-secondary hover:text-text-primary hover:bg-background rounded-md transition-colors font-bold"
             >
-              🎨 AI Interior
+              AI Interior
             </a>
 
             {/* 인증 관련 버튼 */}
