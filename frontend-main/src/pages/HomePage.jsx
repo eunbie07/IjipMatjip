@@ -1,47 +1,134 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
+import { styleImagesData, STYLE_CONFIG } from "../datas/styleData";
+import ImageSlider from "../components/categories/ImageSlider";
+import {
+  UploadCloud,
+  ScanSearch,
+  Cuboid,
+  Star,
+  Quote,
+  HeartHandshake,
+  Search,
+  Layout,
+} from "lucide-react";
+
+import avatarFemale1 from "../assets/images/avatars/avatar_female_1.png";
+import avatarMale1 from "../assets/images/avatars/avatar_male_1.png";
+import avatarFemale2 from "../assets/images/avatars/avatar_female_2.png";
 
 const HomePage = () => {
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const videoRef = useRef(null);
+
+  const styleOrder = Object.keys(STYLE_CONFIG);
+
+  const handleVideoLoad = () => {
+    setVideoLoaded(true);
+    // 비디오 재생 속도 조절 (0.5 = 절반 속도, 2.0 = 2배 속도)
+    if (videoRef.current) {
+      videoRef.current.playbackRate = 0.7; // 0.7배 속도로 설정
+    }
+  };
+
+  const handleVideoError = () => {
+    setVideoError(true);
+  };
+
+  const howItWorksSteps = [
+    {
+      icon: <UploadCloud className="w-12 h-12 text-primary" />,
+      title: "1. 빈 방 사진 업로드",
+      description:
+        "이사 갈 집의 빈 방 사진 한 장이면 충분해요. AI가 공간의 크기와 구조를 정확하게 분석해요.",
+    },
+    {
+      icon: <ScanSearch className="w-12 h-12 text-primary" />,
+      title: "2. 가구 배치 및 스타일링",
+      description:
+        "3D로 구현된 공간에 내 가구를 배치하고, AI가 추천하는 다양한 인테리어 스타일을 적용해보세요.",
+    },
+    {
+      icon: <Cuboid className="w-12 h-12 text-primary" />,
+      title: "3. 결과 확인 및 저장",
+      description:
+        "완성된 인테리어를 현실처럼 생생하게 확인하고 저장하세요. 이제 체계적으로 이사 준비를 진행할 수 있어요.",
+    },
+  ];
+
+  const testimonials = [
+    {
+      name: "김서아",
+      location: "서울, 대한민국",
+      quote:
+        "정말 혁신적인 서비스예요! 새 원룸으로 이사 가는데 가구 배치가 가장 어려웠는데, '이집맞집' 덕분에 미리 계획하고 확신을 얻었어요. 마음에 드는 공간이 완성됐어요!",
+      avatar: avatarFemale1,
+    },
+    {
+      name: "박민준",
+      location: "부산, 대한민국",
+      quote:
+        "공인중개사로서 고객분들께 집을 보여줄 때 이만한 서비스가 없어요. 고객님들에게 조건에 맞는 집을 찾아드리고 소개해드리는 것이 정말 만족스러워요.",
+      avatar: avatarMale1,
+    },
+    {
+      name: "이채원",
+      location: "인천, 대한민국",
+      quote:
+        "인테리어에 서툰 저도 AI가 추천해준 스타일이 정말 세련되어서 놀랐어요. 가구를 배치하는 과정도 직관적이고 편리했어요!",
+      avatar: avatarFemale2,
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background text-text-primary">
       {/* Hero Section */}
-      <div className="relative bg-surface pt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:pl-4 lg:pr-8">
-          <div className="relative z-10 pb-8 sm:pb-16 md:pb-20 lg:max-w-3xl lg:w-full lg:pb-28 xl:pb-32 lg:pr-8">
-            <main className="mt-10 sm:mt-12 md:mt-16 lg:mt-20 xl:mt-28">
-              <div className="sm:text-center lg:text-left">
-                <h1 className="text-4xl md:text-5xl font-bold text-text-primary mb-6 leading-tight">
-                  <span className="block">Transform Your Space</span>{" "}
-                  <span className="block text-primary">with AI Technology</span>
-                </h1>
-                <p className="text-lg text-text-secondary mb-8">
-                  Measure room dimensions from photos, <br />
-                  design with 3D furniture placement,
-                  <br />
-                  and get AI-powered interior suggestions.
-                </p>
-                <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
-                  <div className="rounded-md shadow">
-                    <Link
-                      to="/room-planner"
-                      className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-secondary md:py-4 md:text-lg md:px-10"
-                    >
-                      Get Started
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </main>
-          </div>
-        </div>
-        <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2 lg:pl-1 lg:pr-60">
-          <div className="aspect-[4/3] w-full bg-gray-200 sm:aspect-[3/2] lg:aspect-auto lg:h-full overflow-hidden">
-            <img
-              className="w-full h-full object-cover"
-              src="/hero-bg.jpg"
-              alt="Modern home interior design"
-              loading="eager"
-            />
+      <div className="relative h-screen w-full flex items-center justify-center text-center overflow-hidden">
+        {/* Fallback Image - shown when video fails to load */}
+        {videoError && (
+          <img
+            src="/hero-bg.jpg"
+            alt="Interior design background"
+            className="absolute top-0 left-0 w-full h-full object-cover z-0"
+          />
+        )}
+        
+        {/* Video - hidden when error occurs */}
+        {!videoError && (
+          <video
+            ref={videoRef}
+            className="absolute top-0 left-0 w-full h-full object-cover"
+            style={{ transform: 'scale(1.1) translateY(5%)' }}
+            src="/hero-video.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            onLoadedData={handleVideoLoad}
+            onError={handleVideoError}
+          />
+        )}
+        
+        {/* 오버레이 제거 - 비디오를 완전히 밝게 보이게 함 */}
+        {/* <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 z-10"></div> */}
+        
+        <div className="relative z-20 flex flex-col items-center justify-center h-full text-white px-4" style={{marginTop: '-30%'}}>
+          <h1 className="text-hero-mobile md:text-hero font-bold mb-6 leading-tight animate-fade-in-down text-primary drop-shadow-2xl font-heading tracking-tight">
+            이사 갈 새 집, <br />
+            <span className="text-gray-700 drop-shadow-2xl font-bold">사진으로 미리 경험해보세요</span>
+          </h1>
+          <p className="text-body-large text-gray-700 mb-8 max-w-2xl animate-fade-in-up animation-delay-200 drop-shadow-lg font-body leading-relaxed">
+            사진 한 장으로 새 집의 공간을 파악하고, 
+            <br />내 가구를 가상으로 배치해보며 세련된 홈스타일링을 계획해보세요.
+          </p>
+          <div className="animate-fade-in-up animation-delay-400">
+            <Link
+              to="/room-planner"
+              className="inline-block px-8 py-4 bg-primary text-white font-semibold rounded-lg text-body-medium hover:bg-secondary transition-all duration-300 ease-in-out transform hover:scale-105 shadow-xl drop-shadow-lg tracking-wide"
+            >
+              지금 시작하기
+            </Link>
           </div>
         </div>
       </div>
@@ -49,179 +136,205 @@ const HomePage = () => {
       {/* Main Services Section */}
       <div className="py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-left mb-16">
-            <h2 className="text-base text-primary font-semibold tracking-wide uppercase">
-              Choose Your Service
+          <div className="text-center mb-16">
+            <h2 className="text-caption text-primary font-semibold tracking-widest uppercase mb-4">
+              주요 서비스
             </h2>
-            <p className="text-4xl md:text-5xl font-bold text-text-primary mb-6 leading-tight">
-              What Would You Like To Do?
+            <p className="text-section-title font-semibold text-text-primary leading-tight font-heading tracking-tight">
+              어떤 계획을 갖고 계신가요?
             </p>
-            <p className="text-lg text-text-secondary mb-8">
-              Start your home journey by selecting the service that best fits
-              your needs
+            <p className="mt-4 max-w-2xl mx-auto text-body-large text-text-secondary font-body leading-relaxed">
+              이사 준비, 어디서부터 시작할지 고민이라면 '이집맞집'과 함께하세요.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
             {/* Find Your Home Card */}
-            <div className="group relative bg-surface rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-border">
+            <div className="group relative bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl p-12 hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-3 border border-gray-100">
               <div className="text-center">
-                <div className="mx-auto w-16 h-16 bg-text-primary rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <svg
-                    className="w-8 h-8 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                    />
-                  </svg>
+                <div className="mx-auto w-20 h-20 bg-gradient-to-br from-primary to-secondary text-white rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <Search className="w-10 h-10" />
                 </div>
-                <h3 className="text-2xl font-bold text-text-primary mb-4 group-hover:text-text-secondary transition-colors duration-300">
-                  Find Your Home
+                <h3 className="text-card-title font-semibold text-text-primary mb-6 group-hover:text-primary transition-colors duration-300 font-heading tracking-tight">
+                  내 집 찾기
                 </h3>
-                <p className="text-text-secondary mb-8 leading-relaxed">
-                  라이프스타일과 취향에 맞는 완벽한 부동산을 찾아보세요. 고급
-                  필터링 옵션으로 엄선된 매물을 탐색하세요.
+                <p className="text-body-medium text-text-secondary mb-10 leading-relaxed font-body">
+                  내 라이프스타일과 취향에 꼭 맞는 집을 찾아보세요.<br /> 스마트한 필터로 엄선된 매물만 보여드려요.
                 </p>
-                <div className="space-y-3 mb-8 text-left">
-                  <div className="flex items-center text-text-secondary">
-                    <svg
-                      className="w-5 h-5 text-text-primary mr-3"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    고급 부동산 검색 및 필터링
-                  </div>
-                  <div className="flex items-center text-text-secondary">
-                    <svg
-                      className="w-5 h-5 text-text-primary mr-3"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    실시간 시장 데이터 및 트렌드
-                  </div>
-                  <div className="flex items-center text-text-secondary">
-                    <svg
-                      className="w-5 h-5 text-text-primary mr-3"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    동네 정보 및 분석
-                  </div>
-                </div>
                 <Link
                   to="/find-house"
-                  className="inline-block w-full bg-primary text-white font-semibold py-4 px-8 rounded-xl hover:bg-secondary transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  className="inline-block w-full bg-gradient-to-r from-primary to-secondary text-white font-bold py-5 px-8 rounded-2xl hover:from-secondary hover:to-primary transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl"
                 >
-                  Start House Hunting
+                  집 보러가기
                 </Link>
               </div>
             </div>
 
             {/* 2D/3D Room Planner Card */}
-            <div className="group relative bg-surface rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-border">
+            <div className="group relative bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl p-12 hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-3 border border-gray-100">
               <div className="text-center">
-                <div className="mx-auto w-16 h-16 bg-text-primary rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <svg
-                    className="w-8 h-8 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                    />
-                  </svg>
+                <div className="mx-auto w-20 h-20 bg-gradient-to-br from-primary to-secondary text-white rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <Layout className="w-10 h-10" />
                 </div>
-                <h3 className="text-2xl font-bold text-text-primary mb-4 group-hover:text-text-secondary transition-colors duration-300">
-                  Room Planner
+                <h3 className="text-card-title font-semibold text-text-primary mb-6 group-hover:text-primary transition-colors duration-300 font-heading tracking-tight">
+                  가구 배치하기
                 </h3>
-                <p className="text-text-secondary mb-8 leading-relaxed">
-                  AI 기반 방 분석으로 공간을 측정하고 시각화하세요.
-                  <br />
-                  단일 사진으로 상세한 평면도와 3D 모델을 생성하세요.
+                <p className="text-body-medium text-text-secondary mb-10 leading-relaxed font-body">
+                  AI가 빈 방 사진을 분석하여 정확한 3D 공간을 만들어 드립니다.<br /> 이사 전, 내 가구를 자유롭게 배치해보세요.
                 </p>
-                <div className="space-y-3 mb-8 text-left">
-                  <div className="flex items-center text-text-secondary">
-                    <svg
-                      className="w-5 h-5 text-text-primary mr-3"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    AI 기반 방 측정
-                  </div>
-                  <div className="flex items-center text-text-secondary">
-                    <svg
-                      className="w-5 h-5 text-text-primary mr-3"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    인터랙티브 3D 시각화
-                  </div>
-                  <div className="flex items-center text-text-secondary">
-                    <svg
-                      className="w-5 h-5 text-text-primary mr-3"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    가구 배치 시뮬레이션
-                  </div>
-                </div>
                 <Link
                   to="/room-planner"
-                  className="inline-block w-full bg-primary text-white font-semibold py-4 px-8 rounded-xl hover:bg-secondary transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  className="inline-block w-full bg-gradient-to-r from-primary to-secondary text-white font-bold py-5 px-8 rounded-2xl hover:from-secondary hover:to-primary transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl"
                 >
-                  Start Room Planning
+                  가구 배치하러 가기
                 </Link>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* AI Style Showcase Section */}
+      <div className="py-20 bg-background overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-base text-primary font-semibold tracking-wide uppercase">
+              AI 인테리어 쇼룸
+            </h2>
+            <p className="mt-2 text-4xl md:text-5xl font-bold text-text-primary leading-tight">
+              내 취향을 담은 공간, AI가 찾아드려요
+            </p>
+            <p className="mt-4 max-w-2xl mx-auto text-lg text-text-secondary">
+              AI가 제안하는 다양한 스타일을 구경하고, 새로운 인테리어 영감을 얻어보세요.
+            </p>
+          </div>
+
+          <div className="space-y-24">
+            {styleOrder.map((key) => {
+              const style = STYLE_CONFIG[key];
+              const images = styleImagesData[key] || [];
+              if (images.length === 0) return null;
+
+              return (
+                <div key={key}>
+                  <h3 className="text-3xl font-bold text-text-primary mb-8 text-center">
+                    {style.label}
+                  </h3>
+                  <ImageSlider
+                    images={images}
+                    selectedImage={null}
+                    onImageSelect={() => {}}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* How It Works Section */}
+      <div className="py-20 bg-surface">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-base text-primary font-semibold tracking-wide uppercase">
+              서비스 이용 방법
+            </h2>
+            <p className="mt-2 text-4xl md:text-5xl font-bold text-text-primary leading-tight">
+              단 3단계면, 이사 준비 끝
+            </p>
+            <p className="mt-4 max-w-2xl mx-auto text-lg text-text-secondary">
+              복잡한 과정 없이, 누구나 쉽고 재미있게 새로운 공간을 계획할 수 있습니다.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-10 max-w-5xl mx-auto">
+            {howItWorksSteps.map((step, index) => (
+              <div key={index} className="text-center p-6">
+                <div className="flex items-center justify-center h-24 w-24 rounded-full bg-background mx-auto mb-6 border-2 border-primary shadow-lg">
+                  {step.icon}
+                </div>
+                <h3 className="text-2xl font-bold text-text-primary mb-4">
+                  {step.title}
+                </h3>
+                <p className="text-text-secondary">{step.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Testimonials Section */}
+      <div className="py-20 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-base text-primary font-semibold tracking-wide uppercase">
+              생생한 사용자 후기
+            </h2>
+            <p className="mt-2 text-4xl md:text-5xl font-bold text-text-primary leading-tight">
+              먼저 경험해 본 분들의 이야기
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <div
+                key={index}
+                className="bg-surface p-8 rounded-2xl shadow-lg flex flex-col"
+              >
+                <div className="flex-grow">
+                  <Quote className="w-8 h-8 text-primary mb-4" />
+                  <p className="text-text-secondary mb-6">
+                    "{testimonial.quote}"
+                  </p>
+                </div>
+                <div className="flex items-center mt-auto">
+                  <img
+                    src={testimonial.avatar}
+                    alt={testimonial.name}
+                    className="w-12 h-12 rounded-full mr-4"
+                  />
+                  <div>
+                    <p className="font-bold text-text-primary">
+                      {testimonial.name}
+                    </p>
+                    <p className="text-sm text-text-secondary">
+                      {testimonial.location}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Final CTA Section */}
+      <div className="py-20 bg-surface">
+        <div className="max-w-4xl mx-auto text-center px-4">
+          <HeartHandshake className="w-16 h-16 text-primary mx-auto mb-6" />
+          <h2 className="text-4xl md:text-5xl font-bold text-text-primary mb-6">
+            지금 시작해보세요,
+          </h2>
+          <p className="text-lg text-text-secondary mb-8 max-w-2xl mx-auto">
+            AI와 함께라면, 이사 준비가 더욱 체계적이고 효율적으로 진행돼요.
+          </p>
+          <Link
+            to="/room-planner"
+            className="inline-block px-10 py-4 bg-primary text-white font-bold rounded-lg text-xl hover:bg-secondary transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+          >
+            무료로 시작하기
+          </Link>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-background border-t border-border py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-text-secondary">
+          <p>&copy; {new Date().getFullYear()} IjipMatjip. All rights reserved.</p>
+          <div className="mt-4">
+            <Link to="/terms" className="mx-4 hover:text-primary">이용약관</Link>
+            <Link to="/privacy" className="mx-4 hover:text-primary">개인정보처리방침</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
