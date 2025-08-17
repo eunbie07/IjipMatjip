@@ -144,12 +144,12 @@ const StyleChangePanel = ({
       {/* 도움말 */}
       <div className="mt-4 p-3 bg-blue-50 rounded-lg">
         <div className="text-sm text-blue-800">
-          <div className="font-medium mb-1">💡 사용법</div>
+          <div className="font-medium mb-1">사용법</div>
           <ul className="list-disc list-inside space-y-1 text-xs">
-            <li>📸 먼저 3D 화면 캡처 버튼을 클릭하세요</li>
-            <li>🎨 원하는 방 스타일을 선택하세요</li>
-            <li>🚀 AI가 방의 모든 가구를 선택한 스타일로 통일되게 변경합니다</li>
-            <li>⏱️ 약 30초-1분 정도 소요됩니다</li>
+            <li>1. 먼저 3D 화면 캡처 버튼을 클릭하세요</li>
+            <li>2. 원하는 방 스타일을 선택하세요</li>
+            <li>3. AI가 방의 모든 가구를 선택한 스타일로 통일되게 변경합니다</li>
+            <li>4. 약 30초-1분 정도 소요됩니다</li>
           </ul>
         </div>
       </div>

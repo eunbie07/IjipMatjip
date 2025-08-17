@@ -4,10 +4,8 @@ import LazyImage from './LazyImage';
 
 const ImageSlider = ({ images, selectedImage, onImageSelect }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
-    // 마우스 호버 상태를 추적하는 state 추가
     const [isHovering, setIsHovering] = useState(false);
 
-    // 필터링 시 인덱스가 초기화되도록 합니다.
     useEffect(() => {
         setCurrentIndex(0);
     }, [images]);
@@ -17,35 +15,13 @@ const ImageSlider = ({ images, selectedImage, onImageSelect }) => {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
     };
 
-    // --- 자동 슬라이드 로직 추가 ---
     useEffect(() => {
-        // 마우스가 호버 중이거나 이미지가 1개 이하면 자동 슬라이드를 멈춥니다.
         if (isHovering || images.length <= 1) {
             return;
         }
-
-        const timer = setInterval(() => {
-            nextSlide();
-        }, 3000); // 3초마다 슬라이드 변경
-
-        // 컴포넌트가 언마운트되거나 의존성이 변경될 때 타이머를 정리합니다.
+        const timer = setInterval(nextSlide, 3000);
         return () => clearInterval(timer);
-    }, [currentIndex, isHovering, images.length]); // currentIndex가 바뀌어도 타이머를 재시작하여 안정적으로 동작
-
-    // --- 스마트 프리로딩 로직 (기존과 동일) ---
-    useEffect(() => {
-        if (images.length > 1) {
-            const nextIndex = (currentIndex + 1) % images.length;
-            const prevIndex = (currentIndex - 1 + images.length) % images.length;
-
-            if (images[nextIndex]) {
-                images[nextIndex].src();
-            }
-            if (images[prevIndex]) {
-                images[prevIndex].src();
-            }
-        }
-    }, [currentIndex, images]);
+    }, [currentIndex, isHovering, images.length]);
 
     const prevSlide = () => {
         if (images.length < 2) return;
@@ -68,7 +44,6 @@ const ImageSlider = ({ images, selectedImage, onImageSelect }) => {
         <div 
             className="relative w-full max-w-4xl mx-auto" 
             style={{ height: '50vh', minHeight: '400px' }}
-            // 마우스 진입/이탈 시 isHovering 상태를 변경합니다.
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
         >

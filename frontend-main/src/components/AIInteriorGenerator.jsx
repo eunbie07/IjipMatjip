@@ -552,7 +552,7 @@ Final result must be indistinguishable from a $5000/day professional interior ph
                     onClick={() => setSelectedPreset(key)}
                     className={`p-4 border rounded-xl text-left transition-all duration-200 ${
                       selectedPreset === key 
-                        ? 'border-primary bg-blue-50 shadow-md' 
+                        ? 'border-primary bg-pink-50 shadow-md' 
                         : 'border-border hover:border-primary hover:bg-window-fill'
                     }`}
                     disabled={loading || generatingRealistic}
@@ -589,7 +589,7 @@ Final result must be indistinguishable from a $5000/day professional interior ph
                     onClick={() => setSelectedMood(key)}
                     className={`p-3 border rounded-xl text-sm font-medium transition-all duration-200 ${
                       selectedMood === key 
-                        ? 'border-primary bg-blue-50 text-primary' 
+                        ? 'border-primary bg-pink-50 text-primary' 
                         : 'border-border text-text-secondary hover:border-primary'
                     }`}
                     disabled={loading || generatingRealistic}
@@ -805,69 +805,11 @@ Final result must be indistinguishable from a $5000/day professional interior ph
 
 
         
-        {/* 통합 사용 가이드 */}
-        <div className="mt-12 p-6 bg-blue-50 border border-blue-200 rounded-xl">
-          <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
-            💡 AI 인테리어 디자이너 사용법
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* 1단계: 기본 설정 */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-blue-800 mb-3">1단계: 기본 설정</h4>
-              <div className="space-y-2 text-sm text-blue-700">
-                <div className="flex items-start gap-2">
-                  <span className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">📷</span>
-                  <span><strong>이미지 준비:</strong> 3D 캡처 이미지 또는 방 사진을 업로드하세요</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">🎨</span>
-                  <span><strong>스타일 선택:</strong> 4가지 침실 스타일 중 선택 (모던, 스칸디나비안 등)</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">🎯</span>
-                  <span><strong>목적 설정:</strong> Netflix, 업무, 손님맞이, 로맨틱 등 용도 선택</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">🏠</span>
-                  <span><strong>가구 배치:</strong> 기존 유지 또는 최적화 방식 선택</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 2단계: AI 생성 */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-blue-800 mb-3">2단계: AI 생성</h4>
-              <div className="space-y-2 text-sm text-blue-700">
-                <div className="flex items-start gap-2">
-                  <span className="w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">1</span>
-                  <span><strong>디자인 생성:</strong> "1단계: 인테리어 디자인 생성하기" 클릭 (30초)</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">⚙️</span>
-                  <span><strong>실사화 설정:</strong> 사진 스타일과 조명 모드 조정</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">2</span>
-                  <span><strong>실사화 생성:</strong> "2단계: 실제 방 사진처럼 만들기" 클릭 (1분)</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">✨</span>
-                  <span><strong>결과 완성:</strong> 잡지급 품질의 인테리어 사진 완성!</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 추가 팁 */}
-          <div className="mt-6 p-4 bg-blue-100 rounded-lg">
-            <h5 className="font-semibold text-blue-800 mb-2">🎯 프로 팁</h5>
-            <div className="text-sm text-blue-700 space-y-1">
-              <p>• <strong>여러 스타일 시도:</strong> 같은 방으로 다양한 스타일과 목적을 테스트해보세요</p>
-              <p>• <strong>실사화 품질:</strong> Architectural Digest, Elle Decor 수준의 전문 사진 생성</p>
-              <p>• <strong>커스텀 요청:</strong> "추가 요청"란에 구체적인 요구사항을 입력하세요</p>
-              <p>• <strong>가구 배치:</strong> "기존 배치 유지"로 현재 가구만 스타일 변경 가능</p>
-            </div>
+        {/* 간단 사용 가이드 */}
+        <div className="mt-8 p-4 bg-pink-50 border border-pink-200 rounded-xl">
+          <h3 className="text-base font-semibold text-text-primary mb-3">How to Use</h3>
+          <div className="text-sm text-text-secondary">
+            <p><strong>1.</strong> Choose style & mood → <strong>2.</strong> Generate design → <strong>3.</strong> Create realistic photo</p>
           </div>
         </div>
       </div>

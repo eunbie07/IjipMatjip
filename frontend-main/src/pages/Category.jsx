@@ -37,7 +37,7 @@ export default function CategoryPage() {
         <div className="relative z-10 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
             <header className="text-center mb-8 sm:mb-12">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-3">
-                🏠 원하는 인테리어 스타일을 선택하세요
+                원하는 인테리어 스타일을 선택하세요
             </h1>
             <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
                 마음에 드는 스타일을 선택하고, AI가 만들어주는 당신만의 공간을 경험해보세요.

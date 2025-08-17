@@ -51,7 +51,7 @@ const ConfidenceIndicator = ({ confidence, reliability }) => {
         <div className="font-medium mb-1">신뢰도: {reliability}</div>
         {confidence < 0.7 && (
           <div className="text-xs opacity-75">
-            💡 더 정확한 측정을 위해 다른 각도에서 시도해보세요
+            더 정확한 측정을 위해 다른 각도에서 시도해보세요
           </div>
         )}
         {confidence >= 0.8 && (

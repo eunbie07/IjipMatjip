@@ -5,15 +5,15 @@
 // altBase: 이미지 alt 태그에 사용될 기본 텍스트
 // fileName: 실제 파일명과 key가 다를 경우 (e.g., 오타 대응)
 export const STYLE_CONFIG = {
-  modern: { key: 'modern', label: '모던/미니멀리스트', altBase: '모던 미니멀리스트' },
-  scandinavian: { key: 'scandinavian', label: '스칸디나비안', altBase: '스칸디나비안' },
-  industrial: { key: 'industrial', label: '인더스트리얼', altBase: '인더스트리얼' },
-  bohemian: { key: 'bohemian', label: '보헤미안/내추럴', altBase: '보헤미안 내추럴', fileName: 'Bohemian' },
+  modern: { key: 'modern', label: 'Modern / Minimalist', altBase: '모던 미니멀리스트' },
+  scandinavian: { key: 'scandinavian', label: 'Scandinavian', altBase: '스칸디나비안' },
+  industrial: { key: 'industrial', label: 'Industrial', altBase: '인더스트리얼' },
+  bohemian: { key: 'bohemian', label: 'Bohemian / Natural', altBase: '보헤미안 내추럴', fileName: 'Bohemian' },
 };
 
-// --- 동적 이미지 로더 ---
-// Vite의 기능을 사용해 이미지들을 한번에 가져옵니다.
-const imageModules = import.meta.glob('../assets/images/*.png');
+// --- 동적 이미지 로더 (수정됨) ---
+// Vite의 기능을 사용해 이미지들을 즉시 가져옵니다. (eager: true)
+const imageModules = import.meta.glob('../assets/images/*.png', { eager: true });
 
 // --- 동적 데이터 생성 ---
 const generateImageData = () => {
@@ -36,7 +36,7 @@ const generateImageData = () => {
     if (styleConfig) {
       imageData[styleConfig.key].push({
         id: `${styleConfig.key}-${num}`,
-        src: imageModules[path],
+        src: imageModules[path].default, // .default를 추가하여 실제 이미지 URL을 가져옵니다.
         alt: `${styleConfig.altBase} ${num}`,
         styleKey: styleConfig.key,
       });

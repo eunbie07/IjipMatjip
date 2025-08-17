@@ -22,3 +22,19 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables
+.env
+
+# Generated video files
+scripts/generated_video*.mp4
+**/generated_video*.mp4
+
+# Test image files
+scripts/image*.png
+scripts/image copy*.png
+**/image copy*.png
+
+# Python version file
+.python-version
+uv.lock
