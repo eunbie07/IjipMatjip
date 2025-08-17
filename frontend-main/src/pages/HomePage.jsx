@@ -113,19 +113,19 @@ const HomePage = () => {
         {/* 오버레이 제거 - 비디오를 완전히 밝게 보이게 함 */}
         {/* <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 z-10"></div> */}
         
-        <div className="relative z-20 flex flex-col items-center justify-center h-full text-white px-4" style={{marginTop: '-30%'}}>
-          <h1 className="text-hero-mobile md:text-hero font-bold mb-6 leading-tight animate-fade-in-down text-primary drop-shadow-2xl font-heading tracking-tight">
+        <div className="relative z-20 flex flex-col items-center justify-center h-full text-white px-4" style={{marginTop: '-25%'}}>
+          <h1 className="text-2xl md:text-3xl font-bold mb-3 leading-tight animate-fade-in-down text-primary drop-shadow-2xl font-heading tracking-tight">
             이사 갈 새 집, <br />
             <span className="text-gray-700 drop-shadow-2xl font-bold">사진으로 미리 경험해보세요</span>
           </h1>
-          <p className="text-body-large text-gray-700 mb-8 max-w-2xl animate-fade-in-up animation-delay-200 drop-shadow-lg font-body leading-relaxed">
+          <p className="text-body-large text-gray-700 mb-2 max-w-2xl animate-fade-in-up animation-delay-200 drop-shadow-lg font-body leading-relaxed">
             사진 한 장으로 새 집의 공간을 파악하고, 
             <br />내 가구를 가상으로 배치해보며 세련된 홈스타일링을 계획해보세요.
           </p>
-          <div className="animate-fade-in-up animation-delay-400">
+          <div className="animate-fade-in-up animation-delay-400 mt-1">
             <Link
               to="/room-planner"
-              className="inline-block px-8 py-4 bg-primary text-white font-semibold rounded-lg text-body-medium hover:bg-secondary transition-all duration-300 ease-in-out transform hover:scale-105 shadow-xl drop-shadow-lg tracking-wide"
+              className="inline-block px-4 py-2 bg-primary text-white font-semibold rounded-lg text-sm hover:bg-secondary transition-all duration-300 ease-in-out transform hover:scale-105 shadow-xl drop-shadow-lg tracking-wide"
             >
               지금 시작하기
             </Link>
