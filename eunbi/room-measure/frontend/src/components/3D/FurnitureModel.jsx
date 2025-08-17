@@ -72,7 +72,7 @@ export const FurnitureModel = React.memo(function FurnitureModel({
         console.log("Offset 초기화됨");
       };
 
-      console.log("🎮 실시간 모델 조정 도구 준비 완료!");
+      console.log("실시간 모델 조정 도구 준비 완료!");
       console.log("사용법:");
       console.log("- adjustModelOffset(x, y, z): offset 조정");
       console.log("- getCurrentOffset(): 현재 offset 확인");

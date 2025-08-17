@@ -74,7 +74,7 @@ const ScreenshotCapture = ({ canvasRef, furniture, onScreenshotTaken }) => {
       onClick={captureScreenshot}
       className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
     >
-      📸 3D 화면 캡처
+      3D 화면 캡처
     </button>
   );
 };

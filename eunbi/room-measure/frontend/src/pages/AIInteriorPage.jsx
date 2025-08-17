@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import AIInteriorGenerator from '../components/AIInteriorGenerator';
 
 const AIInteriorPage = () => {
@@ -29,76 +29,78 @@ const AIInteriorPage = () => {
   }, [location.state]);
 
 
-  // 3D 캡처 핸들러 (RoomBox에서 호출 가능하도록)
+  // 3D capture handler (for RoomBox component calls)
   const handle3DCapture = () => {
-    // 실제로는 RoomBox 컴포넌트가 아니므로 안내 메시지 표시
-    alert('3D 화면 캡처는 방 편집 화면에서만 가능합니다. 방 편집 화면으로 돌아가서 캡처 후 다시 시도해주세요.');
+    // Display guide message since this is not the RoomBox component
+    alert('3D screen capture is only available in the room editing screen. Please return to the room editor and try again after capturing.');
   };
 
   return (
-    <div className="min-h-screen bg-background pt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 헤더 */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-text-primary mb-2">
-            AI 인테리어 디자이너
+    <div className="min-h-screen bg-background py-8">
+      <div className="container mx-auto px-4">
+        {/* Header */}
+        <div className="mb-8 pt-24 md:pt-28 max-w-4xl">
+          <h1 className="text-4xl md:text-5xl font-bold text-text-primary mb-6 leading-tight">
+            AI <span className="text-primary">Interior</span> Designer
           </h1>
-          <p className="text-text-secondary">
-            캡처된 방 이미지를 바탕으로 AI가 맞춤형 인테리어 디자인을 생성해드립니다.
+          <p className="text-lg text-text-secondary mb-8">
+            Generate personalized interior designs using artificial intelligence from captured room images
           </p>
         </div>
 
 
-        {/* AI 인테리어 생성기 */}
-        <AIInteriorGenerator 
-          capturedScreenshot={capturedScreenshot}
-          onImageGenerated={(image) => {
-            console.log('AI 인테리어 이미지 생성 완료:', image);
-          }}
-        />
+        <div className="max-w-6xl mx-auto">
+          {/* AI 인테리어 생성기 */}
+          <AIInteriorGenerator 
+            capturedScreenshot={capturedScreenshot}
+            onImageGenerated={(image) => {
+              console.log('AI 인테리어 이미지 생성 완료:', image);
+            }}
+          />
 
-        {/* 3D 캡처 안내 */}
-        {!capturedScreenshot && (
-          <div className="mt-8 p-6 bg-orange-50 border border-orange-200 rounded-xl">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="text-2xl">📸</div>
-              <h3 className="text-lg font-semibold text-orange-900">3D 캡처 기반 가구 스타일 변경</h3>
+          {/* 3D Capture Guide */}
+          {!capturedScreenshot && (
+            <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="text-2xl">📷</div>
+                <h3 className="text-lg font-semibold text-blue-900">3D Capture-based Furniture Style Change</h3>
+              </div>
+              <div className="text-blue-800 space-y-2">
+                <p>To change individual furniture styles:</p>
+                <ol className="list-decimal list-inside ml-4 space-y-1">
+                  <li>Return to the room editing screen and select furniture</li>
+                  <li>Click the "3D Screen Capture" button</li>
+                  <li>Come back to this page and select "Change Furniture Style"</li>
+                </ol>
+                <button
+                  onClick={() => window.history.back()}
+                  className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+                >
+                  ← Back to Room Editor
+                </button>
+              </div>
             </div>
-            <div className="text-orange-800 space-y-2">
-              <p>개별 가구의 스타일을 변경하려면:</p>
-              <ol className="list-decimal list-inside ml-4 space-y-1">
-                <li>방 편집 화면으로 돌아가서 가구를 선택하세요</li>
-                <li>"📸 3D 화면 캡처" 버튼을 클릭하세요</li>
-                <li>다시 이 페이지로 와서 "가구 스타일 변경"을 선택하세요</li>
-              </ol>
-              <button
-                onClick={() => window.history.back()}
-                className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+          )}
+
+          {/* No Capture Image Guide */}
+          {!capturedScreenshot && (
+            <div className="text-center py-16">
+              <div className="text-6xl mb-4">📷</div>
+              <h2 className="text-xl font-semibold text-text-primary mb-2">
+                No 3D Capture Image
+              </h2>
+              <p className="text-text-secondary mb-6">
+                To generate AI interior designs, please capture a 3D screen or upload an image directly.
+              </p>
+              <Link 
+                to="/room-planner"
+                className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-semibold"
               >
-                ← 방 편집 화면으로 돌아가기
-              </button>
+                Go to Room Editor
+              </Link>
             </div>
-          </div>
-        )}
-
-        {/* 캡처 이미지가 없을 때 안내 */}
-        {!capturedScreenshot && (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4">📸</div>
-            <h2 className="text-xl font-semibold text-text-primary mb-2">
-              3D 캡처 이미지가 없습니다
-            </h2>
-            <p className="text-text-secondary mb-6">
-              AI 인테리어 디자인을 생성하려면 3D 화면을 캡처하거나 직접 이미지를 업로드해주세요.
-            </p>
-            <a 
-              href="/"
-              className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-semibold"
-            >
-              방 편집 화면으로 가기
-            </a>
-          </div>
-        )}
+          )}
+        </div>
 
       </div>
     </div>

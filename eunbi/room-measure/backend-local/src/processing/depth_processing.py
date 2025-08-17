@@ -7,15 +7,16 @@ import os
 import logging
 from math import sqrt
 from fastapi import UploadFile
-from models import DepthDistanceRequest
+from ..models.schemas import DepthDistanceRequest
 
 logger = logging.getLogger(__name__)
 
 # 파일 경로 설정
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DEPTH_MAP_PATH = os.path.join(BASE_DIR, "depth_map.npy")
-DEPTH_IMAGE_PATH = os.path.join(BASE_DIR, "depth_map_output.png")
-DEPTH_META_PATH = os.path.join(BASE_DIR, "depth_meta.txt")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # backend-local 폴더
+OUTPUTS_DIR = os.path.join(BASE_DIR, "outputs")
+DEPTH_MAP_PATH = os.path.join(OUTPUTS_DIR, "depth_map.npy")
+DEPTH_IMAGE_PATH = os.path.join(OUTPUTS_DIR, "depth_map_output.png")
+DEPTH_META_PATH = os.path.join(OUTPUTS_DIR, "depth_meta.txt")
 
 async def generate_depth_map(file) -> dict:
     """이미지로부터 깊이 맵 생성"""

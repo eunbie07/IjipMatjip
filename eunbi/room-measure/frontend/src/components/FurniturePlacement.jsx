@@ -714,7 +714,7 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
               disabled={selectedFurnitureIndex === null}
               title="복사 (Ctrl+C)"
             >
-              📋
+              복사
             </button>
             <button
               onClick={pasteFurniture}
@@ -722,7 +722,7 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
               disabled={!copiedFurniture}
               title="붙여넣기 (Ctrl+V)"
             >
-              📌
+              붙여넣기
             </button>
           </div>
 

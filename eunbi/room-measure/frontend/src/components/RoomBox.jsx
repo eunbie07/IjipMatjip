@@ -221,7 +221,7 @@ export default function RoomBox({
   // 브라우저 콘솔에서 사용할 수 있도록 등록
   useEffect(() => {
     window.extractMeshes = extractMeshesToSeparateFiles;
-    console.log("🚀 GLB 추출 도구 준비 완료!");
+    console.log("GLB 추출 도구 준비 완료!");
     console.log("콘솔에서 extractMeshes() 를 실행하세요.");
   }, []);
 
