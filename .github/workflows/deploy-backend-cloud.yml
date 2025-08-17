@@ -46,13 +46,20 @@ jobs:
             docker pull eunbie/room-measure-cloud:$IMAGE_TAG
 
             cd /home/node1/app/eunbi/room-measure/backend-cloud
+            
+            # .env 파일 확인 및 생성
             if [ ! -f .env ]; then
               if [ -f .env.example ]; then
                 cp .env.example .env
+                echo "⚠️ .env.example에서 .env 파일을 생성했습니다. 환경변수를 설정해주세요."
               else
-                echo ".env 파일이 필요합니다"; exit 1
+                echo "❌ .env.example 파일이 없습니다. 환경변수 설정이 필요합니다"
+                exit 1
               fi
             fi
+            
+            # 최신 소스 코드 동기화 (새로운 모듈 구조 포함)
+            git pull origin dev-eunbi || echo "Git pull 실패 - 계속 진행"
 
             docker run -d \
               --name room-measure-cloud \
@@ -61,5 +68,21 @@ jobs:
               --restart unless-stopped \
               eunbie/room-measure-cloud:$IMAGE_TAG
 
-            sleep 10
-            curl -fsS http://localhost:3000/health || { echo "헬스체크 실패"; docker logs --tail=50 room-measure-cloud; exit 1; }
+            # 컨테이너 시작 대기 및 헬스체크
+            echo "🔍 컨테이너 시작 대기 중..."
+            sleep 15
+            
+            # 헬스체크 (3번 시도)
+            for i in {1..3}; do
+              echo "헬스체크 시도 $i/3..."
+              if curl -fsS http://localhost:3000/health; then
+                echo "✅ 배포 성공! 서비스가 정상 동작 중입니다."
+                docker logs --tail=10 room-measure-cloud
+                exit 0
+              fi
+              sleep 5
+            done
+            
+            echo "❌ 헬스체크 실패 - 로그 확인"
+            docker logs --tail=50 room-measure-cloud
+            exit 1

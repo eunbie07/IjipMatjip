@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 
 // 전체 방 스타일 옵션
 const ROOM_STYLES = [
-  { id: 'scandinavian', name: '스칸디나비안', description: '자연스럽고 따뜻한 북유럽 스타일', icon: '🏔️' },
-  { id: 'modern', name: '모던', description: '깔끔하고 미니멀한 현대적 스타일', icon: '🏢' },
-  { id: 'industrial', name: '인더스트리얼', description: '도시적이고 날것의 스타일', icon: '🏭' },
-  { id: 'bohemian', name: '보헤미안', description: '자유롭고 개성있는 보헤미안 스타일', icon: '🌙' },
-  { id: 'vintage', name: '빈티지', description: '클래식하고 우아한 빈티지 스타일', icon: '🏛️' }
+  { id: 'scandinavian', name: '스칸디나비안', description: '자연스럽고 따뜻한 북유럽 스타일', icon: 'S' },
+  { id: 'modern', name: '모던', description: '깔끔하고 미니멀한 현대적 스타일', icon: 'M' },
+  { id: 'industrial', name: '인더스트리얼', description: '도시적이고 날것의 스타일', icon: 'I' },
+  { id: 'bohemian', name: '보헤미안', description: '자유롭고 개성있는 보헤미안 스타일', icon: 'B' },
+  { id: 'vintage', name: '빈티지', description: '클래식하고 우아한 빈티지 스타일', icon: 'V' }
 ];
 
 const StyleChangePanel = ({ 
@@ -68,7 +68,7 @@ const StyleChangePanel = ({
     <div className="p-6 bg-white rounded-xl shadow-lg border">
       <div className="flex items-center gap-3 mb-4">
         <div className="p-2 bg-purple-100 rounded-lg">
-          🏠
+          
         </div>
         <div>
           <h3 className="font-bold text-lg">전체 가구 스타일 변경</h3>
@@ -105,7 +105,7 @@ const StyleChangePanel = ({
                 }`}
               >
                 <div className="w-full h-20 bg-gray-100 rounded mb-2 flex items-center justify-center">
-                  <span className="text-2xl">{style.icon || '🎨'}</span>
+                  <span className="text-2xl">{style.icon || 'S'}</span>
                 </div>
                 <div className="text-sm font-medium">{style.name}</div>
                 <div className="text-xs text-gray-500 mt-1">{style.description}</div>
@@ -144,12 +144,12 @@ const StyleChangePanel = ({
       {/* 도움말 */}
       <div className="mt-4 p-3 bg-blue-50 rounded-lg">
         <div className="text-sm text-blue-800">
-          <div className="font-medium mb-1">💡 사용법</div>
+          <div className="font-medium mb-1">사용법</div>
           <ul className="list-disc list-inside space-y-1 text-xs">
-            <li>📸 먼저 3D 화면 캡처 버튼을 클릭하세요</li>
-            <li>🎨 원하는 방 스타일을 선택하세요</li>
-            <li>🚀 AI가 방의 모든 가구를 선택한 스타일로 통일되게 변경합니다</li>
-            <li>⏱️ 약 30초-1분 정도 소요됩니다</li>
+            <li>먼저 3D 화면 캡처 버튼을 클릭하세요</li>
+            <li>원하는 방 스타일을 선택하세요</li>
+            <li>AI가 방의 모든 가구를 선택한 스타일로 통일되게 변경합니다</li>
+            <li>약 30초-1분 정도 소요됩니다</li>
           </ul>
         </div>
       </div>

@@ -221,7 +221,7 @@ export default function RoomBox({
   // 브라우저 콘솔에서 사용할 수 있도록 등록
   useEffect(() => {
     window.extractMeshes = extractMeshesToSeparateFiles;
-    console.log("🚀 GLB 추출 도구 준비 완료!");
+    console.log("GLB 추출 도구 준비 완료!");
     console.log("콘솔에서 extractMeshes() 를 실행하세요.");
   }, []);
 
@@ -1745,7 +1745,7 @@ export default function RoomBox({
       {capturedScreenshot && (
         <div className="absolute top-20 right-4 bg-white rounded-xl shadow-lg p-3 w-48 z-30">
           <div className="text-xs font-medium text-gray-600 mb-2">
-            📸 캡처된 이미지
+            캡처된 이미지
           </div>
           <img
             src={capturedScreenshot.imageData}

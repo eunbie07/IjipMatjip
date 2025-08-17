@@ -4,13 +4,18 @@ import cv2
 import numpy as np
 import logging
 from ultralytics import YOLO
-from models import WindowInfo
+from ..models.schemas import WindowInfo
 
 logger = logging.getLogger(__name__)
 
 # YOLO 모델 로드 (글로벌 변수로 한 번만 로드)
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+MODELS_DIR = os.path.join(BASE_DIR, "models")
+
 try:
-    yolo_model = YOLO("yolo11n.pt")
+    model_path = os.path.join(MODELS_DIR, "yolo11n.pt")
+    yolo_model = YOLO(model_path)
     logger.info("YOLO 모델 로드 성공")
 except Exception as e:
     logger.error(f"YOLO 모델 로드 실패: {e}")

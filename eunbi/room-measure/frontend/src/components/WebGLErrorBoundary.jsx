@@ -80,10 +80,10 @@ const WebGLFallback = ({ error, webglTest, onRetry }) => {
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-left">
           <h4 className="font-medium text-red-800 mb-2">기술적 정보</h4>
           <div className="text-sm text-red-700 space-y-1">
-            <div>WebGL 지원: {webglSupported ? '✅ 지원됨' : '❌ 지원안됨'}</div>
+            <div>WebGL 지원: {webglSupported ? '지원됨' : '지원안됨'}</div>
             {webglTest && (
               <>
-                <div>WebGL 2.0: {webglTest.webgl2 ? '✅ 지원됨' : '❌ 지원안됨'}</div>
+                <div>WebGL 2.0: {webglTest.webgl2 ? '지원됨' : '지원안됨'}</div>
                 {webglTest.renderer && <div>렌더러: {webglTest.renderer}</div>}
                 {webglTest.error && <div>오류: {webglTest.error}</div>}
               </>
@@ -95,7 +95,7 @@ const WebGLFallback = ({ error, webglTest, onRetry }) => {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
           <h4 className="font-medium text-blue-800 mb-2">해결방법</h4>
           <div className="text-sm text-blue-700 space-y-2">
-            <div className="font-medium text-blue-800">🚀 가장 일반적인 해결방법 (Chrome):</div>
+            <div className="font-medium text-blue-800">가장 일반적인 해결방법 (Chrome):</div>
             <div className="bg-blue-100 p-3 rounded border-l-4 border-blue-400">
               <div className="font-medium mb-1">하드웨어 가속 활성화:</div>
               <div>1. Chrome 설정 → 고급 → 시스템</div>

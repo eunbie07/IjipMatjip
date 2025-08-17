@@ -506,9 +506,9 @@ const ImageClickArea = ({ imageUrl, onComplete, depthWidth, depthHeight }) => {
               displayX = point.x * scaleX;
               displayY = point.y * scaleY;
               
-              console.log(`✅ 포인트 ${index}: (${point.x}, ${point.y}) -> (${displayX.toFixed(1)}, ${displayY.toFixed(1)}) [스케일: ${scaleX.toFixed(2)}, ${scaleY.toFixed(2)}]`);
+              console.log(`포인트 ${index}: (${point.x}, ${point.y}) -> (${displayX.toFixed(1)}, ${displayY.toFixed(1)}) [스케일: ${scaleX.toFixed(2)}, ${scaleY.toFixed(2)}]`);
             } else {
-              console.log(`⚠️ 포인트 ${index}: 스케일링 정보 없음, 원본 좌표 사용 (${point.x}, ${point.y})`);
+              console.log(`포인트 ${index}: 스케일링 정보 없음, 원본 좌표 사용 (${point.x}, ${point.y})`);
             }
             
             return {

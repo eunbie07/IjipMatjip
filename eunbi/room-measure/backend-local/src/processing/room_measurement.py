@@ -5,7 +5,7 @@ import numpy as np
 import logging
 from math import sqrt, isnan, isinf
 from typing import List, Tuple
-from models import Point3D
+from ..models.schemas import Point3D
 
 logger = logging.getLogger(__name__)
 

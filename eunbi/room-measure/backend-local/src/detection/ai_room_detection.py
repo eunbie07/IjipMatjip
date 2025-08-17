@@ -55,7 +55,7 @@ def detect_room_with_ai(image_path: str, confidence_threshold: float = 0.7) -> d
         logger.info(f"이미지 크기: {w} x {h}")
         
         # 첫 번째: 개선된 AI 감지 시도
-        from improved_ai_detection import detect_room_corners_improved
+        from .improved_ai_detection import detect_room_corners_improved
         
         logger.info("🎯 개선된 AI 감지 시도...")
         
@@ -66,7 +66,7 @@ def detect_room_with_ai(image_path: str, confidence_threshold: float = 0.7) -> d
             return improved_result
         
         # 두 번째: 세 선 교차점 감지 (기하학적 방법) 
-        from corner_intersection_detection import detect_three_line_intersections, find_best_floor_corner_intersection
+        from .corner_intersection_detection import detect_three_line_intersections, find_best_floor_corner_intersection
         
         logger.info("🎯 세 선 교차점 감지 시작...")
         
@@ -106,7 +106,7 @@ def detect_room_with_ai(image_path: str, confidence_threshold: float = 0.7) -> d
         
         # 폴백: 최신 AI 기술들 시도
         try:
-            from advanced_ai_detection import detect_with_transformer_ai
+            # from .advanced_ai_detection import detect_with_transformer_ai
             
             transformer_result = detect_with_transformer_ai(image_path, confidence_threshold)
             

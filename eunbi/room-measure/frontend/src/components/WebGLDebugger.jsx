@@ -58,7 +58,7 @@ const WebGLDebugger = () => {
       <div className="bg-white p-3 rounded border">
         <h4 className="font-semibold mb-2">기본 지원 상태</h4>
         <div className="text-sm space-y-1">
-          <div>WebGL 지원: {debugInfo?.supported ? '✅ 지원됨' : '❌ 지원안됨'}</div>
+          <div>WebGL 지원: {debugInfo?.supported ? '지원됨' : '지원안됨'}</div>
           {debugInfo?.error && (
             <div className="text-red-600">오류: {debugInfo.error}</div>
           )}
@@ -70,8 +70,8 @@ const WebGLDebugger = () => {
         <div className="bg-white p-3 rounded border">
           <h4 className="font-semibold mb-2">상세 테스트 결과</h4>
           <div className="text-sm space-y-1">
-            <div>WebGL 지원: {debugInfo.testResult.supported ? '✅' : '❌'}</div>
-            <div>WebGL 2.0: {debugInfo.testResult.webgl2 ? '✅' : '❌'}</div>
+            <div>WebGL 지원: {debugInfo.testResult.supported ? '지원됨' : '지원안됨'}</div>
+            <div>WebGL 2.0: {debugInfo.testResult.webgl2 ? '지원됨' : '지원안됨'}</div>
             {debugInfo.testResult.renderer && (
               <div>렌더러: {debugInfo.testResult.renderer}</div>
             )}
