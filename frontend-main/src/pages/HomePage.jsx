@@ -36,6 +36,13 @@ const HomePage = () => {
     setVideoError(true);
   };
 
+  const scrollToServices = () => {
+    const section = document.getElementById('services');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const howItWorksSteps = [
     {
       icon: <UploadCloud className="w-12 h-12 text-primary" />,
@@ -123,18 +130,18 @@ const HomePage = () => {
             <br />내 가구를 가상으로 배치해보며 세련된 홈스타일링을 계획해보세요.
           </p>
           <div className="animate-fade-in-up animation-delay-400 mt-1">
-            <Link
-              to="/room-planner"
+            <button
+              onClick={scrollToServices}
               className="inline-block px-4 py-2 bg-primary text-white font-semibold rounded-lg text-sm hover:bg-secondary transition-all duration-300 ease-in-out transform hover:scale-105 shadow-xl drop-shadow-lg tracking-wide"
             >
               지금 시작하기
-            </Link>
+            </button>
           </div>
         </div>
       </div>
 
       {/* Main Services Section */}
-      <div className="py-20 bg-surface min-h-screen snap-start flex items-center">
+      <div id="services" className="py-20 bg-surface min-h-screen snap-start flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-caption text-primary font-semibold tracking-widest uppercase mb-4">
