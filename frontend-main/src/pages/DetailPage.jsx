@@ -69,6 +69,11 @@ const DetailPage = () => {
   const [isReportLoading, setIsReportLoading] = useState(true);
   
   const [selectedImage, setSelectedImage] = useState(photo_urls?.[0] || 'https://placehold.co/800x500/e2e8f0/4a5568?text=Image');
+  
+  // 매물이 변경되면 선택 이미지를 초기화
+  useEffect(() => {
+    setSelectedImage(photo_urls?.[0] || 'https://placehold.co/800x500/e2e8f0/4a5568?text=Image');
+  }, [estateData?.id]);
 
   useEffect(() => {
     if (!estateData) {
@@ -188,6 +193,14 @@ const DetailPage = () => {
                                 className={`w-full h-auto max-h-[105px] object-cover rounded-lg cursor-pointer transition-all duration-200 ${selectedImage === img ? 'ring-4 ring-[#FF7E97] shadow-md' : 'opacity-70 hover:opacity-100'}`} 
                             />
                         ))}
+                    </div>
+                    <div className="flex justify-end">
+                      <Link 
+                        to={`/room-planner?imageUrl=${encodeURIComponent(selectedImage)}`}
+                        className="inline-flex items-center gap-2 bg-[#FF7E97] hover:bg-[#f36a86] text-white font-semibold px-4 py-2 rounded-lg shadow transition-colors"
+                      >
+                        이 사진으로 방 측정하기
+                      </Link>
                     </div>
                 </div>
                 <div className= "w-full flex flex-col gap-2 bg-white p-6 rounded-2xl shadow-md border border-gray-100">
