@@ -116,7 +116,7 @@ export const DraggableHuman = React.memo(function DraggableHuman({
   }
 
   return (
-    <group position={position}>
+    <group position={position} userData={{ isHumanModel: true }} name="human-model">
       {/* GLB 모델 표시 */}
       <primitive
         ref={modelRef}
@@ -126,6 +126,7 @@ export const DraggableHuman = React.memo(function DraggableHuman({
         castShadow
         receiveShadow
         onPointerDown={handlePointerDown}
+        userData={{ isHumanModel: true }}
       />
 
       <ContactShadows

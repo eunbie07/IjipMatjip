@@ -20,6 +20,30 @@ export const createAIInteriorHandler = (
         return;
       }
 
+      // 캡처 전에 사람 모델을 DOM에서 직접 숨기기
+      const hideHumanModel = () => {
+        try {
+          // Three.js scene에서 사람 모델 찾기
+          const scene = canvas.__r3f?.scene;
+          if (scene) {
+            scene.traverse((child) => {
+              if (child.userData?.isHumanModel || child.name?.includes('human')) {
+                child.visible = false;
+                console.log('AI 인테리어 생성 - 사람 모델 숨김:', child.name);
+              }
+            });
+          }
+        } catch (error) {
+          console.warn('AI 인테리어 생성 - 사람 모델 숨기기 실패:', error);
+        }
+      };
+
+      // 사람 모델 숨기기
+      hideHumanModel();
+
+      // 렌더링 완료를 위한 잠시 대기
+      await new Promise(resolve => setTimeout(resolve, 200));
+
       // 캔버스 데이터를 이미지로 변환
       const imageData = canvas.toDataURL('image/png');
       

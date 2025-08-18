@@ -673,42 +673,7 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
               </p>
             </div>
 
-            {/* 사람 삭제 및 3D 모델 적용 옵션 */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  id="remove-people"
-                  checked={removePeople}
-                  onChange={(e) => setRemovePeople(e.target.checked)}
-                  disabled={loading || generatingRealistic}
-                  className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-2"
-                />
-                <label htmlFor="remove-people" className="text-sm font-semibold text-text-primary">
-                  사람 제거
-                </label>
-              </div>
-              <p className="text-sm text-text-secondary ml-7">
-                생성된 이미지에서 사람을 자동으로 제거하여 깔끔한 인테리어 사진을 만듭니다.
-              </p>
-              
-              <div className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  id="apply-3d-models"
-                  checked={apply3DModels}
-                  onChange={(e) => setApply3DModels(e.target.checked)}
-                  disabled={loading || generatingRealistic}
-                  className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-2"
-                />
-                <label htmlFor="apply-3d-models" className="text-sm font-semibold text-text-primary">
-                  3D 모델 적용
-                </label>
-              </div>
-              <p className="text-sm text-text-secondary ml-7">
-                실제 3D 가구 모델을 적용하여 더욱 사실적인 인테리어를 생성합니다.
-              </p>
-            </div>
+
 
             {/* 추가 커스텀 요청 */}
             <div className="space-y-2">
@@ -744,12 +709,6 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                     furnitureLayout === 'add_furniture' ? '기존 배치 + 가구 추가' :
                     '완전 최적화'
                   }
-                </p>
-                <p>
-                  <strong>사람 제거:</strong> {removePeople ? '활성화' : '비활성화'}
-                </p>
-                <p>
-                  <strong>3D 모델:</strong> {apply3DModels ? '활성화' : '비활성화'}
                 </p>
               </div>
             </div>
