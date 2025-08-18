@@ -420,7 +420,18 @@ PROFESSIONAL FINISHING TOUCHES:
 - Color grading matching luxury interior magazines
 - Atmospheric depth with subtle environmental effects
 - Natural imperfections that prove authenticity
-- Strategic styling with designer accessories and plants`;
+- Strategic styling with designer accessories and plants
+- Lived-in details without clutter
+- Perfect symmetry and visual balance
+
+QUALITY STANDARDS:
+- 8K resolution equivalent detail
+- Print-ready commercial photography quality  
+- Zero CGI artifacts or artificial elements
+- Professional retouching standards
+- Magazine cover-worthy composition
+
+Final result must be indistinguishable from a $5000/day professional interior photographer's portfolio work.`;
 
       // 사람 삭제 옵션 추가 (실사화)
       if (removePeople) {
@@ -444,18 +455,6 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
 - Create seamless integration between 3D models and the room environment
 - Ensure 3D models have realistic textures and materials`;
       }
-- Lived-in details without clutter
-- Perfect symmetry and visual balance
-
-QUALITY STANDARDS:
-- 8K resolution equivalent detail
-- Print-ready commercial photography quality  
-- Zero CGI artifacts or artificial elements
-- Professional retouching standards
-- Magazine cover-worthy composition
-
-Final result must be indistinguishable from a $5000/day professional interior photographer's portfolio work.
-      `;
       
       parts.push({ text: professionalPrompt });
       parts.push({
