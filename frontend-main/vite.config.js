@@ -6,7 +6,16 @@ export default defineConfig({
   plugins: [react()],
   server: { 
     port: 4000,
-    host: true // 외부 접근 허용 (메인 웹페이지 통합 시 필요)
+    host: true, // 외부 접근 허용 (메인 웹페이지 통합 시 필요)
+    proxy: {
+      // 개발 환경에서만 이미지 CORS 우회를 위한 프록시
+      '/imgp': {
+        target: 'https://img.peterpanz.com',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (p) => p.replace(/^\/imgp/, ''),
+      },
+    }
   },
   build: {
     // 메인 웹페이지 통합을 위한 빌드 설정
