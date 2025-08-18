@@ -266,6 +266,14 @@ function RoomPlannerPage() {
     try {
       updateRoomMeasurementPoints(points);
 
+      // 층고 값 검증 및 기본값 설정
+      let validatedCeilingHeight = parseFloat(ceilingHeight);
+      if (isNaN(validatedCeilingHeight) || validatedCeilingHeight <= 0) {
+        validatedCeilingHeight = 230; // 기본값 2.3m
+        setCeilingHeight(230);
+        console.warn("유효하지 않은 층고 값이 감지되어 기본값 2.3m로 설정했습니다.");
+      }
+
       const payload = {
         housing_type: housingType,
         points: points.map((pt) => ({
@@ -273,7 +281,7 @@ function RoomPlannerPage() {
           y: parseFloat(pt.y),
           z: parseFloat(pt.z),
         })),
-        target_height: parseFloat(ceilingHeight) / 100,
+        target_height: validatedCeilingHeight / 100,
       };
       
       console.log("API 요청 payload:", payload);
@@ -385,13 +393,39 @@ function RoomPlannerPage() {
                       max="400"
                       step="5"
                       value={ceilingHeight}
-                      onChange={(e) => setCeilingHeight(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const numValue = parseFloat(value);
+                        
+                        // 유효성 검사
+                        if (value === '' || isNaN(numValue)) {
+                          setCeilingHeight('');
+                        } else if (numValue < 200) {
+                          setCeilingHeight(200);
+                        } else if (numValue > 400) {
+                          setCeilingHeight(400);
+                        } else {
+                          setCeilingHeight(value);
+                        }
+                      }}
+                      onBlur={(e) => {
+                        // 포커스를 잃을 때 기본값 설정
+                        if (e.target.value === '' || isNaN(parseFloat(e.target.value))) {
+                          setCeilingHeight(230);
+                        }
+                      }}
                       className="flex-1 border border-border rounded-lg px-4 py-3 focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-opacity-50"
+                      placeholder="230"
                     />
                     <span className="text-text-secondary text-base font-medium">
                       cm
                     </span>
                   </div>
+                  {ceilingHeight && (parseFloat(ceilingHeight) < 200 || parseFloat(ceilingHeight) > 400) && (
+                    <p className="text-red-500 text-sm mt-1">
+                      층고는 200cm ~ 400cm 사이의 값이어야 합니다.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
