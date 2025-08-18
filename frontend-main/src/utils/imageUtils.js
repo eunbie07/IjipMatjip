@@ -10,29 +10,37 @@ export const fetchImageFromUrl = async (imageUrl) => {
     // URL 유효성 검사
     const url = new URL(imageUrl);
 
-    // 개발 환경에서는 Vite 프록시를 경유하도록 경로 변환
+    // 개발 환경에서는 Vite 프록시를, 운영 환경에서는 백엔드 프록시를 우선 사용
     const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
-    const shouldUseViteProxy = isDev && url.host === 'img.peterpanz.com';
-    const fetchUrl = shouldUseViteProxy
-      ? `/imgp${url.pathname}${url.search}`
-      : imageUrl;
+    const isTargetHost = url.host === 'img.peterpanz.com';
 
-    // CORS 이슈를 피하기 위해 (개발 시) 프록시 경유 요청
-    let response = await fetch(fetchUrl, {
-      method: 'GET',
-      // 동일 오리진(프록시)일 때는 기본 모드로 충분
-    });
+    const viteProxyUrl = `/imgp${url.pathname}${url.search}`;
+    const apiBase = (client && client.defaults && client.defaults.baseURL) ? client.defaults.baseURL : '';
+    const backendProxyUrl = apiBase ? `${apiBase}/proxy/image?url=${encodeURIComponent(imageUrl)}` : '';
 
-    // 프로덕션 등에서 원본으로 직접 접근 시 CORS가 막힐 수 있으므로 백엔드 프록시로 재시도
-    if (!response.ok || (response.type === 'opaque' && !isDev)) {
-      const apiBase = (client && client.defaults && client.defaults.baseURL) ? client.defaults.baseURL : '';
-      if (!apiBase) {
-        throw new Error(`프록시 재시도 실패: API base URL 없음`);
+    let response;
+
+    if (isDev && isTargetHost) {
+      // 개발: Vite 프록시 사용
+      response = await fetch(viteProxyUrl, { method: 'GET' });
+    } else if (!isDev && isTargetHost && backendProxyUrl) {
+      // 운영: 대상 호스트는 항상 백엔드 프록시 사용 (CORS 회피)
+      response = await fetch(backendProxyUrl, { method: 'GET' });
+    } else {
+      // 그 외: 원본 시도 후 실패/차단 시 백엔드 프록시 폴백
+      try {
+        response = await fetch(imageUrl, { method: 'GET' });
+      } catch (e) {
+        response = undefined;
       }
-      const proxyUrl = `${apiBase}/proxy/image?url=${encodeURIComponent(imageUrl)}`;
-      response = await fetch(proxyUrl, { method: 'GET' });
-      if (!response.ok) {
-        throw new Error(`HTTP error via proxy! status: ${response.status}`);
+      if (!response || !response.ok || (response.type === 'opaque' && !isDev)) {
+        if (!backendProxyUrl) {
+          throw new Error(`프록시 재시도 실패: API base URL 없음`);
+        }
+        response = await fetch(backendProxyUrl, { method: 'GET' });
+        if (!response.ok) {
+          throw new Error(`HTTP error via proxy! status: ${response.status}`);
+        }
       }
     }
 
