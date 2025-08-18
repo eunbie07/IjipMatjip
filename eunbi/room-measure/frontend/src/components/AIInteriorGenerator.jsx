@@ -672,9 +672,6 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                 <strong>완전 최적화</strong>: 가구 재배치 + 추가로 스타일에 완벽하게 맞춤
               </p>
             </div>
-
-
-
             {/* 추가 커스텀 요청 */}
             <div className="space-y-2">
               <label htmlFor="custom-prompt" className="block text-sm font-semibold text-text-primary">
@@ -709,6 +706,12 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                     furnitureLayout === 'add_furniture' ? '기존 배치 + 가구 추가' :
                     '완전 최적화'
                   }
+                </p>
+                <p>
+                  <strong>사람 제거:</strong> {removePeople ? '활성화' : '비활성화'}
+                </p>
+                <p>
+                  <strong>3D 모델:</strong> {apply3DModels ? '활성화' : '비활성화'}
                 </p>
               </div>
             </div>

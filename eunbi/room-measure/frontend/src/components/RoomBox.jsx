@@ -179,13 +179,6 @@ export default function RoomBox({
 
   // AI 인테리어 생성 핸들러
   const handleAIInteriorGenerate = () => {
-    console.log('AI 인테리어 생성 시작 - 사람 모델 숨김 처리 중...');
-    
-    // AI 생성 전에 3D 모델 자동 활성화 및 사람 GLB 숨기기
-    const originalUse3DModels = use3DModels;
-    const originalShowHuman = showHuman;
-    
-    // 즉시 사람 숨기기
     setShowHuman(false);
     
     if (!use3DModels) {
@@ -220,20 +213,6 @@ export default function RoomBox({
 
   // 3D 화면 캡처 핸들러
   const handle3DCapture = () => {
-    console.log('3D 캡처 시작 - 3D 모델 상태로 전환...');
-    
-    // 캡처 전에 3D 모델 자동 활성화 (사람은 그대로 유지)
-    const originalUse3DModels = use3DModels;
-    
-    if (!use3DModels) {
-      setUse3DModels(true);
-      console.log('3D 모델 활성화됨');
-    }
-    
-    // 3D 모델 로딩을 위한 충분한 지연 시간
-    setTimeout(() => {
-      console.log('3D 캡처 실행 - 3D 모델 상태에서 캡처');
-      
       createScreenshotCapture(
         furniture,
         selectedFurniture,
@@ -249,11 +228,6 @@ export default function RoomBox({
       
       // 캡처 완료 후 원래 상태로 복원
       setTimeout(() => {
-        console.log('3D 캡처 완료 - 원래 상태로 복원');
-        setUse3DModels(originalUse3DModels);
-      }, 200);
-    }, 500); // 3D 모델 로딩을 위한 충분한 시간
-  };
 
   // 벽면/바닥 스타일 설정
   const { wallSettings, setWallSettings, floorSettings, setFloorSettings } =
