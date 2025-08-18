@@ -151,6 +151,9 @@ export default function RoomBox({
   // 3D 캡처 관련 상태 (먼저 선언)
   const [capturedScreenshot, setCapturedScreenshot] = useState(null);
 
+  // 3D 모델 사용 상태 (캡처 핸들러보다 먼저 정의)
+  const [use3DModels, setUse3DModels] = useState(false);
+
   // 가구 핸들러들
   const {
     handleViewChange,
@@ -176,39 +179,40 @@ export default function RoomBox({
 
   // AI 인테리어 생성 핸들러
   const handleAIInteriorGenerate = () => {
-    // AI 생성 전에 3D 모델 자동 활성화 및 사람 GLB 숨기기
+    setShowHuman(false);
+    
     if (!use3DModels) {
       setUse3DModels(true);
     }
-    setShowHuman(false);
     
-    // 원래 핸들러 실행
-    createAIInteriorHandler(
-      w,
-      h,
-      d,
-      furniture,
-      navigate,
-      showInfo,
-      showSuccess,
-      showError,
-      setCapturedScreenshot
-    )();
+    // 렌더링 완료를 위한 충분한 지연 시간
+    setTimeout(() => {
+      console.log('AI 인테리어 생성 실행 - 사람 모델 숨김 상태:', !showHuman);
+      
+      // 원래 핸들러 실행
+      createAIInteriorHandler(
+        w,
+        h,
+        d,
+        furniture,
+        navigate,
+        showInfo,
+        showSuccess,
+        showError,
+        setCapturedScreenshot
+      )();
+      
+      // 생성 완료 후 원래 상태로 복원 (더 긴 지연)
+      setTimeout(() => {
+        console.log('AI 인테리어 생성 완료 - 원래 상태로 복원');
+        setUse3DModels(originalUse3DModels);
+        setShowHuman(originalShowHuman);
+      }, 500); // 더 긴 지연으로 확실한 복원
+    }, 300); // 렌더링 완료를 위한 충분한 시간
   };
 
   // 3D 화면 캡처 핸들러
   const handle3DCapture = () => {
-    // 캡처 전에 3D 모델 자동 활성화 및 사람 GLB 임시 숨기기
-    const originalUse3DModels = use3DModels;
-    const originalShowHuman = showHuman;
-    
-    if (!use3DModels) {
-      setUse3DModels(true);
-    }
-    setShowHuman(false);
-    
-    // 약간의 지연 후 캡처 실행 (렌더링 완료 대기)
-    setTimeout(() => {
       createScreenshotCapture(
         furniture,
         selectedFurniture,
@@ -224,14 +228,6 @@ export default function RoomBox({
       
       // 캡처 완료 후 원래 상태로 복원
       setTimeout(() => {
-        setUse3DModels(originalUse3DModels);
-        setShowHuman(originalShowHuman);
-      }, 100);
-    }, 100);
-  };
-
-  // 3D 모델 사용 상태
-  const [use3DModels, setUse3DModels] = useState(false);
 
   // 벽면/바닥 스타일 설정
   const { wallSettings, setWallSettings, floorSettings, setFloorSettings } =
@@ -250,7 +246,7 @@ export default function RoomBox({
   // 브라우저 콘솔에서 사용할 수 있도록 등록
   useEffect(() => {
     window.extractMeshes = extractMeshesToSeparateFiles;
-    console.log("GLB 추출 도구 준비 완료!");
+    console.log("🚀 GLB 추출 도구 준비 완료!");
     console.log("콘솔에서 extractMeshes() 를 실행하세요.");
   }, []);
 

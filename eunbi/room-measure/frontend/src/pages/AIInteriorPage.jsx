@@ -7,23 +7,68 @@ const AIInteriorPage = () => {
   const [capturedScreenshot, setCapturedScreenshot] = useState(null);
 
 
+  // localStorage 용량 체크 및 정리 함수
+  const clearOldData = () => {
+    try {
+      // 오래된 캡처 데이터 삭제
+      const keys = Object.keys(localStorage);
+      const oldKeys = keys.filter(key => 
+        key.startsWith('capturedScreenshot') && 
+        key !== 'capturedScreenshot'
+      );
+      oldKeys.forEach(key => localStorage.removeItem(key));
+      
+      // 기존 캡처 데이터도 삭제 (새로운 데이터로 교체)
+      localStorage.removeItem('capturedScreenshot');
+    } catch (error) {
+      console.warn('localStorage 정리 중 오류:', error);
+    }
+  };
+
+  // localStorage에 안전하게 저장하는 함수
+  const safeSetItem = (key, value) => {
+    try {
+      // 먼저 기존 데이터 정리
+      clearOldData();
+      
+      // 새 데이터 저장
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      if (error.name === 'QuotaExceededError') {
+        console.warn('localStorage 용량 한계 초과, 기존 데이터를 정리합니다.');
+        // localStorage 완전 정리 후 재시도
+        try {
+          localStorage.clear();
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch (retryError) {
+          console.error('localStorage 저장 실패:', retryError);
+          // localStorage 저장 실패 시 메모리에서만 사용
+        }
+      } else {
+        console.error('localStorage 저장 중 오류:', error);
+      }
+    }
+  };
+
   // 라우트 state와 로컬 스토리지에서 캡처 데이터 복원
   useEffect(() => {
     // 먼저 라우트 state에서 확인
     if (location.state?.capturedScreenshot) {
       setCapturedScreenshot(location.state.capturedScreenshot);
-      // localStorage에도 저장 (백업용)
-      localStorage.setItem('capturedScreenshot', JSON.stringify(location.state.capturedScreenshot));
+      // localStorage에도 안전하게 저장 (백업용)
+      safeSetItem('capturedScreenshot', location.state.capturedScreenshot);
     } else {
       // 라우트 state에 없으면 localStorage에서 복원
-      const savedScreenshot = localStorage.getItem('capturedScreenshot');
-      if (savedScreenshot) {
-        try {
+      try {
+        const savedScreenshot = localStorage.getItem('capturedScreenshot');
+        if (savedScreenshot) {
           const parsed = JSON.parse(savedScreenshot);
           setCapturedScreenshot(parsed);
-        } catch (error) {
-          console.error('캡처 데이터 파싱 실패:', error);
         }
+      } catch (error) {
+        console.error('캡처 데이터 파싱 실패:', error);
+        // 파싱 실패 시 localStorage에서 삭제
+        localStorage.removeItem('capturedScreenshot');
       }
     }
   }, [location.state]);
