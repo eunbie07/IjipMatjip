@@ -1670,7 +1670,7 @@ export default function RoomBox({
         <button
           onClick={handle3DCapture}
           disabled={furniture.length === 0}
-          className="group flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="group flex items-center gap-3 px-4 py-3 bg-pink-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <div className="p-2 bg-white/20 rounded-lg group-hover:bg-white/30 transition-colors">
             <svg
@@ -1702,7 +1702,7 @@ export default function RoomBox({
         {/* AI 인테리어 생성 버튼 */}
         <button
           onClick={handleAIInteriorGenerate}
-          className="group flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+          className="group flex items-center gap-3 px-4 py-3 bg-pink-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
         >
           <div className="p-2 bg-white/20 rounded-lg group-hover:bg-white/30 transition-colors">
             <svg
