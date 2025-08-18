@@ -8,61 +8,75 @@ import client from "../api/client";
 export const fetchImageFromUrl = async (imageUrl) => {
   try {
     // URL 유효성 검사
-    const url = new URL(imageUrl);
+    const originalUrl = new URL(imageUrl);
 
-    // 개발 환경에서는 Vite 프록시를, 운영 환경에서는 백엔드 프록시를 우선 사용
     const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
-    const isTargetHost = url.host === 'img.peterpanz.com';
+    const viteProxyUrl = `/imgp${originalUrl.pathname}${originalUrl.search}`;
 
-    const viteProxyUrl = `/imgp${url.pathname}${url.search}`;
     const apiBase = (client && client.defaults && client.defaults.baseURL) ? client.defaults.baseURL : '';
-    const proxyBase = (
-      typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_PROXY_BASE
-    ) || (apiBase ? apiBase.replace(':3001', ':3000') : '') || 'http://13.55.21.100:3000';
-    const backendProxyUrl = proxyBase ? `${proxyBase}/proxy/image?url=${encodeURIComponent(imageUrl)}` : '';
+    const explicitProxyBase = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_PROXY_BASE;
 
-    let response;
+    // 가능한 프록시 후보들을 우선순위에 따라 정렬
+    const proxyBases = [
+      apiBase && `${apiBase}/api`,
+      apiBase && `${apiBase}`,
+      explicitProxyBase && `${explicitProxyBase}`,
+      'http://13.55.21.100:3000'
+    ].filter(Boolean);
 
-    if (isDev && isTargetHost) {
-      // 개발: Vite 프록시 사용
-      response = await fetch(viteProxyUrl, { method: 'GET' });
-    } else if (!isDev && isTargetHost && backendProxyUrl) {
-      // 운영: 대상 호스트는 항상 백엔드 프록시 사용 (CORS 회피)
-      response = await fetch(backendProxyUrl, { method: 'GET' });
-    } else {
-      // 그 외: 원본 시도 후 실패/차단 시 백엔드 프록시 폴백
+    const candidateUrls = [
+      // 개발 환경에서는 Vite 프록시 우선
+      ...(isDev ? [viteProxyUrl] : []),
+      // 원본 직접 접근 (CORS 허용 시)
+      imageUrl,
+      // 백엔드 프록시 후보들
+      ...proxyBases.map(base => `${base}/proxy/image?url=${encodeURIComponent(imageUrl)}`)
+    ];
+
+    let lastError;
+    for (const candidate of candidateUrls) {
       try {
-        response = await fetch(imageUrl, { method: 'GET' });
+        const resp = await fetch(candidate, { method: 'GET' });
+        if (!resp || !resp.ok) {
+          lastError = new Error(`HTTP ${resp?.status}`);
+          continue;
+        }
+        const blob = await resp.blob();
+
+        // 1) 정상 이미지 타입이면 그대로 사용
+        if (blob.type && blob.type.startsWith('image/')) {
+          const urlParts = originalUrl.pathname.split('/');
+          const fileName = urlParts[urlParts.length - 1] || 'image.jpg';
+          return new File([blob], fileName, { type: blob.type });
+        }
+
+        // 2) 서버가 Content-Type을 잘못 주는 경우: 확장자로 보완 판정
+        const pathnameLower = originalUrl.pathname.toLowerCase();
+        const extToMime = {
+          '.jpg': 'image/jpeg',
+          '.jpeg': 'image/jpeg',
+          '.png': 'image/png',
+          '.gif': 'image/gif',
+          '.webp': 'image/webp',
+          '.bmp': 'image/bmp'
+        };
+        const matchedExt = Object.keys(extToMime).find(ext => pathnameLower.endsWith(ext));
+        if (matchedExt) {
+          const guessedType = extToMime[matchedExt];
+          const urlParts = originalUrl.pathname.split('/');
+          const fileName = urlParts[urlParts.length - 1] || `image${matchedExt}`;
+          return new File([blob], fileName, { type: guessedType });
+        }
+
+        lastError = new Error('콘텐츠 타입/확장자 모두 이미지 아님');
+        continue;
       } catch (e) {
-        response = undefined;
-      }
-      if (!response || !response.ok || (response.type === 'opaque' && !isDev)) {
-        if (!backendProxyUrl) {
-          throw new Error(`프록시 재시도 실패: API base URL 없음`);
-        }
-        response = await fetch(backendProxyUrl, { method: 'GET' });
-        if (!response.ok) {
-          throw new Error(`HTTP error via proxy! status: ${response.status}`);
-        }
+        lastError = e;
+        continue;
       }
     }
 
-    // 이미지 데이터를 Blob으로 가져오기
-    const blob = await response.blob();
-    
-    // Content-Type 확인
-    if (!blob.type.startsWith('image/')) {
-      throw new Error('URL이 이미지 파일이 아닙니다.');
-    }
-
-    // 파일명 추출 (URL에서 파일명이 없으면 기본값 사용)
-    const urlParts = url.pathname.split('/');
-    const fileName = urlParts[urlParts.length - 1] || 'image.jpg';
-    
-    // Blob을 File 객체로 변환
-    const file = new File([blob], fileName, { type: blob.type });
-    
-    return file;
+    throw lastError || new Error('모든 소스 시도 실패');
   } catch (error) {
     console.error('이미지 URL에서 파일 가져오기 실패:', error);
     throw new Error(`이미지를 가져올 수 없습니다: ${error.message}`);
