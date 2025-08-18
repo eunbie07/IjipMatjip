@@ -683,7 +683,7 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
     <div className="mt-8 p-6 bg-surface rounded-xl shadow-lg border border-border">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-text-primary flex items-center gap-2">
-          가구 배치 시뮬레이셔
+          Furniture Layout Simulator
         </h2>
         <div className="flex flex-wrap gap-2">
           {/* 실행취소/다시실행 */}
@@ -727,34 +727,6 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
           </div>
 
           <button
-            onClick={() => {
-              // 데이터 저장 후 AI Design 페이지로 이동
-              if (placedFurniture.length > 0) {
-                const saveData = {
-                  roomInfo: {
-                    width: validRoomWidth,
-                    depth: validRoomDepth,
-                    height: roomHeight,
-                    area: ((validRoomWidth * validRoomDepth) / 10000).toFixed(1) + "㎡",
-                  },
-                  furniture: placedFurniture,
-                  statistics: {
-                    furnitureCount: placedFurniture.length,
-                    spaceUtilization: calculateSpaceUtilization + "%",
-                  }
-                };
-                localStorage.setItem('roomPlannerData', JSON.stringify(saveData));
-                window.location.href = '/ai-design';
-              } else {
-                alert("AI 디자인을 생성하려면 먼저 가구를 배치해주세요!");
-              }
-            }}
-            className="px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={placedFurniture.length === 0}
-          >
-            <strong>AI 디자인 생성</strong>
-          </button>
-          <button
             onClick={handleClearAll}
             className="px-4 py-2 bg-danger hover:bg-danger-dark text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={placedFurniture.length === 0}
@@ -768,7 +740,7 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-background p-4 rounded-lg border border-border">
           <div className="text-sm text-text-secondary font-medium">
-            방 크기
+            Room Size
           </div>
           <div className="text-lg font-bold text-text-primary">
             {validRoomWidth.toFixed(1)} × {validRoomDepth.toFixed(1)} cm
@@ -776,15 +748,15 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
         </div>
         <div className="bg-background p-4 rounded-lg border border-border">
           <div className="text-sm text-text-secondary font-medium">
-            배치된 가구
+            Placed Furniture
           </div>
           <div className="text-lg font-bold text-text-primary">
-            {placedFurniture.length} 개
+            {placedFurniture.length} items
           </div>
         </div>
         <div className="bg-background p-4 rounded-lg border border-border">
           <div className="text-sm text-text-secondary font-medium">
-            공간 활용률
+            Space Utilization
           </div>
           <div className="text-lg font-bold text-text-primary">
             {calculateSpaceUtilization}%
@@ -796,7 +768,7 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
         {/* 가구 카탈로그 */}
         <div className="lg:col-span-1">
           <h3 className="text-2xl font-bold mb-4 text-text-primary">
-            가구 선택
+            Select Furniture
           </h3>
 
           {/* 카테고리 탭 */}
@@ -829,11 +801,11 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
 
           {/* 커스텀 가구 추가 */}
           <div className="mt-4 p-3 bg-background border border-border rounded-lg">
-            <h4 className="text-lg font-semibold mb-3 text-text-primary">커스텀 가구 추가</h4>
+            <h4 className="text-lg font-semibold mb-3 text-text-primary">Add Custom Furniture</h4>
             <div className="space-y-2">
               <input
                 type="text"
-                placeholder="가구 이름"
+                placeholder="Furniture Name"
                 value={customFurnitureName}
                 onChange={(e) => setCustomFurnitureName(e.target.value)}
                 className="w-full px-2 py-1 text-sm border rounded"
@@ -842,7 +814,7 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
                 <div className="flex gap-2">
                   <input
                     type="number"
-                    placeholder="폭(cm)"
+                    placeholder="Width (cm)"
                     value={customFurnitureSize.width}
                     onChange={(e) => setCustomFurnitureSize(prev => ({...prev, width: parseInt(e.target.value) || 0}))}
                     className="flex-1 px-2 py-1 text-sm border rounded"
@@ -851,7 +823,7 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
                   />
                   <input
                     type="number"
-                    placeholder="깊이(cm)"
+                    placeholder="Depth (cm)"
                     value={customFurnitureSize.depth}
                     onChange={(e) => setCustomFurnitureSize(prev => ({...prev, depth: parseInt(e.target.value) || 0}))}
                     className="flex-1 px-2 py-1 text-sm border rounded"
@@ -859,23 +831,25 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
                     max="500"
                   />
                 </div>
-                <input
-                  type="number"
-                  placeholder="높이(cm)"
-                  value={customFurnitureSize.height}
-                  onChange={(e) => setCustomFurnitureSize(prev => ({...prev, height: parseInt(e.target.value) || 0}))}
-                  className="w-full px-2 py-1 text-sm border rounded"
-                  min="10"
-                  max="300"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    placeholder="Height (cm)"
+                    value={customFurnitureSize.height}
+                    onChange={(e) => setCustomFurnitureSize(prev => ({...prev, height: parseInt(e.target.value) || 0}))}
+                    className="flex-1 px-2 py-1 text-sm border rounded"
+                    min="10"
+                    max="300"
+                  />
+                  <button
+                    onClick={handleAddCustomFurniture}
+                    className="px-3 py-1 bg-primary text-white rounded text-sm hover:bg-secondary transition-colors"
+                    disabled={!customFurnitureName || customFurnitureSize.width <= 0 || customFurnitureSize.depth <= 0}
+                  >
+                    Add
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={handleAddCustomFurniture}
-                disabled={!customFurnitureName || !customFurnitureSize.width || !customFurnitureSize.depth || !customFurnitureSize.height}
-                className="w-full px-3 py-2 bg-primary text-white rounded text-sm font-medium hover:bg-secondary disabled:bg-border disabled:cursor-not-allowed"
-              >
-                커스텀 가구 추가
-              </button>
             </div>
           </div>
 
@@ -1395,7 +1369,7 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
           {draggedFurniture && (
             <div className="mt-2 text-center">
               <p className="text-sm text-text-secondary font-medium animate-pulse">
-                위 회색 영역에 {draggedFurniture.name}을(를) 드래그해서 놓으세요
+                Drag {draggedFurniture.name} to the gray area above
               </p>
             </div>
           )}
@@ -1405,11 +1379,11 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
             placedFurniture[selectedFurnitureIndex] && (
               <div className="mt-4 p-4 bg-background border border-border rounded-lg">
                 <h4 className="font-medium text-text-primary mb-2">
-                  선택된 가구: {placedFurniture[selectedFurnitureIndex].name}
+                  Selected: {placedFurniture[selectedFurnitureIndex].name}
                 </h4>
                 <div className="text-sm text-text-secondary space-y-1">
                   <div>
-                    크기:{" "}
+                    Size:{" "}
                     {(placedFurniture[selectedFurnitureIndex].rotation || 0) %
                       180 ===
                     0
@@ -1446,20 +1420,20 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
 
                       return (
                         <>
-                          위치 (왼쪽아래): ({leftBottomX}, {leftBottomZ}) cm
+                          Position (Bottom-Left): ({leftBottomX}, {leftBottomZ}) cm
                           <br />
-                          위치 (오른쪽위): ({rightTopX}, {rightTopZ}) cm
+                          Position (Top-Right): ({rightTopX}, {rightTopZ}) cm
                         </>
                       );
                     })()}
                   </div>
                   <div>
-                    회전:{" "}
+                    Rotation:{" "}
                     {placedFurniture[selectedFurnitureIndex].rotation || 0}°
                   </div>
                 </div>
                 <div className="mt-3 text-xs text-text-secondary">
-                  가구를 드래그하여 이동하거나, 녹색 버튼으로 회전할 수 있습니다
+                  Drag to move or use the green button to rotate
                 </div>
               </div>
             )}
@@ -1467,19 +1441,19 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
           {/* 사용 가이드 */}
           <div className="mt-4 p-4 bg-background rounded-lg">
             <h4 className="font-medium text-text-primary mb-2">
-              <strong>사용 가이드</strong>
+              <strong>User Guide</strong>
             </h4>
             <div className="text-sm text-text-secondary">
-              <strong className="text-text-primary">가구 배치</strong>
+              <strong className="text-text-primary">Furniture Placement</strong>
               <ul className="mt-1 space-y-1 ml-4">
-                <li>• 왼쪽 목록에서 드래그하여 배치</li>
-                <li>• 클릭으로 선택, 드래그로 이동</li>
-                <li>• 녹색 버튼으로 90° 회전</li>
-                <li>• 빨간 버튼으로 삭제</li>
+                <li>• Drag from the left list to place</li>
+                <li>• Click to select, drag to move</li>
+                <li>• Use green button to rotate 90°</li>
+                <li>• Use red button to delete</li>
               </ul>
             </div>
             <div className="mt-3 text-xs text-text-secondary">
-              가구가 겹치거나 방 밖으로 나가지 않도록 자동으로 제한됩니다
+              Furniture automatically stops when overlapping or going outside the room
             </div>
           </div>
         </div>
