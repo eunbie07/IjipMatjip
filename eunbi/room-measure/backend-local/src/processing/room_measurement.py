@@ -1261,6 +1261,11 @@ def improved_room_measurement(points: List[Point3D], target_height: float) -> di
     logger.info("개선된 방 크기 측정 시작...")
     
     try:
+        # target_height 검증 및 기본값 설정
+        if target_height is None or isnan(target_height) or target_height <= 0:
+            target_height = 2.3  # 기본값 2.3m
+            logger.warning(f"유효하지 않은 target_height가 감지되어 기본값 {target_height}m로 설정했습니다.")
+        
         # 입력 검증
         is_valid, error_msg = validate_points(points)
         if not is_valid:

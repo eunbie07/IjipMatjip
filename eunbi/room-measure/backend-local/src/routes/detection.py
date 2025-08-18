@@ -89,7 +89,12 @@ async def estimate_room_size(room_points: RoomPoints):
     """방 크기 측정"""
     try:
         logger.info(f"방 크기 측정 요청: {len(room_points.points)}개 포인트")
-        logger.info(f"목표 높이: {room_points.target_height}m")
+        logger.info(f"목표 높이: {room_points.target_height}m (타입: {type(room_points.target_height)})")
+        
+        # target_height 유효성 검사
+        if room_points.target_height is None or room_points.target_height <= 0:
+            logger.warning(f"유효하지 않은 target_height: {room_points.target_height}, 기본값 2.3m 사용")
+            room_points.target_height = 2.3
         
         # 개선된 방 측정 알고리즘 사용 (target_height 전달)
         result = improved_room_measurement(room_points.points, room_points.target_height)

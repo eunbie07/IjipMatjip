@@ -153,6 +153,11 @@ const RoomResult = ({ result, depthImageUrl }) => {
   const validDepth = isNaN(depth) ? 0 : depth;
   const validHeight = isNaN(height) ? 0 : height;
 
+  // NaN 값이 있을 때 경고 메시지
+  if (isNaN(width) || isNaN(depth) || isNaN(height)) {
+    console.warn("측정 결과에 NaN 값이 포함되어 있습니다:", { width, depth, height });
+  }
+
   // 백엔드에서 계산된 값이 있으면 사용, 없으면 프론트엔드에서 계산
   const area_m2 = area || (validWidth * validDepth) / 10000;
   const volume_m3 = volume || (validWidth * validDepth * validHeight) / 1000000;
