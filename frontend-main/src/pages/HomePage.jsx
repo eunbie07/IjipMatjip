@@ -59,7 +59,7 @@ const HomePage = () => {
 
   const testimonials = [
     {
-      name: "김서아",
+      name: "이단비",
       location: "서울, 대한민국",
       quote:
         "정말 혁신적인 서비스예요! 새 원룸으로 이사 가는데 가구 배치가 가장 어려웠는데, '이집맞집' 덕분에 미리 계획하고 확신을 얻었어요. 마음에 드는 공간이 완성됐어요!",
@@ -73,7 +73,7 @@ const HomePage = () => {
       avatar: avatarMale1,
     },
     {
-      name: "이채원",
+      name: "정민아",
       location: "인천, 대한민국",
       quote:
         "인테리어에 서툰 저도 AI가 추천해준 스타일이 정말 세련되어서 놀랐어요. 가구를 배치하는 과정도 직관적이고 편리했어요!",
@@ -82,9 +82,9 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="bg-background text-text-primary">
+    <div className="bg-background text-text-primary h-screen overflow-y-scroll snap-y snap-mandatory">
       {/* Hero Section */}
-      <div className="relative h-screen w-full flex items-center justify-center text-center overflow-hidden">
+      <div className="relative h-screen w-full flex items-center justify-center text-center overflow-hidden snap-start">
         {/* Fallback Image - shown when video fails to load */}
         {videoError && (
           <img
@@ -134,7 +134,7 @@ const HomePage = () => {
       </div>
 
       {/* Main Services Section */}
-      <div className="py-20 bg-surface">
+      <div className="py-20 bg-surface min-h-screen snap-start flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-caption text-primary font-semibold tracking-widest uppercase mb-4">
@@ -194,10 +194,10 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* AI Style Showcase Section */}
-      <div className="py-20 bg-background overflow-hidden">
+      {/* AI Style Showcase - Intro Section */}
+      <div className="py-20 bg-background overflow-hidden min-h-screen snap-start flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center">
             <h2 className="text-base text-primary font-semibold tracking-wide uppercase">
               AI 인테리어 쇼룸
             </h2>
@@ -208,32 +208,33 @@ const HomePage = () => {
               AI가 제안하는 다양한 스타일을 구경하고, 새로운 인테리어 영감을 얻어보세요.
             </p>
           </div>
-
-          <div className="space-y-24">
-            {styleOrder.map((key) => {
-              const style = STYLE_CONFIG[key];
-              const images = styleImagesData[key] || [];
-              if (images.length === 0) return null;
-
-              return (
-                <div key={key}>
-                  <h3 className="text-3xl font-bold text-text-primary mb-8 text-center">
-                    {style.label}
-                  </h3>
-                  <ImageSlider
-                    images={images}
-                    selectedImage={null}
-                    onImageSelect={() => {}}
-                  />
-                </div>
-              );
-            })}
-          </div>
         </div>
       </div>
 
+      {/* AI Style Showcase - Each style as its own snap section */}
+      {styleOrder.map((key) => {
+        const style = STYLE_CONFIG[key];
+        const images = styleImagesData[key] || [];
+        if (images.length === 0) return null;
+
+        return (
+          <div key={key} className="py-20 bg-background min-h-screen snap-start flex items-center">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+              <h3 className="text-3xl font-bold text-text-primary mb-8 text-center">
+                {style.label}
+              </h3>
+              <ImageSlider
+                images={images}
+                selectedImage={null}
+                onImageSelect={() => {}}
+              />
+            </div>
+          </div>
+        );
+      })}
+
       {/* How It Works Section */}
-      <div className="py-20 bg-surface">
+      <div className="py-20 bg-surface min-h-screen snap-start flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-base text-primary font-semibold tracking-wide uppercase">
@@ -263,7 +264,7 @@ const HomePage = () => {
       </div>
 
       {/* Testimonials Section */}
-      <div className="py-20 bg-background">
+      <div className="py-20 bg-background min-h-screen snap-start flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-base text-primary font-semibold tracking-wide uppercase">
@@ -307,7 +308,7 @@ const HomePage = () => {
       </div>
 
       {/* Final CTA Section */}
-      <div className="py-20 bg-surface">
+      <div className="py-20 bg-surface min-h-screen snap-start flex items-center">
         <div className="max-w-4xl mx-auto text-center px-4">
           <HeartHandshake className="w-16 h-16 text-primary mx-auto mb-6" />
           <h2 className="text-4xl md:text-5xl font-bold text-text-primary mb-6">
@@ -326,7 +327,7 @@ const HomePage = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-background border-t border-border py-8">
+      <footer className="bg-background border-t border-border py-8 min-h-screen snap-start flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-text-secondary">
           <p>&copy; {new Date().getFullYear()} IjipMatjip. All rights reserved.</p>
           <div className="mt-4">
