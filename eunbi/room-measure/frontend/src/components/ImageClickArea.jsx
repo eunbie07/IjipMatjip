@@ -704,13 +704,13 @@ const ImageClickArea = ({ imageUrl, onComplete, depthWidth, depthHeight }) => {
               ))}
 
               {/* 진행률 표시 */}
-              <div className="absolute top-4 left-4 bg-primary/70 text-white px-3 py-2 rounded-lg">
-                <div className="text-sm font-medium">
+              <div className="absolute top-4 left-4 bg-primary text-white px-3 py-2 rounded-lg shadow-lg">
+                <div className="text-sm font-medium text-white">
                   Progress: {points.length}/4
                 </div>
                 <div className="w-24 h-2 bg-secondary rounded-full mt-1">
                   <div
-                    className="h-full bg-primary rounded-full transition-all duration-300"
+                    className="h-full bg-white rounded-full transition-all duration-300"
                     style={{ width: `${(points.length / 4) * 100}%` }}
                   />
                 </div>
