@@ -194,18 +194,32 @@ export default function RoomBox({
   };
 
   // 3D 화면 캡처 핸들러
-  const handle3DCapture = createScreenshotCapture(
-    furniture,
-    selectedFurniture,
-    w,
-    h,
-    d,
-    showInfo,
-    showSuccess,
-    showError,
-    showWarning,
-    setCapturedScreenshot
-  );
+  const handle3DCapture = () => {
+    // 캡처 전에 사람 GLB 임시 숨기기
+    const originalShowHuman = showHuman;
+    setShowHuman(false);
+    
+    // 약간의 지연 후 캡처 실행 (렌더링 완료 대기)
+    setTimeout(() => {
+      createScreenshotCapture(
+        furniture,
+        selectedFurniture,
+        w,
+        h,
+        d,
+        showInfo,
+        showSuccess,
+        showError,
+        showWarning,
+        setCapturedScreenshot
+      )();
+      
+      // 캡처 완료 후 원래 상태로 복원
+      setTimeout(() => {
+        setShowHuman(originalShowHuman);
+      }, 100);
+    }, 100);
+  };
 
   // 3D 모델 사용 상태
   const [use3DModels, setUse3DModels] = useState(false);
