@@ -1,11 +1,12 @@
 import {Map as KakaoMap, MapMarker} from 'react-kakao-maps-sdk';
+import { ICONS } from '../../assets/images/houses';
 
 const markerIcons = {
-  school: { src: '/images/school.png', size: { width: 40, height: 40 } },
-  subway: { src: '/images/subway.png', size: { width: 40, height: 40 } },
-  hospital: { src: '/images/hospital.png', size: { width: 40, height: 40 } },
-  mart: { src: '/images/mart.png', size: { width: 40, height: 40 } },
-  park: { src: '/images/park.png', size: { width: 40, height: 40 } },
+  school: { src: ICONS.school, size: { width: 40, height: 40 } },
+  subway: { src: ICONS.subway, size: { width: 40, height: 40 } },
+  hospital: { src: ICONS.hospital, size: { width: 40, height: 40 } },
+  mart: { src: ICONS.mart, size: { width: 40, height: 40 } },
+  park: { src: ICONS.park, size: { width: 40, height: 40 } },
 };
 
 const InfrastructureMap = ({lat, lng, isEstateMarker = false, markers = []}) => {
@@ -17,7 +18,7 @@ const InfrastructureMap = ({lat, lng, isEstateMarker = false, markers = []}) => 
         <MapMarker
           position={{ lat, lng }}
           image={{
-            src:'/images/home_pin.png',
+            src:ICONS.home_pin,
             size:{width:48, height:48},
             options: {offset: {x:24, y:48}}
           }}

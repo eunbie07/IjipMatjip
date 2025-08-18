@@ -27,13 +27,30 @@ const RecommendationPage = () => {
   useEffect(() => {
     if (!searchConditions) {
       alert("검색 조건이 없습니다. 이전 페이지로 돌아갑니다.");
-      navigate('/');
+      navigate('/find-house');
       return;
     }
 
     const fetchAllRecommendations = async () => {
       setLoading(true);
+
+      // --- 👇 캐싱 로직 시작 ---
+      // 검색 조건 객체를 문자열로 만들어 고유한 키로 사용합니다.
+      const cacheKey = `recommendations_${JSON.stringify(searchConditions)}`;
+      const cachedData = sessionStorage.getItem(cacheKey);
+
+      if (cachedData) {
+        const { neighborhoods, estates } = JSON.parse(cachedData);
+        setRecommendations(neighborhoods || []);
+        setEstates(estates || []);
+        setLoading(false);
+        console.log("캐시된 추천 데이터를 사용합니다.");
+        return; // 캐시된 데이터가 있으면 API 호출 없이 종료
+      }
+      // --- 캐싱 로직 끝 ---
+
       try {
+        console.log("새로운 추천 데이터를 API에서 가져옵니다.");
         const payload = {
             preferences: searchConditions.preferences,
             region: searchConditions.region,
@@ -47,6 +64,10 @@ const RecommendationPage = () => {
         
         setRecommendations(neighborhoods || []);
         setEstates(estates || []);
+
+        // --- 👇 새로 받은 데이터를 sessionStorage에 저장 ---
+        sessionStorage.setItem(cacheKey, JSON.stringify({ neighborhoods, estates }));
+        // --- 여기까지 ---
 
       } catch (error) {
         console.error('추천 데이터를 불러오는 데 실패했습니다.',  error.response?.data || error);
@@ -76,7 +97,7 @@ const RecommendationPage = () => {
     <div className="w-full flex justify-center min-h-screen p-4 py-10">
       <div className="w-full max-w-4xl mx-auto flex flex-col gap-6">
         <div className="w-full">
-          <button onClick={() => navigate('/')} className='bg-white text-gray-700 font-semibold px-6 py-2 rounded-lg shadow-md hover:bg-gray-50 transition flex items-center gap-2'>
+          <button onClick={() => navigate('/find-house')} className='bg-white text-gray-700 font-semibold px-6 py-2 rounded-lg shadow-md hover:bg-gray-50 transition flex items-center gap-2'>
             ← 조건 다시 설정하기
           </button>
         </div>
