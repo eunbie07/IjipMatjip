@@ -175,17 +175,23 @@ export default function RoomBox({
   );
 
   // AI 인테리어 생성 핸들러
-  const handleAIInteriorGenerate = createAIInteriorHandler(
-    w,
-    h,
-    d,
-    furniture,
-    navigate,
-    showInfo,
-    showSuccess,
-    showError,
-    setCapturedScreenshot
-  );
+  const handleAIInteriorGenerate = () => {
+    // AI 생성 전에 사람 GLB 숨기기
+    setShowHuman(false);
+    
+    // 원래 핸들러 실행
+    createAIInteriorHandler(
+      w,
+      h,
+      d,
+      furniture,
+      navigate,
+      showInfo,
+      showSuccess,
+      showError,
+      setCapturedScreenshot
+    )();
+  };
 
   // 3D 화면 캡처 핸들러
   const handle3DCapture = createScreenshotCapture(
