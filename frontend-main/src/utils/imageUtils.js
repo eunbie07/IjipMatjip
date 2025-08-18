@@ -16,7 +16,10 @@ export const fetchImageFromUrl = async (imageUrl) => {
 
     const viteProxyUrl = `/imgp${url.pathname}${url.search}`;
     const apiBase = (client && client.defaults && client.defaults.baseURL) ? client.defaults.baseURL : '';
-    const backendProxyUrl = apiBase ? `${apiBase}/proxy/image?url=${encodeURIComponent(imageUrl)}` : '';
+    const proxyBase = (
+      typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_PROXY_BASE
+    ) || (apiBase ? apiBase.replace(':3001', ':3000') : '') || 'http://13.55.21.100:3000';
+    const backendProxyUrl = proxyBase ? `${proxyBase}/proxy/image?url=${encodeURIComponent(imageUrl)}` : '';
 
     let response;
 
