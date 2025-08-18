@@ -176,7 +176,10 @@ export default function RoomBox({
 
   // AI 인테리어 생성 핸들러
   const handleAIInteriorGenerate = () => {
-    // AI 생성 전에 사람 GLB 숨기기
+    // AI 생성 전에 3D 모델 자동 활성화 및 사람 GLB 숨기기
+    if (!use3DModels) {
+      setUse3DModels(true);
+    }
     setShowHuman(false);
     
     // 원래 핸들러 실행
@@ -195,8 +198,13 @@ export default function RoomBox({
 
   // 3D 화면 캡처 핸들러
   const handle3DCapture = () => {
-    // 캡처 전에 사람 GLB 임시 숨기기
+    // 캡처 전에 3D 모델 자동 활성화 및 사람 GLB 임시 숨기기
+    const originalUse3DModels = use3DModels;
     const originalShowHuman = showHuman;
+    
+    if (!use3DModels) {
+      setUse3DModels(true);
+    }
     setShowHuman(false);
     
     // 약간의 지연 후 캡처 실행 (렌더링 완료 대기)
@@ -216,6 +224,7 @@ export default function RoomBox({
       
       // 캡처 완료 후 원래 상태로 복원
       setTimeout(() => {
+        setUse3DModels(originalUse3DModels);
         setShowHuman(originalShowHuman);
       }, 100);
     }, 100);
