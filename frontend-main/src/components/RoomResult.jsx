@@ -261,7 +261,7 @@ const RoomResult = ({ result, depthImageUrl }) => {
                   <div className="font-medium text-accent-dark mb-1">참고사항</div>
                   <p className="text-sm text-secondary">
                     이 측정은 개선된 알고리즘으로 층고{" "}
-                    {Math.round(result.height_cm)}cm를 기준으로 계산되었습니다.
+                    {Math.round(validHeight)}cm를 기준으로 계산되었습니다.
                     신뢰도가 높을수록 실제 크기에 가까운 결과입니다.
                   </p>
                 </div>
