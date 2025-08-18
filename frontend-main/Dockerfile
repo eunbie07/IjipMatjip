@@ -23,9 +23,6 @@ RUN echo "VITE_LOCAL_API_BASE=$VITE_LOCAL_API_BASE" > .env && \
     echo "VITE_AI_INTERIOR_API_BASE=$VITE_AI_INTERIOR_API_BASE" >> .env && \
     echo "VITE_GEMINI_API_KEY=$VITE_GEMINI_API_KEY" >> .env
 
-# Debug: Check if files exist
-RUN ls -la src/hooks/ && echo "=== Checking useKeyboardControls ===" && cat src/hooks/useKeyboardControls.js
-
 # Build the app
 RUN npm run build
 

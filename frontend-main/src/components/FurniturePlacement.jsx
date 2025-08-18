@@ -727,13 +727,11 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
           </div>
 
           <button
-
-          <button
             onClick={handleClearAll}
             className="px-4 py-2 bg-danger hover:bg-danger-dark text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={placedFurniture.length === 0}
           >
-            <strong>전체 삭제</strong>
+            <strong>Clear All</strong>
           </button>
         </div>
       </div>
