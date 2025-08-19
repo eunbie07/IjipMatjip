@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { undistortImage, generateDepthMap, getDepthMapImage, getDepthMeta, estimateRoomSize } from "../utils/api";
 import ImageUploader from "../components/ImageUploader";
+import ImageUrlInput from "../components/ImageUrlInput";
 import ImageClickArea from "../components/ImageClickArea";
 import RoomResult from "../components/RoomResult";
 import RoomBox from "../components/RoomBox";
@@ -82,7 +83,7 @@ const HelpTips = ({ isOpen, onClose }) => (
         onClick={onClose}
         className="absolute top-4 right-4 text-text-secondary hover:text-text-primary"
       >
-        ✕
+        X
       </button>
       <h3 className="font-semibold text-text-primary mb-4 text-lg">측정 가이드</h3>
       <div className="space-y-3">
@@ -125,7 +126,7 @@ function RoomPlannerPage() {
 
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
-      console.log("🪑 Placed furniture updated:", placedFurniture);
+      console.log("Placed furniture updated:", placedFurniture);
     }
   }, [placedFurniture]);
 
@@ -141,6 +142,7 @@ function RoomPlannerPage() {
 
   const [activeTab, setActiveTab] = useState("analysis");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [uploadMethod, setUploadMethod] = useState("file"); // "file" 또는 "url"
 
   const [manualResult, setManualResult] = useState(null);
   const [autoResult, setAutoResult] = useState(null);
@@ -150,7 +152,7 @@ function RoomPlannerPage() {
   const updateRoomMeasurementPoints = (points) => {
     setRoomMeasurementPoints(points);
     window.roomMeasurementPoints = points;
-    console.log("📐 방 측정 포인트 저장됨:", points);
+    console.log("방 측정 포인트 저장됨:", points);
   };
 
   const handleTabClick = (tabName) => {
@@ -313,6 +315,30 @@ function RoomPlannerPage() {
     }
   };
 
+  // URL 파라미터에서 이미지 URL 확인
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const imageUrlParam = urlParams.get('imageUrl');
+    
+    if (imageUrlParam) {
+      setUploadMethod("url");
+      // URL 파라미터가 있으면 자동으로 이미지 로드
+      handleImageUploadFromUrl(imageUrlParam);
+    }
+  }, []);
+
+  // URL에서 이미지 업로드 처리 함수
+  const handleImageUploadFromUrl = async (imageUrl) => {
+    try {
+      const { fetchImageFromUrl } = await import("../utils/imageUtils");
+      const file = await fetchImageFromUrl(imageUrl);
+      handleImageUpload(file);
+    } catch (error) {
+      console.error("URL에서 이미지 로드 실패:", error);
+      setUploadError(`URL에서 이미지를 가져올 수 없습니다: ${error.message}`);
+    }
+  };
+
   React.useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(document.fullscreenElement !== null);
@@ -347,16 +373,56 @@ function RoomPlannerPage() {
         <div className="max-w-6xl mx-auto">
           <div className="bg-surface border border-border rounded-lg shadow-sm p-4 sm:p-6 lg:p-8 mb-6">
             <div className="mb-6">
-              <div className="w-full border-2 border-dashed border-border rounded-xl p-6 sm:p-8 flex flex-col items-center justify-center bg-background hover:bg-gray-100 transition-colors">
-                <span className="font-medium text-lg sm:text-xl mb-2 text-text-primary">
-                  Upload Photo
-                </span>
-                <span className="text-text-secondary text-sm sm:text-base mb-4 text-center">
-                  Please select a photo where the room corners are clearly
-                  visible
-                </span>
-                <ImageUploader onUpload={handleImageUpload} />
+              {/* 업로드 방법 선택 탭 */}
+              <div className="flex border-b border-border mb-6">
+                <button
+                  onClick={() => setUploadMethod("file")}
+                  className={`flex-1 px-4 py-3 text-center font-medium transition-colors text-sm sm:text-base ${
+                    uploadMethod === "file"
+                      ? "text-primary border-b-2 border-primary"
+                      : "text-text-secondary hover:text-text-primary"
+                  }`}
+                >
+                  파일 업로드
+                </button>
+                <button
+                  onClick={() => setUploadMethod("url")}
+                  className={`flex-1 px-4 py-3 text-center font-medium transition-colors text-sm sm:text-base ${
+                    uploadMethod === "url"
+                      ? "text-primary border-b-2 border-primary"
+                      : "text-text-secondary hover:text-text-primary"
+                  }`}
+                >
+                  URL에서 가져오기
+                </button>
               </div>
+
+              {/* 파일 업로드 섹션 */}
+              {uploadMethod === "file" && (
+                <div className="w-full border-2 border-dashed border-border rounded-xl p-6 sm:p-8 flex flex-col items-center justify-center bg-background hover:bg-gray-100 transition-colors">
+                  <span className="font-medium text-lg sm:text-xl mb-2 text-text-primary">
+                    파일 업로드
+                  </span>
+                  <span className="text-text-secondary text-sm sm:text-base mb-4 text-center">
+                    방 모서리가 명확히 보이는 사진을 선택해주세요
+                  </span>
+                  <ImageUploader onUpload={handleImageUpload} />
+                </div>
+              )}
+
+              {/* URL 입력 섹션 */}
+              {uploadMethod === "url" && (
+                <div className="w-full border-2 border-dashed border-border rounded-xl p-6 sm:p-8 flex flex-col items-center justify-center bg-background">
+                  <span className="font-medium text-lg sm:text-xl mb-2 text-text-primary">
+                    URL에서 이미지 가져오기
+                  </span>
+                  <span className="text-text-secondary text-sm sm:text-base mb-4 text-center">
+                    이미지 URL을 입력하여 방 사진을 가져오세요
+                  </span>
+                  <ImageUrlInput onUpload={handleImageUpload} isProcessing={isProcessing} />
+                </div>
+              )}
+
               {isProcessing && <LoadingSpinner message={uploadStatus} />}
               <UploadStatus status={uploadStatus} error={uploadError} />
             </div>
@@ -498,7 +564,7 @@ function RoomPlannerPage() {
                       AI Room Measurement Analysis
                       {result?.detectionMethod && (
                         <span className="ml-3 text-sm font-normal text-text-secondary">
-                          ({result.detectionMethod === "auto" ? "🤖 Auto Detection" : "📍 Manual 4-Point"})
+                          ({result.detectionMethod === "auto" ? "Auto Detection" : "Manual 4-Point"})
                         </span>
                       )}
                     </h3>
@@ -708,7 +774,7 @@ function RoomPlannerPage() {
                         className="px-4 py-2 bg-primary/50 text-white rounded-lg hover:bg-primary/70 transition-all duration-200 flex items-center gap-2"
                         title="전체화면으로 보기"
                       >
-                        <span>⛶</span>
+                        
                         <span className="text-sm">전체화면</span>
                       </button>
                     </div>

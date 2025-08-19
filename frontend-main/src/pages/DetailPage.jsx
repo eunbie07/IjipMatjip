@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import InfrastructureMap from '../components/houses/InfrastructureMap';
-import { getPhotoUrl } from '../hooks/getPhotoUrl'
+import { getPhotoUrl } from '../hooks/getPhotoUrl';
+import Slider from "react-slick"; // react-slick 라이브러리 임포트
+import "slick-carousel/slick/slick.css"; 
+import "slick-carousel/slick/slick-theme.css";
 
 // --- 아이콘 컴포넌트 ---
 const ArrowLeftIcon = (props) => (
@@ -38,9 +41,11 @@ const SubwayIcon = (props) => (
 const ParkIcon = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 22s-4-2-4-8 4-8 4-8 4 2 4 8-4 8-4 8Z"/><path d="M12 22V12"/><path d="m15 15-3-3-3 3"/><path d="M12 12V2"/></svg>
 );
-// --- 👇 새로운 아이콘 추가 ---
 const ClipboardCheckIcon = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+);
+const WandIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.21 1.21 0 0 0 1.72 0L21.64 5.36a1.21 1.21 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M14 19h4"/><path d="M17 17v4"/></svg>
 );
 
 // 가격 포맷팅 함수
@@ -56,6 +61,30 @@ const formatPrice = (prop) => {
   return '정보 없음';
 };
 
+// --- 슬라이더 커스텀 화살표 컴포넌트 ---
+const NextArrow = ({ onClick }) => {
+  return (
+    <div
+      className="absolute top-1/2 right-4 -translate-y-1/2 z-10 cursor-pointer bg-white/50 rounded-full p-2 hover:bg-white transition-colors shadow-md"
+      onClick={onClick}
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF7E97" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </div>
+  );
+};
+
+const PrevArrow = ({ onClick }) => {
+  return (
+    <div
+      className="absolute top-1/2 left-4 -translate-y-1/2 z-10 cursor-pointer bg-white/50 rounded-full p-2 hover:bg-white transition-colors shadow-md"
+      onClick={onClick}
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF7E97" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </div>
+  );
+};
+
+
 const DetailPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -67,9 +96,13 @@ const DetailPage = () => {
   const [infrastructure, setInfrastructure] = useState({ schools: [], subways: [], hospitals: [], marts: [], parks: [] });
   const [loading, setLoading] = useState(true);
   const [isReportLoading, setIsReportLoading] = useState(true);
-  
-  const [selectedImage, setSelectedImage] = useState(photo_urls?.[0] || 'https://placehold.co/800x500/e2e8f0/4a5568?text=Image');
 
+  const[selectedImage, setSelectedImage] = useState(photo_urls?.[0] || 'https://placehold.co/800x500/e2e8f0/4a5568?text=Image')
+
+  useEffect(() => {
+    setSelectedImage(photo_urls?.[0] || 'https://placehold.co/800x500/e2e8f0/4a5568?text=Image')
+  },[estateData?.id])
+  
   useEffect(() => {
     if (!estateData) {
       setLoading(false);
@@ -81,7 +114,7 @@ const DetailPage = () => {
       setLoading(true);
       setIsReportLoading(true);
       
-      const cacheKey = `detail_page_data_v2_${estateData.id}`; // 캐시 키 버전 변경
+      const cacheKey = `detail_page_data_v2_${estateData.id}`;
       const cachedData = sessionStorage.getItem(cacheKey);
 
       if (cachedData) {
@@ -138,7 +171,7 @@ const DetailPage = () => {
     return (
       <div className="text-center p-10">
         <p>매물 정보가 없습니다.</p>
-        <Link to="/" className="text-blue-500 hover:underline">처음으로 돌아가기</Link>
+        <Link to="/find-house" className="text-blue-500 hover:underline">처음으로 돌아가기</Link>
       </div>
     );
   }
@@ -150,17 +183,39 @@ const DetailPage = () => {
     { name: '공원', count: infrastructure.parks.length, Icon: ParkIcon, color: 'text-yellow-500' },
   ];
 
-  // --- 👇 가격 분석 결과에 따라 색상을 다르게 표시하기 위한 객체 ---
   const priceEvalColors = {
     '저렴': 'bg-blue-100 text-blue-800',
     '적정': 'bg-green-100 text-green-800',
     '높음': 'bg-red-100 text-red-800',
   };
 
+  const sliderSettings = {
+    dots: true,
+    infinite: photo_urls.length > 1,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    nextArrow: <NextArrow />,
+    prevArrow: <PrevArrow />,
+  };
+
+  const handleGoToRoomPlanner = () => {
+    if(!selectedImage) return;
+    navigate(`/room-planner?imageUrl=${encodeURIComponent(selectedImage)}`)
+  }
+
   return (
     <div className="bg-gray-50 min-h-screen font-sans">
+      <style>{`
+        .slick-prev:before,
+        .slick-next:before {
+          color: #FF7E97 !important;
+        }
+      `}</style>
       <header className="bg-white/80 backdrop-blur-lg border-b border-gray-200 sticky top-0 z-20">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="container mx-auto max-w-6xl px-4 h-16 flex items-center justify-between">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-600 hover:text-slate-900">
             <ArrowLeftIcon className="w-5 h-5" />
             <span className="font-semibold">목록으로</span>
@@ -172,116 +227,127 @@ const DetailPage = () => {
         </div>
       </header>
       
-      <main className="container p-2">
-        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Column */}
-            <div className="flex flex-col gap-2">
-                <div className="flex flex-col gap-2">
-                    <img src={selectedImage} alt="Main view" className="w-full h-auto max-h-[530px] object-cover rounded-2xl shadow-lg mb-4" />
-                    <div className="grid grid-cols-5 gap-4">
-                        {photo_urls && photo_urls.map((img, index) => (
-                            <img 
-                                key={index} 
-                                src={img} 
-                                alt={`Thumb ${index + 1}`} 
-                                onClick={() => setSelectedImage(img)} 
-                                className={`w-full h-auto max-h-[105px] object-cover rounded-lg cursor-pointer transition-all duration-200 ${selectedImage === img ? 'ring-4 ring-[#FF7E97] shadow-md' : 'opacity-70 hover:opacity-100'}`} 
-                            />
-                        ))}
+      <main className="container mx-auto max-w-6xl p-4 flex flex-col gap-8">
+        
+        <section>
+          <div className='mb-6'>
+              <h1 className="text-3xl font-bold text-slate-900">{estateData.room_type}</h1>
+              <p className="text-gray-500 flex items-center gap-2 mt-1"><MapPinIcon /> {estateData.address}</p>
+          </div>
+          <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center divide-x divide-gray-200">
+                <div><p className="text-sm text-gray-500">거래 종류</p><p className="font-bold text-xl text-slate-800 mt-1">{estateData.deal_type}</p></div>
+                <div><p className="text-sm text-gray-500">가격</p><p className="font-bold text-xl text-slate-800 mt-1">{formatPrice(estateData)}</p></div>
+                <div><p className="text-sm text-gray-500">면적</p><p className="font-bold text-xl text-slate-800 mt-1">{`${Math.round(estateData.area_m2 / 3.3)}평`}</p></div>
+                <div><p className="text-sm text-gray-500">층</p><p className="font-bold text-xl text-slate-800 mt-1">{estateData.floor}</p></div>
+            </div>
+          </div>
+        </section>
+
+        <section className="w-full relative">
+            <Slider {...sliderSettings}>
+                {photo_urls && photo_urls.map((img, index) => (
+                    <div key={index}>
+                        <img 
+                            src={img} 
+                            alt={`Slide ${index + 1}`} 
+                            className="w-full h-auto max-h-[500px] object-cover rounded-2xl"
+                        />
                     </div>
-                </div>
-                <div className= "w-full flex flex-col gap-2 bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-                  <div className='flex gap-4'>
-                    <h1 className="text-2xl font-bold text-slate-900">{estateData.room_type}</h1>
-                    <p className="text-gray-500  flex items-center gap-1"><MapPinIcon /> {estateData.address}</p>
+                ))}
+            </Slider>
+        </section>
+
+        {isReportLoading ? (
+          <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-md text-center">
+              <div className="animate-pulse flex flex-col items-center gap-4">
+                  <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              </div>
+              <p className="font-semibold text-gray-600 mt-4">AI가 심층 분석 리포트를 생성 중입니다...</p>
+          </div>
+        ) : aiReport && (
+          <section className="bg-white border border-gray-200 p-6 rounded-2xl shadow-md flex flex-col gap-5">
+              <div className="flex items-center gap-3">
+                  <ZapIcon className="w-8 h-8 text-[#FF7E97]" />
+                  <h2 className="text-2xl font-bold text-slate-900">AI 심층 분석</h2>
+                  <span className="px-3 py-1 text-sm font-bold text-white bg-gradient-to-r from-[#FF7E97] to-[#f89baf] rounded-full">
+                      적합도 {aiReport.fit_score}점
+                  </span>
+              </div>
+              
+              <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-[#FF7E97]">
+                  <p className="text-sm font-bold text-slate-600 mb-1">"AI 한 줄 총평"</p>
+                  <p className="text-gray-800 text-lg font-semibold italic">{aiReport.summary}</p>
+              </div>
+
+              <div className='bg-gray-50 p-4 rounded-lg'>
+                  <h4 className="font-bold text-slate-800 mb-2">💰 가격 분석</h4>
+                  <div className='flex items-center gap-3'>
+                      <span className={`px-3 py-1 text-sm font-bold rounded-full ${priceEvalColors[aiReport.price_analysis.evaluation] || 'bg-gray-100 text-gray-800'}`}>
+                          {aiReport.price_analysis.evaluation}
+                      </span>
+                      <p className='text-sm text-gray-700'>{aiReport.price_analysis.comment}</p>
                   </div>
-                    <div className="mt-6 pt-6 border-t border-gray-200 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                        <div><p className="text-sm text-gray-500">거래 종류</p><p className="font-bold text-lg text-slate-800">{estateData.deal_type}</p></div>
-                        <div><p className="text-sm text-gray-500">가격</p><p className="font-bold text-lg text-slate-800">{formatPrice(estateData)}</p></div>
-                        <div><p className="text-sm text-gray-500">면적</p><p className="font-bold text-lg text-slate-800">{`${Math.round(estateData.area_m2 / 3.3)}평`}</p></div>
-                        <div><p className="text-sm text-gray-500">층</p><p className="font-bold text-lg text-slate-800">{estateData.floor}</p></div>
-                    </div>
-                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                      <h4 className="font-bold text-green-600 mb-2">👍 추천하는 이유</h4>
+                      <ul className="space-y-2 text-sm text-gray-600">
+                          {aiReport.pros.map((pro, i) => <li key={i} className="flex gap-2"><CheckCircleIcon className="text-green-500 flex-shrink-0 mt-0.5"/>{pro}</li>)}
+                      </ul>
+                  </div>
+                  <div>
+                      <h4 className="font-bold text-red-600 mb-2">🤔 고려할 점</h4>
+                      <ul className="space-y-2 text-sm text-gray-600">
+                          {aiReport.cons.map((con, i) => <li key={i} className="flex gap-2"><XCircleIcon className="text-red-500 flex-shrink-0 mt-0.5"/>{con}</li>)}
+                      </ul>
+                  </div>
+              </div>
+
+              <div className='bg-gray-50 p-4 rounded-lg border-t-2 border-dashed border-pink-200 mt-2'>
+                  <h4 className="font-bold text-slate-800 mb-2">📝 방문 전 체크포인트</h4>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                      {aiReport.check_points.map((point, i) => <li key={i} className="flex gap-2"><ClipboardCheckIcon className="text-slate-500 flex-shrink-0 mt-0.5"/>{point}</li>)}
+                  </ul>
+              </div>
+              
+              <div className="mt-4 flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={handleGoToRoomPlanner}
+                  className="w-full bg-gradient-to-r from-[#FF7E97] to-[#F89BAF] text-white font-bold py-3 px-4 rounded-lg text-lg flex items-center justify-center gap-3 shadow-lg shadow-[#FF7E97]/40 hover:scale-105 transition-transform"
+                >
+                  <WandIcon className="w-6 h-6" />
+                  AI로 이 방 꾸며보기
+                </button>
+              </div>
+          </section>
+        )}
+        
+        <section className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">위치 및 주변 정보 (1km 이내)</h2>
+            <div className="h-96 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden mb-6">
+              <InfrastructureMap 
+                lat={estateData.latitude} 
+                lng={estateData.longitude} 
+                isEstateMarker={true}
+                markers={[]}
+              />
             </div>
             
-            {/* Right Column */}
-            <div className="flex flex-col gap-12">
-                <div className=" flex flex-col gap-2 bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-                    <h2 className="text-2xl font-bold text-slate-900 mb-4">위치 및 주변 정보 (1km 이내)</h2>
-                    <div className="h-80 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden mb-6">
-                      <InfrastructureMap 
-                        lat={estateData.latitude} 
-                        lng={estateData.longitude} 
-                        isEstateMarker={true}
-                        markers={[]}
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-                      {infraList.map(item => (
-                        <div key={item.name} className="flex flex-col items-center justify-center bg-gray-50 p-4 rounded-lg border border-gray-200">
-                          <item.Icon className={`w-8 h-8 ${item.color} mb-2`} />
-                          <p className="font-semibold text-sm text-slate-700">{item.name}</p>
-                          <p className={`text-lg font-bold ${item.color}`}>{item.count}개</p>
-                        </div>
-                      ))}
-                    </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+              {infraList.map(item => (
+                <div key={item.name} className="flex flex-col items-center justify-center bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <item.Icon className={`w-8 h-8 ${item.color} mb-2`} />
+                  <p className="font-semibold text-sm text-slate-700">{item.name}</p>
+                  <p className={`text-lg font-bold ${item.color}`}>{item.count}개</p>
                 </div>
-
-                {/* --- 👇 AI 분석 리포트 UI 전체 수정 --- */}
-                {isReportLoading ? (
-                  <div className="bg-gradient-to-br from-pink-50 to-orange-50 p-6 rounded-2xl shadow-md text-center">
-                    <p>AI가 심층 분석 리포트를 생성 중입니다...</p>
-                  </div>
-                ) : aiReport && (
-                  <div className="flex flex-col gap-6 bg-gradient-to-br from-pink-50 to-orange-50 p-6 rounded-2xl shadow-md">
-                      <div className="flex items-center gap-3">
-                          <ZapIcon className="w-8 h-8 text-[#FF7E97]" />
-                          <h2 className="text-2xl font-bold text-slate-900">AI 심층 분석 리포트</h2>
-                          <span className="px-3 py-1 text-sm font-bold text-white bg-gradient-to-r from-[#FF7E97] to-[#f89baf] rounded-full">
-                              점수 {aiReport.fit_score}점
-                          </span>
-                      </div>
-                      <p className="text-gray-700 text-lg font-semibold text-center bg-white/50 px-4 py-3 rounded-lg">{aiReport.summary}</p>
-                      
-                      {/* 가격 분석 섹션 */}
-                      <div className='bg-white/50 p-4 rounded-lg'>
-                        <h4 className="font-bold text-slate-800 mb-2">💰 가격 분석</h4>
-                        <div className='flex items-center gap-3'>
-                            <span className={`px-3 py-1 text-sm font-bold rounded-full ${priceEvalColors[aiReport.price_analysis.evaluation] || 'bg-gray-100 text-gray-800'}`}>
-                                {aiReport.price_analysis.evaluation}
-                            </span>
-                            <p className='text-sm text-gray-700'>{aiReport.price_analysis.comment}</p>
-                        </div>
-                      </div>
-
-                      <div className="grid md:grid-cols-2 gap-6">
-                          <div>
-                              <h4 className="font-bold text-green-600 mb-2">👍 추천하는 이유</h4>
-                              <ul className="space-y-2 text-sm text-gray-600">
-                                  {aiReport.pros.map((pro, i) => <li key={i} className="flex gap-2"><CheckCircleIcon className="text-green-500 flex-shrink-0 mt-0.5"/>{pro}</li>)}
-                              </ul>
-                          </div>
-                          <div>
-                              <h4 className="font-bold text-red-600 mb-2">🤔 고려할 점</h4>
-                              <ul className="space-y-2 text-sm text-gray-600">
-                                  {aiReport.cons.map((con, i) => <li key={i} className="flex gap-2"><XCircleIcon className="text-red-500 flex-shrink-0 mt-0.5"/>{con}</li>)}
-                              </ul>
-                          </div>
-                      </div>
-
-                      {/* 체크포인트 섹션 */}
-                      <div className='bg-white/50 p-4 rounded-lg border-t-2 border-dashed border-pink-200 mt-2'>
-                        <h4 className="font-bold text-slate-800 mb-2">📝 방문 전 체크포인트</h4>
-                        <ul className="space-y-2 text-sm text-gray-600">
-                            {aiReport.check_points.map((point, i) => <li key={i} className="flex gap-2"><ClipboardCheckIcon className="text-slate-500 flex-shrink-0 mt-0.5"/>{point}</li>)}
-                        </ul>
-                      </div>
-                  </div>
-                )}
-                {/* --- 여기까지 수정 --- */}
+              ))}
             </div>
-        </div>
+        </section>
+        
       </main>
     </div>
   );

@@ -672,44 +672,6 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                 <strong>완전 최적화</strong>: 가구 재배치 + 추가로 스타일에 완벽하게 맞춤
               </p>
             </div>
-
-            {/* 사람 삭제 및 3D 모델 적용 옵션 */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  id="remove-people"
-                  checked={removePeople}
-                  onChange={(e) => setRemovePeople(e.target.checked)}
-                  disabled={loading || generatingRealistic}
-                  className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-2"
-                />
-                <label htmlFor="remove-people" className="text-sm font-semibold text-text-primary">
-                  사람 제거
-                </label>
-              </div>
-              <p className="text-sm text-text-secondary ml-7">
-                생성된 이미지에서 사람을 자동으로 제거하여 깔끔한 인테리어 사진을 만듭니다.
-              </p>
-              
-              <div className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  id="apply-3d-models"
-                  checked={apply3DModels}
-                  onChange={(e) => setApply3DModels(e.target.checked)}
-                  disabled={loading || generatingRealistic}
-                  className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-2"
-                />
-                <label htmlFor="apply-3d-models" className="text-sm font-semibold text-text-primary">
-                  3D 모델 적용
-                </label>
-              </div>
-              <p className="text-sm text-text-secondary ml-7">
-                실제 3D 가구 모델을 적용하여 더욱 사실적인 인테리어를 생성합니다.
-              </p>
-            </div>
-
             {/* 추가 커스텀 요청 */}
             <div className="space-y-2">
               <label htmlFor="custom-prompt" className="block text-sm font-semibold text-text-primary">

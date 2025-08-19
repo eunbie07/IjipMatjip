@@ -116,9 +116,11 @@ async def general_exception_handler(request: Request, exc: Exception):
 # 라우터 등록
 from src.routes.auth import router as auth_router
 from src.routes.layouts import router as layouts_router
+from src.routes.proxy import router as proxy_router
 
 app.include_router(auth_router)
 app.include_router(layouts_router)
+app.include_router(proxy_router)
 
 # 기본 엔드포인트
 @app.get("/")

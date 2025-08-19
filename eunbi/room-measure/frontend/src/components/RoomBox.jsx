@@ -179,6 +179,8 @@ export default function RoomBox({
 
   // AI 인테리어 생성 핸들러
   const handleAIInteriorGenerate = () => {
+    const originalUse3DModels = use3DModels;
+    const originalShowHuman = showHuman;
     setShowHuman(false);
     
     if (!use3DModels) {
@@ -213,22 +215,35 @@ export default function RoomBox({
 
   // 3D 화면 캡처 핸들러
   const handle3DCapture = () => {
-      createScreenshotCapture(
-        furniture,
-        selectedFurniture,
-        w,
-        h,
-        d,
-        showInfo,
-        showSuccess,
-        showError,
-        showWarning,
-        setCapturedScreenshot
-      )();
-      
-      // 캡처 완료 후 원래 상태로 복원
-      setTimeout(() => {
+      const originalUse3DModels = use3DModels;
+      if (!use3DModels) {
+        setUse3DModels(true);
+      }
 
+      // GLB 모델 렌더링 시간을 확보한 뒤 캡처 실행
+      setTimeout(() => {
+        createScreenshotCapture(
+          furniture,
+          selectedFurniture,
+          w,
+          h,
+          d,
+          showInfo,
+          showSuccess,
+          showError,
+          showWarning,
+          setCapturedScreenshot
+        )();
+
+        // 캡처 완료 후 원래 상태로 복원
+        setTimeout(() => {
+          if (!originalUse3DModels) {
+            setUse3DModels(false);
+          }
+        }, 500);
+      }, 700);
+  };
+  
   // 벽면/바닥 스타일 설정
   const { wallSettings, setWallSettings, floorSettings, setFloorSettings } =
     useWallFloorSettings();
