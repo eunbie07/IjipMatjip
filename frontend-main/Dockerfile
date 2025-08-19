@@ -1,42 +1,15 @@
-# Build stage
-FROM node:20-alpine as build
-
+FROM node:20-alpine AS build
 WORKDIR /app
-
-# Copy package files
 COPY package*.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy source code
+RUN npm ci --no-audit --no-fund
 COPY . .
-
-# Create .env file from build args
-ARG VITE_LOCAL_API_BASE
-ARG VITE_CLOUD_API_BASE
-ARG VITE_AI_INTERIOR_API_BASE
-ARG VITE_GEMINI_API_KEY
-
-RUN echo "VITE_LOCAL_API_BASE=$VITE_LOCAL_API_BASE" > .env && \
-    echo "VITE_CLOUD_API_BASE=$VITE_CLOUD_API_BASE" >> .env && \
-    echo "VITE_AI_INTERIOR_API_BASE=$VITE_AI_INTERIOR_API_BASE" >> .env && \
-    echo "VITE_GEMINI_API_KEY=$VITE_GEMINI_API_KEY" >> .env
-
-# Build the app
+# 있으면 .env.production을 .env로
+RUN [ -f .env.production ] && cp .env.production .env || true
+ENV NODE_ENV=production
 RUN npm run build
 
-# Production stage
 FROM nginx:alpine
-
-# Copy built files to nginx
 COPY --from=build /app/dist /usr/share/nginx/html
-
-# Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
-
-# Expose port 80
 EXPOSE 80
-
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["nginx","-g","daemon off;"]

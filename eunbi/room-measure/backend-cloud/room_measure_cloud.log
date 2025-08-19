@@ -251,3 +251,89 @@
 2025-08-13 21:32:38,010 - main - INFO - Request 4403977472 completed in 0.021s - Status: 200
 2025-08-13 21:32:38,072 - main - INFO - Request 4403980256: GET http://localhost:3000/favicon.ico
 2025-08-13 21:32:38,074 - main - INFO - Request 4403980256 completed in 0.002s - Status: 404
+2025-08-19 03:14:31,633 - __main__ - INFO - Request 133006834357248: GET http://15.134.12.201/me
+2025-08-19 03:14:31,634 - __main__ - INFO - Request 133006834357248 completed in 0.002s - Status: 403
+2025-08-19 06:06:27,868 - __main__ - INFO - Request 129246001188640: POST http://localhost:3000/signup
+2025-08-19 06:06:35,001 - __main__ - INFO - Request 129246001188640 completed in 7.132s - Status: 200
+2025-08-19 06:14:49,801 - __main__ - INFO - Request 129246001191232: POST http://localhost:3000/signup
+2025-08-19 06:14:53,874 - __main__ - INFO - Request 129246001191232 completed in 4.073s - Status: 200
+2025-08-19 06:38:37,149 - __main__ - INFO - Request 129246001346992: POST http://ijipmatjip.site/login
+2025-08-19 06:38:37,308 - __main__ - INFO - Request 129246001346992 completed in 0.159s - Status: 401
+2025-08-19 06:38:47,792 - __main__ - INFO - Request 129245971104880: POST http://ijipmatjip.site/login
+2025-08-19 06:38:47,796 - __main__ - INFO - Request 129245971104880 completed in 0.004s - Status: 401
+2025-08-19 06:39:18,748 - __main__ - INFO - Request 129245971108096: POST http://ijipmatjip.site/signup
+2025-08-19 06:39:21,711 - __main__ - INFO - Request 129245971108096 completed in 2.963s - Status: 200
+2025-08-19 06:39:37,467 - __main__ - INFO - Request 129245971111744: POST http://ijipmatjip.site/login
+2025-08-19 06:39:39,946 - __main__ - INFO - Request 129245971111744 completed in 2.479s - Status: 200
+2025-08-19 06:39:40,119 - __main__ - INFO - Request 129245971112944: GET http://ijipmatjip.site/me
+2025-08-19 06:39:40,193 - __main__ - INFO - Request 129245971112944 completed in 0.074s - Status: 200
+2025-08-19 06:40:34,347 - __main__ - INFO - Request 129245971119472: GET http://ijipmatjip.site/me
+2025-08-19 06:40:34,351 - __main__ - INFO - Request 129245971119472 completed in 0.004s - Status: 200
+2025-08-19 06:40:34,508 - __main__ - INFO - Request 129245971118800: GET http://ijipmatjip.site/me
+2025-08-19 06:40:34,510 - __main__ - INFO - Request 129245971118800 completed in 0.002s - Status: 200
+2025-08-19 06:40:55,147 - __main__ - INFO - Request 129245971223072: GET http://ijipmatjip.site/me
+2025-08-19 06:40:55,149 - __main__ - INFO - Request 129245971223072 completed in 0.002s - Status: 200
+2025-08-19 06:40:55,317 - __main__ - INFO - Request 129245971224848: GET http://ijipmatjip.site/me
+2025-08-19 06:40:55,319 - __main__ - INFO - Request 129245971224848 completed in 0.003s - Status: 200
+2025-08-19 06:41:15,634 - __main__ - INFO - Request 129245971227200: GET http://ijipmatjip.site/me
+2025-08-19 06:41:15,719 - __main__ - INFO - Request 129245971227200 completed in 0.085s - Status: 200
+2025-08-19 06:41:15,951 - __main__ - INFO - Request 129245971108720: GET http://ijipmatjip.site/me
+2025-08-19 06:41:15,963 - __main__ - INFO - Request 129245971108720 completed in 0.011s - Status: 200
+2025-08-19 06:41:30,028 - __main__ - INFO - Request 129245971114624: GET http://ijipmatjip.site/me
+2025-08-19 06:41:30,037 - __main__ - INFO - Request 129245971114624 completed in 0.010s - Status: 200
+2025-08-19 06:41:30,195 - __main__ - INFO - Request 129245971111648: GET http://ijipmatjip.site/me
+2025-08-19 06:41:30,197 - __main__ - INFO - Request 129245971111648 completed in 0.002s - Status: 200
+2025-08-19 06:53:32,831 - __main__ - INFO - Request 129246001347232: GET http://ijipmatjip.site/me
+2025-08-19 06:53:33,153 - __main__ - INFO - Request 129246001347232 completed in 0.321s - Status: 200
+2025-08-19 06:53:33,319 - __main__ - INFO - Request 129246001035504: GET http://ijipmatjip.site/me
+2025-08-19 06:53:33,393 - __main__ - INFO - Request 129246001035504 completed in 0.073s - Status: 200
+2025-08-19 06:53:37,148 - __main__ - INFO - Request 129246001187632: GET http://ijipmatjip.site/me
+2025-08-19 06:53:37,150 - __main__ - INFO - Request 129246001187632 completed in 0.002s - Status: 200
+2025-08-19 06:53:37,311 - __main__ - INFO - Request 129246001186672: GET http://ijipmatjip.site/me
+2025-08-19 06:53:37,313 - __main__ - INFO - Request 129246001186672 completed in 0.003s - Status: 200
+2025-08-19 06:53:57,148 - __main__ - INFO - Request 129245971228256: GET http://ijipmatjip.site/me
+2025-08-19 06:53:57,151 - __main__ - INFO - Request 129245971228256 completed in 0.003s - Status: 200
+2025-08-19 06:53:57,311 - __main__ - INFO - Request 129245971223168: GET http://ijipmatjip.site/me
+2025-08-19 06:53:57,314 - __main__ - INFO - Request 129245971223168 completed in 0.003s - Status: 200
+2025-08-19 06:55:51,150 - __main__ - INFO - Request 129245971229936: GET http://ijipmatjip.site/me
+2025-08-19 06:55:51,152 - __main__ - INFO - Request 129245971229936 completed in 0.002s - Status: 200
+2025-08-19 06:55:51,308 - __main__ - INFO - Request 129245971231232: GET http://ijipmatjip.site/me
+2025-08-19 06:55:51,311 - __main__ - INFO - Request 129245971231232 completed in 0.003s - Status: 200
+2025-08-19 06:59:35,629 - __main__ - INFO - Request 129245971383264: GET http://ijipmatjip.site/me
+2025-08-19 06:59:35,632 - __main__ - INFO - Request 129245971383264 completed in 0.003s - Status: 200
+2025-08-19 06:59:35,788 - __main__ - INFO - Request 129245971386048: GET http://ijipmatjip.site/me
+2025-08-19 06:59:35,792 - __main__ - INFO - Request 129245971386048 completed in 0.004s - Status: 200
+2025-08-19 06:59:40,347 - __main__ - INFO - Request 129245971388928: GET http://ijipmatjip.site/me
+2025-08-19 06:59:40,349 - __main__ - INFO - Request 129245971388928 completed in 0.002s - Status: 200
+2025-08-19 06:59:40,507 - __main__ - INFO - Request 129245971390704: GET http://ijipmatjip.site/me
+2025-08-19 06:59:40,509 - __main__ - INFO - Request 129245971390704 completed in 0.002s - Status: 200
+2025-08-19 07:00:01,466 - __main__ - INFO - Request 129245971394256: GET http://ijipmatjip.site/me
+2025-08-19 07:00:01,469 - __main__ - INFO - Request 129245971394256 completed in 0.003s - Status: 200
+2025-08-19 07:00:01,635 - __main__ - INFO - Request 129245971396848: GET http://ijipmatjip.site/me
+2025-08-19 07:00:01,639 - __main__ - INFO - Request 129245971396848 completed in 0.004s - Status: 200
+2025-08-19 07:00:43,787 - __main__ - INFO - Request 129245971396176: GET http://ijipmatjip.site/me
+2025-08-19 07:00:43,789 - __main__ - INFO - Request 129245971396176 completed in 0.002s - Status: 200
+2025-08-19 07:00:43,956 - __main__ - INFO - Request 129245971399120: GET http://ijipmatjip.site/me
+2025-08-19 07:00:44,029 - __main__ - INFO - Request 129245971399120 completed in 0.074s - Status: 200
+2025-08-19 07:04:23,146 - __main__ - INFO - Request 129245971401664: GET http://ijipmatjip.site/me
+2025-08-19 07:04:23,153 - __main__ - INFO - Request 129245971401664 completed in 0.007s - Status: 200
+2025-08-19 07:04:23,311 - __main__ - INFO - Request 129245971407280: GET http://ijipmatjip.site/me
+2025-08-19 07:04:23,313 - __main__ - INFO - Request 129245971407280 completed in 0.002s - Status: 200
+2025-08-19 07:04:35,788 - __main__ - INFO - Request 129245971394064: GET http://ijipmatjip.site/me
+2025-08-19 07:04:35,789 - __main__ - INFO - Request 129245971394064 completed in 0.002s - Status: 200
+2025-08-19 07:04:35,948 - __main__ - INFO - Request 129245971394976: GET http://ijipmatjip.site/me
+2025-08-19 07:04:35,950 - __main__ - INFO - Request 129245971394976 completed in 0.002s - Status: 200
+2025-08-19 07:08:15,312 - __main__ - INFO - Request 129245971385520: POST http://ijipmatjip.site/save-room-layout-guest
+2025-08-19 07:08:16,518 - src.database.connections - INFO - MongoDB에 저장 완료: 68a422df01476912c861092d
+2025-08-19 07:08:16,595 - src.routes.layouts - INFO - 방 레이아웃 저장 완료 (게스트 - MongoDB)
+2025-08-19 07:08:16,597 - __main__ - INFO - Request 129245971385520 completed in 1.285s - Status: 200
+2025-08-19 07:12:04,991 - __main__ - INFO - Request 129245971231280: GET http://ijipmatjip.site/me
+2025-08-19 07:12:05,077 - __main__ - INFO - Request 129245971231280 completed in 0.086s - Status: 200
+2025-08-19 07:12:05,233 - __main__ - INFO - Request 129245971219328: GET http://ijipmatjip.site/me
+2025-08-19 07:12:05,235 - __main__ - INFO - Request 129245971219328 completed in 0.003s - Status: 200
+2025-08-19 07:48:40,417 - __main__ - INFO - Request 135081546691264: GET http://ijipmatjip.site/me
+2025-08-19 07:48:40,421 - __main__ - INFO - Request 135081546691264 completed in 0.003s - Status: 500
+2025-08-19 07:48:40,578 - __main__ - INFO - Request 135081546694432: GET http://ijipmatjip.site/me
+2025-08-19 07:48:40,580 - __main__ - INFO - Request 135081546694432 completed in 0.002s - Status: 500
+2025-08-19 10:00:06,858 - __main__ - INFO - Request 135081525188928: GET http://15.134.12.201/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php
+2025-08-19 10:00:06,859 - __main__ - INFO - Request 135081525188928 completed in 0.002s - Status: 404

@@ -59,7 +59,7 @@ const RecommendationPage = () => {
             size_pyeong: searchConditions.size_pyeong,
             room_type: searchConditions.room_type,
         };
-        const response = await client.post('/api/recommend/neighborhood', payload);
+        const response = await client.post('/recommend/neighborhood', payload);
         const { neighborhoods, estates } = response.data;
         
         setRecommendations(neighborhoods || []);
