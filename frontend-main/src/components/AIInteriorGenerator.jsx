@@ -392,7 +392,7 @@ ${customPrompt.trim()}`;
         return lighting[mode] || lighting.natural;
       };
 
-      const professionalPrompt = `
+      let professionalPrompt = `
 Transform this interior design into a PREMIUM, MAGAZINE-QUALITY architectural photography shot worthy of ${getPhotoStyleSpecs(photoStyle)}.
 
 PHOTOGRAPHY SPECIFICATIONS:
