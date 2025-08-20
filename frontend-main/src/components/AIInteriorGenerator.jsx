@@ -155,6 +155,32 @@ const AIInteriorGenerator = ({ onImageGenerated, capturedScreenshot }) => {
   const [generatingRealistic, setGeneratingRealistic] = useState(false); // 두 번째(실사화) 생성 로딩 상태
   const [error, setError] = useState(''); // 에러 메시지
 
+  // data:URL을 Blob으로 변환해 안전하게 다운로드 (anchor href=data:URL 사용 시 브라우저 콘솔 경고 방지)
+  const downloadDataUrl = async (dataUrl, filename) => {
+    try {
+      const base64 = dataUrl.split(',')[1] || dataUrl;
+      const mimeMatch = dataUrl.match(/^data:(.*?);base64,/);
+      const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+      const byteChars = atob(base64);
+      const byteNumbers = new Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) {
+        byteNumbers[i] = byteChars.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Download failed:', e);
+    }
+  };
+
   // 캡쳐 이미지를 업로드 이미지로 변환하는 함수
   React.useEffect(() => {
     if (capturedScreenshot && capturedScreenshot.imageData) {
@@ -766,13 +792,12 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                 >
                   Save
                 </button>
-                <a
-                  href={imageUrl}
-                  download={`ai-interior-design-${Date.now()}.png`}
-                  className="flex-1 bg-window-fill border border-window-stroke text-text-primary py-3 px-4 rounded-lg text-sm font-semibold text-center"
+                <button
+                  onClick={() => downloadDataUrl(imageUrl, `ai-interior-design-${Date.now()}.png`)}
+                  className="flex-1 bg-window-fill border border-window-stroke text-text-primary py-3 px-4 rounded-lg text-sm font-semibold"
                 >
                   Download
-                </a>
+                </button>
               </div>
             </div>
             <p className="text-center text-text-secondary text-sm mt-4">
@@ -881,13 +906,12 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                     >
                       Save
                     </button>
-                    <a
-                      href={realisticImageUrl}
-                      download={`ai-interior-realistic-${Date.now()}.png`}
-                      className="flex-1 bg-window-fill border border-window-stroke text-text-primary py-3 px-4 rounded-lg text-sm font-semibold text-center"
+                    <button
+                      onClick={() => downloadDataUrl(realisticImageUrl, `ai-interior-realistic-${Date.now()}.png`)}
+                      className="flex-1 bg-window-fill border border-window-stroke text-text-primary py-3 px-4 rounded-lg text-sm font-semibold"
                     >
                       Download
-                    </a>
+                    </button>
                   </div>
                 </div>
                 <p className="text-center text-text-secondary text-sm mt-4">
