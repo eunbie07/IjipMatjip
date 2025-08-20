@@ -14,13 +14,18 @@ const ZapIcon = (props) => (
     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2z" />
   </svg>
 );
+const BriefcaseIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+  </svg>
+);
 
 const lifestyleOptions = ['조용한 곳', '학군 중요', '교통 편리', '번화가', '생활편의시설'];
 
 const FindHousePage = () => {
   const navigate = useNavigate();
 
-  // --- 모든 입력 값을 저장하기 위한 State 선언 ---
   const [tradeType, setTradeType] = useState('전세');
   const [selectedSido, setSelectedSido] = useState('');
   const [selectedSigungu, setSelectedSigungu] = useState('');
@@ -35,7 +40,8 @@ const FindHousePage = () => {
   const [roomType, setRoomType] = useState('전체');
   const [areaPyeong, setAreaPyeong] = useState('');
 
-  const [selectedLifestyles, setSelectedLifestyles] = useState(['']);
+  const [selectedLifestyles, setSelectedLifestyles] = useState([]);
+  const [commuteAddress, setCommuteAddress] = useState('');
   
   const [sidoList, setSidoList] = useState([]);
   const [sigunguList, setSigunguList] = useState([]);
@@ -81,14 +87,16 @@ const FindHousePage = () => {
         min: areaPyeong ? parseInt(areaPyeong) : null,
       },
       preferences: selectedLifestyles,
+      commute: {
+        address: commuteAddress || null,
+      },
     };
-    
     
     navigate('/recommend', { state: { conditions: searchConditions } });
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center  p-4">
+    <div className="w-full min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-2xl flex flex-col gap-8 bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-gray-200">
         <div className="text-center flex flex-col gap-2">
           <div className="flex justify-center items-center">
@@ -102,7 +110,6 @@ const FindHousePage = () => {
 
         <div className="flex flex-col gap-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* 희망지역 */}
             <div className='md:col-span-2'>
               <label className="font-semibold text-gray-700">희망지역</label>
               <div className="flex space-x-2 mt-2 gap-2">
@@ -116,10 +123,24 @@ const FindHousePage = () => {
                 </select>
               </div>
             </div>
-            {/* 거래유형 */}
+
+            <div className="md:col-span-2">
+              <label className="font-semibold text-gray-700">직장 주소 (선택)</label>
+              <div className="relative mt-2">
+                <BriefcaseIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input 
+                  type="text" 
+                  value={commuteAddress} 
+                  onChange={(e) => setCommuteAddress(e.target.value)} 
+                  placeholder="예: 서울특별시 강남구 테헤란로 123" 
+                  className="w-full p-3 pl-10 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7E97]" 
+                />
+              </div>
+            </div>
+            
             <div className='md:col-span-2'>
               <label className='block text-sm font-semibold text-gray-700'>거래유형</label>
-              <div className='flex space-x-4 gap-4'>
+              <div className='flex space-x-4 gap-4 mt-2'>
                 <div className='flex items-center gap-2'>
                     <input type='radio' id="tradeTypeJeonse" name="tradeType" value="전세" checked={tradeType === '전세'} onChange={(e) => setTradeType(e.target.value)} className='h-4 w-4 text-pink-600 border-gray-300 focus:ring-pink-500' />
                     <label htmlFor='tradeTypeJeonse' className='ml-2 block text-sm text-gray-900'>전세</label>
@@ -130,7 +151,7 @@ const FindHousePage = () => {
                 </div>
               </div>
             </div>
-            {/* 전세 */}
+            
             {tradeType === '전세' && (
               <div className='md:col-span-2 grid grid-cols-2 gap-x-6' >
                 <div>
@@ -149,7 +170,7 @@ const FindHousePage = () => {
                 </div>
               </div>
             )}
-            {/* 월세 */}
+            
             {tradeType === '월세' && (
               <div className='md:col-span-2'>
                 <div>
@@ -177,7 +198,7 @@ const FindHousePage = () => {
                 </div>
               </div>
             )}
-            {/* 방 구조 및 평수 */}
+            
             <div className='md:col-span-1'>
               <label className='block text-sm font-semibold text-gray-700 mb-1'>방 구조</label>
               <select value={roomType} onChange={(e) => setRoomType(e.target.value)} className='w-full p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7E97]'>
@@ -187,10 +208,13 @@ const FindHousePage = () => {
               </select>
             </div>
             <div className='md:col-span-1'>
-              <label className='block text-sm font-semibold text-gray-700 mb-1'>평수</label>
-              <input type='number' value={areaPyeong} onChange={(e) => setAreaPyeong(e.target.value)} placeholder='10' className='w-full p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7E97]' />
+              <label className='block text-sm font-semibold text-gray-700 mb-1'>최소 희망 평수</label>
+              <div className="flex items-center gap-2">
+                <input type='number' value={areaPyeong} onChange={(e) => setAreaPyeong(e.target.value)} placeholder='10' className='w-full p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7E97]' />
+                <span className="text-gray-600">평</span>
+              </div>
             </div>
-            {/* 라이프스타일 */}
+            
             <div className="md:col-span-2">
               <label className="font-semibold text-gray-700">라이프스타일 (선택)</label>
               <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-3">

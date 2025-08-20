@@ -3,10 +3,7 @@ import { useLocation, Link, useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import InfrastructureMap from '../components/houses/InfrastructureMap';
 import { getPhotoUrl } from '../hooks/getPhotoUrl';
-import Slider from "react-slick"; // react-slick 라이브러리 임포트
-import "slick-carousel/slick/slick.css"; 
-import "slick-carousel/slick/slick-theme.css";
-
+import Slider from "react-slick"; 
 // --- 아이콘 컴포넌트 ---
 const ArrowLeftIcon = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
@@ -46,6 +43,15 @@ const ClipboardCheckIcon = (props) => (
 );
 const WandIcon = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.21 1.21 0 0 0 1.72 0L21.64 5.36a1.21 1.21 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M14 19h4"/><path d="M17 17v4"/></svg>
+);
+const CarIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><path d="M10 17h4"/><rect x="3" y="17" width="18" height="4" rx="2"/><circle cx="6.5" cy="19.5" r="0.5"/><circle cx="17.5" cy="19.5" r="0.5"/></svg>
+);
+const BusIcon = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M8 6v6"/><path d="M16 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.4 6.8 19.8 6 19 6H5c-.8 0-1.4.8-1.6 1.8L2 12v4c0 .5.5 1 1 1h3"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+);
+const WalkingIcon = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 22c1.1 0 2-.9 2-2v-6.5l1.4-1.1c.6-.5 1.1-1.3.8-2.1l-1-3.3c-.3-1-1.3-1.8-2.4-1.8H7.8c-1.1 0-2.1.8-2.4 1.8l-1 3.3c-.3.8.2 1.6.8 2.1l1.4 1.1V20c0 1.1.9 2 2 2h4Z"/><circle cx="12" cy="4" r="2"/></svg>
 );
 
 // 가격 포맷팅 함수
@@ -89,19 +95,21 @@ const DetailPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const estateData = location.state?.estateData;
-  const photo_urls = getPhotoUrl(estateData?.photo_url)
-  const searchConditions = location.state?.conditions
+  const photo_urls = getPhotoUrl(estateData?.photo_url);
+  const searchConditions = location.state?.conditions;
 
   const [aiReport, setAiReport] = useState(null);
   const [infrastructure, setInfrastructure] = useState({ schools: [], subways: [], hospitals: [], marts: [], parks: [] });
   const [loading, setLoading] = useState(true);
   const [isReportLoading, setIsReportLoading] = useState(true);
-
-  const[selectedImage, setSelectedImage] = useState(photo_urls?.[0] || 'https://placehold.co/800x500/e2e8f0/4a5568?text=Image')
+  const [commuteDetails, setCommuteDetails] = useState(null);
+  const [workMarker, setWorkMarker] = useState(null)
+  
+  const [selectedImage, setSelectedImage] = useState(photo_urls?.[0] || 'https://placehold.co/800x500/e2e8f0/4a5568?text=Image');
 
   useEffect(() => {
-    setSelectedImage(photo_urls?.[0] || 'https://placehold.co/800x500/e2e8f0/4a5568?text=Image')
-  },[estateData?.id])
+    setSelectedImage(photo_urls?.[0] || 'https://placehold.co/800x500/e2e8f0/4a5568?text=Image');
+  },[estateData?.id]);
   
   useEffect(() => {
     if (!estateData) {
@@ -114,43 +122,67 @@ const DetailPage = () => {
       setLoading(true);
       setIsReportLoading(true);
       
-      const cacheKey = `detail_page_data_v2_${estateData.id}`;
+      const cacheKey = `detail_page_data_v3_${estateData.id}_${searchConditions?.commute?.address || ''}`;
       const cachedData = sessionStorage.getItem(cacheKey);
 
       if (cachedData) {
-        const { report, infra } = JSON.parse(cachedData);
+        const { report, infra, commute } = JSON.parse(cachedData);
         setAiReport(report);
         setInfrastructure(infra);
+        setCommuteDetails(commute);
+        if (commute?.destination_coords) {
+          setWorkMarker({ ...commute.destination_coords, type: 'work' });
+        }
         setLoading(false);
         setIsReportLoading(false);
-        console.log("캐시된 데이터를 사용합니다.");
         return;
       }
 
       try {
-        console.log("인프라 정보를 먼저 가져옵니다.");
-        const infraResult = await client.post('/api/infrastructure',{
-          latitude: estateData.latitude,
-          longitude: estateData.longitude,
-          radius_km:1.0
-        });
-        setInfrastructure(infraResult.data);
-        setLoading(false);
+        const promises = [
+          client.post('/api/infrastructure',{ latitude: estateData.latitude, longitude: estateData.longitude, radius_km:1.0 }),
+          client.post('/api/report/generate',{ property_data : estateData, user_preferences: { preferences: searchConditions.preferences, region: searchConditions.region } })
+        ];
 
-        console.log("AI 리포트를 가져옵니다.");
-        const reportResult = await client.post('/api/report/generate',{
-          property_data : estateData,
-          user_preferences: {
-            preferences: searchConditions.preferences,
-            region: searchConditions.region,
-          }
-        });
+        let commutePromise = Promise.resolve(null);
+        if (searchConditions?.commute?.address) {
+            commutePromise = client.post('/api/geocode', { address: searchConditions.commute.address })
+                .then(geocodeRes => {
+                    const workCoords = geocodeRes.data;
+                    return client.post('/api/commute-details', {
+                        origin: { lat: estateData.latitude, lng: estateData.longitude },
+                        destination: workCoords,
+                    });
+                })
+                .then(commuteRes => ({
+                    driving: commuteRes.data.driving_minutes,
+                    transit: commuteRes.data.transit_minutes,
+                    walking: commuteRes.data.walking_minutes,
+                    path: commuteRes.data.driving_path,
+                    destination_coords: commuteRes.data.destination_coords,
+                }))
+                .catch(err => {
+                    console.error("출퇴근 시간 계산 실패:", err);
+                    return { driving: '계산 실패', transit: '계산 실패', walking: '계산 실패', path: [] };
+                });
+        }
+        promises.push(commutePromise);
+
+        const [infraResult, reportResult, commuteResult] = await Promise.all(promises);
+        
+        setInfrastructure(infraResult.data);
         setAiReport(reportResult.data);
+        setCommuteDetails(commuteResult);
+        if (commuteResult?.destination_coords){
+          setWorkMarker({...commuteResult.destination_coords, type:'work'})
+        }
+        setLoading(false);
         setIsReportLoading(false);
 
         sessionStorage.setItem(cacheKey, JSON.stringify({
           report: reportResult.data,
-          infra: infraResult.data
+          infra: infraResult.data,
+          commute: commuteResult,
         }));
 
       } catch (error) {
@@ -162,6 +194,14 @@ const DetailPage = () => {
 
     fetchDetails();
   }, [estateData, searchConditions]);
+
+  const handleGoToRoomPlanner = () => {
+    if(!selectedImage) {
+        alert("방 꾸미기에 사용할 대표 사진을 선택해주세요.");
+        return;
+    }
+    navigate(`/room-planner?imageUrl=${encodeURIComponent(selectedImage)}`);
+  };
 
   if (loading) {
     return <div className="text-center p-10">매물 정보를 불러오는 중입니다...</div>;
@@ -201,10 +241,7 @@ const DetailPage = () => {
     prevArrow: <PrevArrow />,
   };
 
-  const handleGoToRoomPlanner = () => {
-    if(!selectedImage) return;
-    navigate(`/room-planner?imageUrl=${encodeURIComponent(selectedImage)}`)
-  }
+  const hasCommuteInfo = commuteDetails && (commuteDetails.driving || commuteDetails.transit || commuteDetails.walking);
 
   return (
     <div className="bg-gray-50 min-h-screen font-sans">
@@ -314,7 +351,7 @@ const DetailPage = () => {
                   </ul>
               </div>
               
-              <div className="mt-4 flex flex-col sm:flex-row gap-4">
+              <div className="mt-4">
                 <button
                   onClick={handleGoToRoomPlanner}
                   className="w-full bg-gradient-to-r from-[#FF7E97] to-[#F89BAF] text-white font-bold py-3 px-4 rounded-lg text-lg flex items-center justify-center gap-3 shadow-lg shadow-[#FF7E97]/40 hover:scale-105 transition-transform"
@@ -327,15 +364,41 @@ const DetailPage = () => {
         )}
         
         <section className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">위치 및 주변 정보 (1km 이내)</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">위치 및 주변 정보</h2>
             <div className="h-96 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden mb-6">
               <InfrastructureMap 
                 lat={estateData.latitude} 
                 lng={estateData.longitude} 
                 isEstateMarker={true}
-                markers={[]}
+                markers={workMarker ? [workMarker] : []}
+                routePath={commuteDetails?.path} 
               />
             </div>
+            {hasCommuteInfo && (
+                <div className="mb-6 pb-4 border-gray-200 flex items-center justify-center">
+                     <h3 className="text-lg font-bold text-slate-800 text-center mr-6">🚶‍♂️ 직장까지 예상 소요 시간</h3>
+                     <div className="flex justify-center items-center gap-8">
+                        {commuteDetails.walking && (
+                            <div className="text-center flex gap-2">
+                                <p className="text-sm text-gray-500 mt-1 flex items-center gap-1"><WalkingIcon className="w-4 h-4"/>도보</p>
+                                <p className="font-bold text-2xl text-pink-500">{commuteDetails.walking}분</p>
+                            </div>
+                        )}
+                        {commuteDetails.transit && (
+                            <div className="text-center flex gap-2">
+                                <p className="font-bold text-2xl text-pink-500">{commuteDetails.transit}분</p>
+                                <p className="text-sm text-gray-500 mt-1 flex items-center gap-1"><BusIcon className="w-4 h-4"/>대중교통</p>
+                            </div>
+                        )}
+                        {commuteDetails.driving && (
+                            <div className="text-center flex gap-2">
+                                <p className="text-sm text-gray-500 mt-1 flex items-center gap-1"><CarIcon className="w-4 h-4"/>자가용</p>
+                                <p className="font-bold text-2xl text-pink-500">{commuteDetails.driving}분</p>
+                            </div>
+                        )}
+                     </div>
+                </div>
+            )}
             
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
               {infraList.map(item => (

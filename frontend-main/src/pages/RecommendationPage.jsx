@@ -34,8 +34,6 @@ const RecommendationPage = () => {
     const fetchAllRecommendations = async () => {
       setLoading(true);
 
-      // --- 👇 캐싱 로직 시작 ---
-      // 검색 조건 객체를 문자열로 만들어 고유한 키로 사용합니다.
       const cacheKey = `recommendations_${JSON.stringify(searchConditions)}`;
       const cachedData = sessionStorage.getItem(cacheKey);
 
@@ -45,29 +43,19 @@ const RecommendationPage = () => {
         setEstates(estates || []);
         setLoading(false);
         console.log("캐시된 추천 데이터를 사용합니다.");
-        return; // 캐시된 데이터가 있으면 API 호출 없이 종료
+        return;
       }
-      // --- 캐싱 로직 끝 ---
 
       try {
         console.log("새로운 추천 데이터를 API에서 가져옵니다.");
-        const payload = {
-            preferences: searchConditions.preferences,
-            region: searchConditions.region,
-            deal_type: searchConditions.deal_type,
-            budget: searchConditions.budget,
-            size_pyeong: searchConditions.size_pyeong,
-            room_type: searchConditions.room_type,
-        };
-        const response = await client.post('/api/recommend/neighborhood', payload);
+        // payload는 searchConditions를 그대로 사용하면 됩니다.
+        const response = await client.post('/api/recommend/neighborhood', searchConditions);
         const { neighborhoods, estates } = response.data;
         
         setRecommendations(neighborhoods || []);
         setEstates(estates || []);
 
-        // --- 👇 새로 받은 데이터를 sessionStorage에 저장 ---
         sessionStorage.setItem(cacheKey, JSON.stringify({ neighborhoods, estates }));
-        // --- 여기까지 ---
 
       } catch (error) {
         console.error('추천 데이터를 불러오는 데 실패했습니다.',  error.response?.data || error);
@@ -124,6 +112,9 @@ const RecommendationPage = () => {
           <div className='space-y-4 flex flex-col gap-2'>
             {filteredEstates.length > 0 ? (
               filteredEstates.map(prop => (
+                // --- 👇 이 부분 수정 ---
+                // Link의 state에 매물 정보(estateData)와 함께
+                // 검색 조건(conditions)을 반드시 포함해서 넘겨줍니다.
                 <Link to={`/detail/${prop.id}`} state={{ estateData: prop, conditions: searchConditions }} key={prop.id} className='no-underline text-black'>
                   <div className='bg-white/80 backdrop-blur-lg p-4 rounded-xl shadow-lg border border-gray-200 flex items-center gap-6 hover:shadow-2xl hover:border-pink-300 transition-all duration-300 cursor-pointer'>
                     <img src={getPhotoUrl(prop.photo_url)[0]} alt={prop.address} className='w-32 h-32 object-cover rounded-lg' onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/200x130/fbcfe8/4a044e?text=No+Image'; }}/>
