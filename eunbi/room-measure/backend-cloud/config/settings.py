@@ -26,6 +26,13 @@ MONGO_DB = "room_measure"
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 LOG_FILE = "room_measure_cloud.log"
 
+# AWS S3 설정
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "")
+AWS_REGION = os.getenv("AWS_REGION", "ap-northeast-2")
+S3_BUCKET = os.getenv("S3_BUCKET", "")
+S3_PUBLIC_BASE_URL = os.getenv("S3_PUBLIC_BASE_URL", "")
+
 # 디버그 출력
 if __name__ == "__main__":
     print(f"POSTGRES_HOST: {POSTGRES_HOST}")

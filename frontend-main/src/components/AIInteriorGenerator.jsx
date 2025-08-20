@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { uploadGeneratedImageToS3 } from "../utils/api";
 
 // 검증된 침실 스타일 프리셋들
 const bedroomPresets = {
@@ -751,6 +752,28 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                   setError('인테리어 디자인 이미지 로드에 실패했습니다.');
                 }}
               />
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await uploadGeneratedImageToS3({ imageDataUrl: imageUrl, variant: 'design' });
+                      alert('S3 업로드 완료: ' + res.url);
+                    } catch (e) {
+                      alert('S3 업로드 실패: ' + (e?.message || '오류'));
+                    }
+                  }}
+                  className="flex-1 bg-primary text-white py-3 px-4 rounded-lg text-sm font-semibold hover:bg-secondary"
+                >
+                  Save
+                </button>
+                <a
+                  href={imageUrl}
+                  download={`ai-interior-design-${Date.now()}.png`}
+                  className="flex-1 bg-window-fill border border-window-stroke text-text-primary py-3 px-4 rounded-lg text-sm font-semibold text-center"
+                >
+                  Download
+                </a>
+              </div>
             </div>
             <p className="text-center text-text-secondary text-sm mt-4">
               AI가 만들어낸 인테리어 디자인입니다.
@@ -844,6 +867,28 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                       setError('실사화 이미지 로드에 실패했습니다.');
                     }}
                   />
+                  <div className="flex gap-3 mt-4">
+                    <button
+                      onClick={async () => {
+                        try {
+                          const res = await uploadGeneratedImageToS3({ imageDataUrl: realisticImageUrl, variant: 'realistic' });
+                          alert('S3 업로드 완료: ' + res.url);
+                        } catch (e) {
+                          alert('S3 업로드 실패: ' + (e?.message || '오류'));
+                        }
+                      }}
+                      className="flex-1 bg-primary text-white py-3 px-4 rounded-lg text-sm font-semibold hover:bg-secondary"
+                    >
+                      Save
+                    </button>
+                    <a
+                      href={realisticImageUrl}
+                      download={`ai-interior-realistic-${Date.now()}.png`}
+                      className="flex-1 bg-window-fill border border-window-stroke text-text-primary py-3 px-4 rounded-lg text-sm font-semibold text-center"
+                    >
+                      Download
+                    </a>
+                  </div>
                 </div>
                 <p className="text-center text-text-secondary text-sm mt-4">
                   AI가 만들어낸 실제와 같은 인테리어 사진입니다.

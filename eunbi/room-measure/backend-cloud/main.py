@@ -117,10 +117,12 @@ async def general_exception_handler(request: Request, exc: Exception):
 from src.routes.auth import router as auth_router
 from src.routes.layouts import router as layouts_router
 from src.routes.proxy import router as proxy_router
+from src.routes.images import router as images_router
 
 app.include_router(auth_router)
 app.include_router(layouts_router)
 app.include_router(proxy_router)
+app.include_router(images_router)
 
 # 기본 엔드포인트
 @app.get("/")

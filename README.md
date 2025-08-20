@@ -1,6 +1,6 @@
 ## IjipMatjip
 
-부동산 방 사진을 기반으로 방 크기를 추정하고, 3D에서 가구를 배치하며, 스타일에 맞춘 AI 인테리어 이미지를 생성할 수 있는 웹 애플리케이션입니다. 사용자 조건에 맞는 매물을 AI가 추천하고, 상세 분석 리포트와 주변 인프라 정보를 제공합니다.
+ 사용자 조건에 맞는 매물을 AI가 추천하고, 방 사진으로 공간 크기를 추정해 3D 가구 배치와 스타일별 AI 인테리어 이미지를 제공하며, 상세 분석 리포트와 주변 인프라 정보까지 한 번에 보여주는 통합형 부동산 웹 앱입니다.
 
 ### 핵심 모듈
 - `frontend-main`: 메인 웹 프론트엔드 (React + Vite + Tailwind + Three.js)
@@ -9,6 +9,17 @@
 - `eunbi/room-measure/frontend`: 실험적/보조 프론트엔드 (선택)
 
 ### 주요 기능
+
+| 구분 | 기능 | 설명 |
+|:---:|:---|:---|
+| 01 | 방사진으로 크기측정 | 사진만으로 방 사이즈를 측정 |
+| 02 | 2D평면도, 3D 공간 생성 | 방 사진을 기반으로 2D 평면도와 3D 공간 모델을 자동 생성 |
+| 03 | 가구배치 시뮬레이션 | 3D 환경에서 가구를 드래그하여 배치하고 실시간으로 공간 활용도 확인 |
+| 04 | 스타일별 AI 방이미지 제작 | 선택한 스타일에 따라 AI가 인테리어 이미지를 생성하여 미래의 방 모습 미리보기 |
+| 05 | 상세분석 리포트 | 방의 크기, 가구 배치, 공간 활용도 등을 종합적으로 분석한 상세 리포트 제공 |
+| 06 | 사용자 맞춤 인프라 | 주변 마트, 병원, 지하철, 공원 등 생활 인프라 정보를 지도 기반으로 제공 |
+
+**상세 기능 설명:**
 - 방 사진 업로드 후 4포인트 클릭으로 가로/세로 길이 추정 (광각 왜곡 보정 포함)
 - 3D 캔버스에서 가구 드래그/회전/스냅, 벽/창문 표시, 격자/조명 토글
 - 창문 감지, 깊이맵 생성/조회, 방 크기 추정 등 로컬 처리 API 연동
@@ -25,33 +36,62 @@
 - CI/CD: GitHub Actions (워크플로우 기반 자동 빌드/배포)
 
 ### 아키텍처
-프론트엔드는 개발 시 Vite(4000), 배포 시 Nginx(80)를 통해 서빙되며, 로컬 처리 API(3010)와 클라우드 API(3000)에 각각 통신합니다. 
+실제 배포 환경에서는 프론트엔드와 백엔드 클라우드는 Docker로 컨테이너화되어 도메인으로 접근 가능하며, 백엔드 로컬은 터널링을 통해 외부에서 접근할 수 있습니다.
+
 ```mermaid
 flowchart LR
   user["Browser (Client)"]
-  fe["Frontend-main (React/Vite)\nDev: Vite :4000\nProd: Nginx :80"]
-  local["Backend-local (FastAPI)\n:3010\nProcessing / Detection"]
-  cloud["Backend-cloud (FastAPI)\n:3000\nAuth / Layouts / Conversion"]
-  pg["PostgreSQL :5432"]
-  mongo["MongoDB :27017"]
+  domain["Domain (HTTPS)"]
+  
+  subgraph "EC2 Instance"
+    subgraph "Docker Container - Frontend"
+      fe["Frontend-main\nReact SPA"]
+      nginx["Nginx\nReverse Proxy\n:80"]
+    end
+    
+    subgraph "Docker Container - Backend"
+      cloud["Backend-cloud\nFastAPI :3000"]
+    end
+    
+    subgraph "Databases"
+      pg["PostgreSQL\n:5432"]
+      mongo["MongoDB\n:27017"]
+    end
+  end
+  
+  subgraph "External Services"
+    subgraph "Backend-local (Tunneled)"
+      local["FastAPI :3010"]
+    end
+  end
+  
+  subgraph "AI Models"
+    yolo["YOLO11\nObject Detection"]
+    midas["MiDaS\nDepth Estimation"]
+    roomnet["RoomNet\nRoom Detection"]
+  end
 
-  user --> fe
-  fe --> local
-  fe --> cloud
-  cloud --> pg
-  cloud --> mongo
+  user <--> domain
+  domain <--> nginx
+  nginx <--> fe
+  nginx <--> cloud
+  fe <--> local
+  local <--> yolo
+  local <--> midas
+  local <--> roomnet
+  cloud <--> pg
+  cloud <--> mongo
 ```
 
-포트/역할 요약
+배포 환경 구성
 
-| 구성요소 | 포트 | 역할 |
+| 구성요소 | 배포 방식 | 포트 | 역할 |
 |---|---:|---|
-| Frontend (개발) | 4000 | Vite 개발 서버 |
-| Frontend (배포) | 80 | Nginx 정적 호스팅 |
-| Backend-local | 3010 | 이미지 처리/깊이/감지/방측정 |
-| Backend-cloud | 3000 | 인증/레이아웃/좌표변환 |
-| PostgreSQL | 5432 | 사용자 등 관계형 데이터 |
-| MongoDB | 27017 | 방 레이아웃 등 도큐먼트 저장 |
+| Frontend-main | Docker (Nginx) | 80 | React SPA 정적 호스팅 |
+| Backend-cloud | Docker (FastAPI) | 3000 | 인증/레이아웃/좌표변환 |
+| Backend-local | 터널링 (ngrok/cloudflared) | 3010 | 이미지 처리/깊이/감지/방측정 |
+| PostgreSQL | EC2 내부 | 5432 | 사용자 등 관계형 데이터 |
+| MongoDB | EC2 내부 | 27017 | 방 레이아웃 등 도큐먼트 저장 |
 
 ### 시스템 요구사항 요약
 - Python: 3.12 이상 (local/cloud 백엔드 모두)
