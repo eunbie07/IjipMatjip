@@ -32,6 +32,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "")
 AWS_REGION = os.getenv("AWS_REGION", "ap-northeast-2")
 S3_BUCKET = os.getenv("S3_BUCKET", "")
 S3_PUBLIC_BASE_URL = os.getenv("S3_PUBLIC_BASE_URL", "")
+S3_OBJECT_ACL = os.getenv("S3_OBJECT_ACL", "")  # e.g., "public-read" or empty to disable ACL
 
 # 디버그 출력
 if __name__ == "__main__":

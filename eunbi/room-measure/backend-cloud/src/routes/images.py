@@ -12,6 +12,7 @@ from config.settings import (
     AWS_REGION,
     S3_BUCKET,
     S3_PUBLIC_BASE_URL,
+    S3_OBJECT_ACL,
 )
 from src.auth.service import verify_token
 
@@ -72,18 +73,22 @@ async def upload_generated_image(payload: UploadImageRequest, user_id: int = Dep
             aws_secret_access_key=AWS_SECRET_ACCESS_KEY or None,
         )
 
-        s3_client.put_object(
-            Bucket=S3_BUCKET,
-            Key=s3_key,
-            Body=image_bytes,
-            ContentType=mime_type,
-            ACL="public-read",  # 버킷 정책에 맞게 조정
-            Metadata={
+        put_kwargs = {
+            "Bucket": S3_BUCKET,
+            "Key": s3_key,
+            "Body": image_bytes,
+            "ContentType": mime_type,
+            "Metadata": {
                 "user_id": str(user_id),
                 "variant": (payload.variant or "design"),
                 **({"room_id": payload.room_id} if payload.room_id else {}),
             },
-        )
+        }
+        # ACL을 사용하는 버킷만 설정 (ACL 미지원 버킷은 생략)
+        if S3_OBJECT_ACL:
+            put_kwargs["ACL"] = S3_OBJECT_ACL
+
+        s3_client.put_object(**put_kwargs)
 
         if S3_PUBLIC_BASE_URL:
             # CloudFront 또는 정적 도메인 사용 시
