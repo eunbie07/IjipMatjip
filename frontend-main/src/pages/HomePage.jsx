@@ -45,22 +45,28 @@ const HomePage = () => {
 
   const howItWorksSteps = [
     {
-      icon: <UploadCloud className="w-12 h-12 text-primary" />,
-      title: "1. 빈 방 사진 업로드",
+      icon: <Search className="w-12 h-12 text-primary" />,
+      title: "1. 조건 설정 및 AI 추천",
       description:
-        "이사 갈 집의 빈 방 사진 한 장이면 충분해요. AI가 공간의 크기와 구조를 정확하게 분석해요.",
+        "원하는 지역, 예산, 선호사항을 입력하면 AI가 최적의 동네와 매물을 추천해드려요.",
     },
     {
-      icon: <ScanSearch className="w-12 h-12 text-primary" />,
-      title: "2. 가구 배치 및 스타일링",
+      icon: <UploadCloud className="w-12 h-12 text-primary" />,
+      title: "2. 빈 방 사진 업로드",
+      description:
+        "관심 있는 매물의 빈 방 사진을 업로드하세요. AI가 공간의 크기와 구조를 정확하게 분석해요.",
+    },
+    {
+      icon: <Layout className="w-12 h-12 text-primary" />,
+      title: "3. 3D 가구 배치 및 스타일링",
       description:
         "3D로 구현된 공간에 내 가구를 배치하고, AI가 추천하는 다양한 인테리어 스타일을 적용해보세요.",
     },
     {
-      icon: <Cuboid className="w-12 h-12 text-primary" />,
-      title: "3. 결과 확인 및 저장",
+      icon: <Star className="w-12 h-12 text-primary" />,
+      title: "4. AI 인테리어 이미지 생성",
       description:
-        "완성된 인테리어를 현실처럼 생생하게 확인하고 저장하세요. 이제 체계적으로 이사 준비를 진행할 수 있어요.",
+        "선택한 스타일로 현실감 있는 인테리어 이미지를 AI가 생성해드려요.",
     },
   ];
 
@@ -248,13 +254,13 @@ const HomePage = () => {
               서비스 이용 방법
             </h2>
             <p className="mt-2 text-4xl md:text-5xl font-bold text-text-primary leading-tight">
-              단 3단계면, 이사 준비 끝
+              단 4단계면, 이사 준비 끝
             </p>
             <p className="mt-4 max-w-2xl mx-auto text-lg text-text-secondary">
               복잡한 과정 없이, 누구나 쉽고 재미있게 새로운 공간을 계획할 수 있습니다.
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-10 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
             {howItWorksSteps.map((step, index) => (
               <div key={index} className="text-center p-6">
                 <div className="flex items-center justify-center h-24 w-24 rounded-full bg-background mx-auto mb-6 border-2 border-primary shadow-lg">
