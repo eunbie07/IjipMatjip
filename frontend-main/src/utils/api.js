@@ -72,6 +72,41 @@ export const getCurrentUser = async () => {
 };
 
 // ---------------------------
+// 이미지(S3) 업로드
+// ---------------------------
+
+export const uploadGeneratedImageToS3 = async ({ imageDataUrl, variant = 'design', roomId = null }) => {
+  const response = await fetch(`${CLOUD_API_BASE}/images/upload`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ image_data_url: imageDataUrl, variant, room_id: roomId })
+  });
+
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result?.detail || result?.message || 'S3 업로드 실패');
+  }
+  return result; // { success, key, url }
+};
+
+export const listGeneratedImagesFromS3 = async ({ limit = 20, continuationToken = null } = {}) => {
+  const url = new URL(`${CLOUD_API_BASE}/images/list`);
+  url.searchParams.set('limit', limit);
+  if (continuationToken) url.searchParams.set('continuation_token', continuationToken);
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
+
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result?.detail || result?.message || 'S3 목록 조회 실패');
+  }
+  return result; // { success, items, next_continuation_token }
+};
+
+// ---------------------------
 // 클라우드 API (EC2 배포용)
 // ---------------------------
 
