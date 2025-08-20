@@ -95,14 +95,18 @@ const FindHousePage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl flex flex-col gap-8 bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-gray-200">
-        <div className="text-center flex flex-col gap-2">
+    <div className="w-full min-h-screen bg-background py-8 text-text-primary">
+      <div className="w-full max-w-4xl mx-auto px-4 pt-24 md:pt-28 mb-8">
+        <h2 className="text-3xl md:text-4xl font-bold text-text-primary leading-tight">Find <span className="text-primary">Your Home</span></h2>
+        <p className="text-text-secondary mt-2 text-base md:text-lg">Enter your preferences and let AI recommend the best neighborhoods and listings</p>
+      </div>
+      <div className="w-full max-w-2xl mx-auto px-4 flex flex-col gap-8 bg-surface rounded-2xl shadow-xl p-8 border border-border">
+        <div className="text-center flex flex-col gap-1">
           <div className="flex justify-center items-center">
-            <HomeIcon className="w-12 h-12 mb-2 text-[#FF7E97]" />
+            <HomeIcon className="w-10 h-10 mb-1 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900">AI 부동산 추천</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-xl font-semibold text-text-primary">AI 부동산 추천</h1>
+          <p className="text-text-secondary mt-1 text-sm">
             원하는 조건을 입력하고, 나에게 맞는 동네와 집을 찾아보세요.
           </p>
         </div>
@@ -110,13 +114,13 @@ const FindHousePage = () => {
         <div className="flex flex-col gap-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className='md:col-span-2'>
-              <label className="font-semibold text-gray-700">희망지역</label>
+              <label className="font-semibold text-text-secondary">희망지역</label>
               <div className="flex space-x-2 mt-2 gap-2">
-                <select value={selectedSido} onChange={(e) => setSelectedSido(e.target.value)} className="w-1/2 p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7E97]">
+                <select value={selectedSido} onChange={(e) => setSelectedSido(e.target.value)} className="w-1/2 p-3 bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
                   <option value="">시/도 선택</option>
                   {sidoList.map((sido) => <option key={sido} value={sido}>{sido}</option>)}
                 </select>
-                <select value={selectedSigungu} onChange={(e) => setSelectedSigungu(e.target.value)} className="w-1/2 p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7E97]" disabled={!selectedSido}>
+                <select value={selectedSigungu} onChange={(e) => setSelectedSigungu(e.target.value)} className="w-1/2 p-3 bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" disabled={!selectedSido}>
                   <option value="">시/군/구 선택</option>
                   {sigunguList.map((sigungu) => <option key={sigungu} value={sigungu}>{sigungu}</option>)}
                 </select>
@@ -124,29 +128,29 @@ const FindHousePage = () => {
             </div>
 
             <div className="md:col-span-2">
-              <label className="font-semibold text-gray-700">직장 주소 (선택)</label>
+              <label className="font-semibold text-text-secondary">직장 주소 (선택)</label>
               <div className="relative mt-2">
-                <BriefcaseIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <BriefcaseIcon className="w-5 h-5 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2" />
                 <input 
                   type="text" 
                   value={commuteAddress} 
                   onChange={(e) => setCommuteAddress(e.target.value)} 
                   placeholder="예: 서울특별시 강남구 테헤란로 123" 
-                  className="w-full p-3 pl-10 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7E97]" 
+                  className="w-full p-3 pl-10 bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" 
                 />
               </div>
             </div>
             
             <div className='md:col-span-2'>
-              <label className='block text-sm font-semibold text-gray-700'>거래유형</label>
+              <label className='block text-sm font-semibold text-text-secondary'>거래유형</label>
               <div className='flex space-x-4 gap-4 mt-2'>
                 <div className='flex items-center gap-2'>
-                    <input type='radio' id="tradeTypeJeonse" name="tradeType" value="전세" checked={tradeType === '전세'} onChange={(e) => setTradeType(e.target.value)} className='h-4 w-4 text-pink-600 border-gray-300 focus:ring-pink-500' />
-                    <label htmlFor='tradeTypeJeonse' className='ml-2 block text-sm text-gray-900'>전세</label>
+                    <input type='radio' id="tradeTypeJeonse" name="tradeType" value="전세" checked={tradeType === '전세'} onChange={(e) => setTradeType(e.target.value)} className='h-4 w-4 text-primary border-border focus:ring-primary' />
+                    <label htmlFor='tradeTypeJeonse' className='ml-2 block text-sm text-text-primary'>전세</label>
                 </div>
                 <div className='flex items-center gap-2'>
-                    <input type='radio' id="tradeTypeWolse" name="tradeType" value="월세" checked={tradeType === '월세'} onChange={(e) => setTradeType(e.target.value)} className='h-4 w-4 text-pink-600 border-gray-300 focus:ring-pink-500' />
-                    <label htmlFor='tradeTypeWolse' className='ml-2 block text-sm text-gray-900'>월세</label>
+                    <input type='radio' id="tradeTypeWolse" name="tradeType" value="월세" checked={tradeType === '월세'} onChange={(e) => setTradeType(e.target.value)} className='h-4 w-4 text-primary border-border focus:ring-primary' />
+                    <label htmlFor='tradeTypeWolse' className='ml-2 block text-sm text-text-primary'>월세</label>
                 </div>
               </div>
             </div>
@@ -154,17 +158,17 @@ const FindHousePage = () => {
             {tradeType === '전세' && (
               <div className='md:col-span-2 grid grid-cols-2 gap-x-6' >
                 <div>
-                  <label className='block text-sm font-semibold text-gray-700 mb-1'>전세금 (최소)</label>
+                  <label className='block text-sm font-semibold text-text-secondary mb-1'>전세금 (최소)</label>
                   <div className='flex items-center gap-2'>
-                    <input type='number' value={jeonseMin} onChange={(e) => setJeonseMin(e.target.value)} placeholder='10000' className='w-full p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7E97]'/>
-                    <span className='ml-2 text-gray-600'>만원</span>
+                    <input type='number' value={jeonseMin} onChange={(e) => setJeonseMin(e.target.value)} placeholder='10000' className='w-full p-3 bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'/>
+                    <span className='ml-2 text-text-secondary'>만원</span>
                   </div>
                 </div>
                 <div>
-                  <label className='block text-sm font-semibold text-gray-700 mb-1'>전세금 (최대)</label>
+                  <label className='block text-sm font-semibold text-text-secondary mb-1'>전세금 (최대)</label>
                   <div className='flex items-center gap-2'>
-                    <input type='number' value={jeonseMax} onChange={(e) => setJeonseMax(e.target.value)} placeholder='30000' className='w-full p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7E97]'/>
-                    <span className='ml-2 text-gray-600'>만원</span>
+                    <input type='number' value={jeonseMax} onChange={(e) => setJeonseMax(e.target.value)} placeholder='30000' className='w-full p-3 bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'/>
+                    <span className='ml-2 text-text-secondary'>만원</span>
                   </div>
                 </div>
               </div>
@@ -173,25 +177,25 @@ const FindHousePage = () => {
             {tradeType === '월세' && (
               <div className='md:col-span-2'>
                 <div>
-                  <label className='block text-sm font-semibold text-gray-700 mb-1'>보증금 (최대)</label>
+                  <label className='block text-sm font-semibold text-text-secondary mb-1'>보증금 (최대)</label>
                   <div className='flex items-center mb-4 gap-3'>
-                    <input type='number' value={wolseDepositMax} onChange={(e) => setWolseDepositMax(e.target.value)} placeholder='5000' className='flex-1 p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7E97]'/>
-                    <span className='ml-2 text-gray-600'>만원</span>
+                    <input type='number' value={wolseDepositMax} onChange={(e) => setWolseDepositMax(e.target.value)} placeholder='5000' className='flex-1 p-3 bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'/>
+                    <span className='ml-2 text-text-secondary'>만원</span>
                   </div>
                 </div>
                 <div className='grid grid-cols-2 gap-x-4'>
                   <div>
-                    <label className='block text-sm font-semibold text-gray-700 mb-1'>월세 (최소)</label>
+                    <label className='block text-sm font-semibold text-text-secondary mb-1'>월세 (최소)</label>
                     <div className='flex items-center gap-2'>
-                      <input type='number' value={wolseMin} onChange={(e) => setWolseMin(e.target.value)} placeholder='50' className='w-full p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7E97]'/>
-                      <span className='ml-2 text-gray-600'>만원</span>
+                      <input type='number' value={wolseMin} onChange={(e) => setWolseMin(e.target.value)} placeholder='50' className='w-full p-3 bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'/>
+                      <span className='ml-2 text-text-secondary'>만원</span>
                     </div>
                   </div>
                   <div>
-                    <label className='block text-sm font-semibold text-gray-700 mb-1'>월세 (최대)</label>
+                    <label className='block text-sm font-semibold text-text-secondary mb-1'>월세 (최대)</label>
                     <div className='flex items-center gap-2'>
-                      <input type='number' value={wolseMax} onChange={(e) => setWolseMax(e.target.value)} placeholder='100' className='w-full p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7E97]'/>
-                      <span className='ml-2 text-gray-600'>만원</span>
+                      <input type='number' value={wolseMax} onChange={(e) => setWolseMax(e.target.value)} placeholder='100' className='w-full p-3 bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'/>
+                      <span className='ml-2 text-text-secondary'>만원</span>
                     </div>
                   </div>
                 </div>
@@ -199,33 +203,33 @@ const FindHousePage = () => {
             )}
             
             <div className='md:col-span-1'>
-              <label className='block text-sm font-semibold text-gray-700 mb-1'>방 구조</label>
-              <select value={roomType} onChange={(e) => setRoomType(e.target.value)} className='w-full p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7E97]'>
+              <label className='block text-sm font-semibold text-text-secondary mb-1'>방 구조</label>
+              <select value={roomType} onChange={(e) => setRoomType(e.target.value)} className='w-full p-3 bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'>
                 <option>전체</option>
                 <option>원룸</option>
                 <option>투룸</option>
               </select>
             </div>
             <div className='md:col-span-1'>
-              <label className='block text-sm font-semibold text-gray-700 mb-1'>최소 희망 평수</label>
+              <label className='block text-sm font-semibold text-text-secondary mb-1'>최소 희망 평수</label>
               <div className="flex items-center gap-2">
-                <input type='number' value={areaPyeong} onChange={(e) => setAreaPyeong(e.target.value)} placeholder='10' className='w-full p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7E97]' />
-                <span className="text-gray-600">평</span>
+                <input type='number' value={areaPyeong} onChange={(e) => setAreaPyeong(e.target.value)} placeholder='10' className='w-full p-3 bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary' />
+                <span className="text-text-secondary">평</span>
               </div>
             </div>
             
             <div className="md:col-span-2">
-              <label className="font-semibold text-gray-700">라이프스타일 (선택)</label>
+              <label className="font-semibold text-text-secondary">라이프스타일 (선택)</label>
               <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {lifestyleOptions.map((style) => (
-                  <button key={style} type='button' onClick={() => handleLifestyleClick(style)} className={`p-3 text-sm border rounded-lg transition-all focus:outline-none focus:ring-2 ${selectedLifestyles.includes(style) ? 'border-[#FF7E97] bg-pink-50 text-[#FF7E97] ring-[#FF7E97]' : 'border-gray-300 text-gray-700 hover:border-[#FF7E97] hover:bg-pink-50 hover:text-[#FF7E97]'}`}>
+                  <button key={style} type='button' onClick={() => handleLifestyleClick(style)} className={`p-3 text-sm border rounded-lg transition-all focus:outline-none focus:ring-2 ${selectedLifestyles.includes(style) ? 'border-primary bg-primary/10 text-primary ring-primary' : 'border-border text-text-secondary hover:border-primary hover:bg-primary/10 hover:text-primary'}`}>
                     {style}
                   </button>
                 ))}
               </div>
             </div>
           </div>
-          <button onClick={handleSearch} className="w-full mt-4 bg-gradient-to-r from-[#FF7E97] to-[#F89BAF] text-white font-bold py-4 rounded-lg text-lg flex items-center justify-center gap-2 shadow-lg shadow-[#FF7E97]/40 hover:scale-105 transition-transform">
+          <button onClick={handleSearch} className="w-full mt-4 bg-gradient-to-r from-primary to-secondary text-white font-bold py-4 rounded-lg text-lg flex items-center justify-center gap-2 shadow-lg hover:scale-105 transition-transform">
             <ZapIcon className="w-6 h-6" />
             <span>AI 추천받기</span>
           </button>
