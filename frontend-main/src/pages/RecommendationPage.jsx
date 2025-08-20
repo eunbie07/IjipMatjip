@@ -77,26 +77,30 @@ const RecommendationPage = () => {
     : estates;
 
   if (loading) {
-    return <div className="text-center p-10">AI가 최적의 동네와 매물을 찾고 있습니다...</div>;
+    return <div className="text-center p-10 text-text-secondary bg-background min-h-screen flex items-center justify-center w-full">AI가 최적의 동네와 매물을 찾고 있습니다...</div>;
   }
 
 
   return (
-    <div className="w-full flex justify-center min-h-screen p-4 py-10">
+    <div className="w-full flex justify-center min-h-screen p-4 py-10 bg-background text-text-primary">
       <div className="w-full max-w-4xl mx-auto flex flex-col gap-6">
+        <div className="w-full pt-24 md:pt-28">
+          <h2 className="text-3xl md:text-4xl font-bold text-text-primary leading-tight">AI <span className="text-primary">Recommendations</span></h2>
+          <p className="text-text-secondary mt-2 text-base md:text-lg">Curated neighborhoods and listings based on your input preferences</p>
+        </div>
         <div className="w-full">
-          <button onClick={() => navigate('/find-house')} className='bg-white text-gray-700 font-semibold px-6 py-2 rounded-lg shadow-md hover:bg-gray-50 transition flex items-center gap-2'>
+          <button onClick={() => navigate('/find-house')} className='bg-surface text-text-secondary border border-border font-semibold px-6 py-2 rounded-lg shadow-md hover:bg-background transition flex items-center gap-2'>
             ← 조건 다시 설정하기
           </button>
         </div>
         <div className='text-center'>
-          <h1 className='text-3xl font-bold text-slate-900'>AI 추천 결과입니다.</h1>
-          <p className='text-gray-600 mt-2'>사용자님의 조건을 분석하여 최적의 동네와 매물을 찾았어요.</p>
+          <h1 className='text-3xl font-bold text-text-primary'>AI 추천 결과입니다.</h1>
+          <p className='text-text-secondary mt-2'>사용자님의 조건을 분석하여 최적의 동네와 매물을 찾았어요.</p>
         </div>
         <section className='flex flex-col gap-2'>
           <div className='flex gap-2 items-center'>
-          <h2 className='text-xl font-bold text-slate-800 mb-4'>이런 동네는 어떠세요?</h2>
-          <button onClick={() => setSelectedDong(null)} className={`bg-white/80 rounded-xl border-2 ${!selectedDong ? 'border-pink-200 ring-2 ring-[#FF7E97]' :'border-gray-200'} px-1  cursor-pointer`}> 전체보기 </button>
+          <h2 className='text-xl font-bold text-text-primary mb-4'>이런 동네는 어떠세요?</h2>
+          <button onClick={() => setSelectedDong(null)} className={`bg-surface rounded-xl border-2 ${!selectedDong ? 'border-primary ring-2 ring-primary' :'border-border'} px-1  cursor-pointer`}> 전체보기 </button>
           </div>
           <div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
             {recommendations.map((dong,index) => (
@@ -105,9 +109,9 @@ const RecommendationPage = () => {
           </div>
         </section>
         <section>
-          <h2 className='text-xl font-bold text-slate-800 mb-4 flex items-center'>
+          <h2 className='text-xl font-bold text-text-primary mb-4 flex items-center'>
             맞춤 매물 리스트
-            {selectedDong && <span className='text-sm font-semibold text-pink-600 bg-pink-100 px-3 py-1 rounded-full ml-3'>{selectedDong}</span>}
+            {selectedDong && <span className='text-sm font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full ml-3'>{selectedDong}</span>}
           </h2>
           <div className='space-y-4 flex flex-col gap-2'>
             {filteredEstates.length > 0 ? (
@@ -115,17 +119,17 @@ const RecommendationPage = () => {
                 // --- 👇 이 부분 수정 ---
                 // Link의 state에 매물 정보(estateData)와 함께
                 // 검색 조건(conditions)을 반드시 포함해서 넘겨줍니다.
-                <Link to={`/detail/${prop.id}`} state={{ estateData: prop, conditions: searchConditions }} key={prop.id} className='no-underline text-black'>
-                  <div className='bg-white/80 backdrop-blur-lg p-4 rounded-xl shadow-lg border border-gray-200 flex items-center gap-6 hover:shadow-2xl hover:border-pink-300 transition-all duration-300 cursor-pointer'>
+                <Link to={`/detail/${prop.id}`} state={{ estateData: prop, conditions: searchConditions }} key={prop.id} className='no-underline text-text-primary'>
+                  <div className='bg-surface p-4 rounded-xl shadow-lg border border-border flex items-center gap-6 hover:shadow-2xl hover:border-primary transition-all duration-300 cursor-pointer'>
                     <img src={getPhotoUrl(prop.photo_url)[0]} alt={prop.address} className='w-32 h-32 object-cover rounded-lg' onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/200x130/fbcfe8/4a044e?text=No+Image'; }}/>
                     <div className='flex-grow'>
-                      <p className='text-sm font-semibold text-gray-500'>{prop.address}</p>
-                      <h3 className='text-lg font-bold text-slate-900 my-1'>{`${prop.room_type}, ${Math.round(prop.area_m2 / 3.3)}평, ${prop.floor}`}</h3>
-                      <p className='text-sm text-gray-600'>관리비 {prop.maintenance_fee.toLocaleString()}원</p>
+                      <p className='text-sm font-semibold text-text-secondary'>{prop.address}</p>
+                      <h3 className='text-lg font-bold text-text-primary my-1'>{`${prop.room_type}, ${Math.round(prop.area_m2 / 3.3)}평, ${prop.floor}`}</h3>
+                      <p className='text-sm text-text-secondary'>관리비 {prop.maintenance_fee.toLocaleString()}원</p>
                     </div>
                     <div className='text-right'>
-                      <p className='text-sm text-gray-500'>{prop.deal_type}</p>
-                      <p className='font-bold text-lg text-[#FF7E97]'>
+                      <p className='text-sm text-text-secondary'>{prop.deal_type}</p>
+                      <p className='font-bold text-lg text-primary'>
                         {prop.deal_type === '월세' 
                           ?`${formatPrice(prop.price_deposit)} / ${prop.price_rent}` : formatPrice(prop.price_deposit)
                         }
@@ -135,8 +139,8 @@ const RecommendationPage = () => {
                 </Link>
               ))
             ) : (
-              <div className='text-center py-10 bg-white/50 rounded-lg'>
-                <p className='text-gray-500'>이 조건에 맞는 매물이 없습니다.</p>
+              <div className='text-center py-10 bg-surface rounded-lg'>
+                <p className='text-text-secondary'>이 조건에 맞는 매물이 없습니다.</p>
               </div>
             )}
           </div>

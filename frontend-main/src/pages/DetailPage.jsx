@@ -71,10 +71,10 @@ const formatPrice = (prop) => {
 const NextArrow = ({ onClick }) => {
   return (
     <div
-      className="absolute top-1/2 right-4 -translate-y-1/2 z-10 cursor-pointer bg-white/50 rounded-full p-2 hover:bg-white transition-colors shadow-md"
+      className="absolute top-1/2 right-4 -translate-y-1/2 z-10 cursor-pointer bg-surface/50 text-primary rounded-full p-2 hover:bg-surface transition-colors shadow-md"
       onClick={onClick}
     >
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF7E97" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
     </div>
   );
 };
@@ -82,10 +82,10 @@ const NextArrow = ({ onClick }) => {
 const PrevArrow = ({ onClick }) => {
   return (
     <div
-      className="absolute top-1/2 left-4 -translate-y-1/2 z-10 cursor-pointer bg-white/50 rounded-full p-2 hover:bg-white transition-colors shadow-md"
+      className="absolute top-1/2 left-4 -translate-y-1/2 z-10 cursor-pointer bg-surface/50 text-primary rounded-full p-2 hover:bg-surface transition-colors shadow-md"
       onClick={onClick}
     >
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF7E97" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
     </div>
   );
 };
@@ -244,39 +244,37 @@ const DetailPage = () => {
   const hasCommuteInfo = commuteDetails && (commuteDetails.driving || commuteDetails.transit || commuteDetails.walking);
 
   return (
-    <div className="bg-gray-50 min-h-screen font-sans">
-      <style>{`
-        .slick-prev:before,
-        .slick-next:before {
-          color: #FF7E97 !important;
-        }
-      `}</style>
-      <header className="bg-white/80 backdrop-blur-lg border-b border-gray-200 sticky top-0 z-20">
+    <div className="bg-background text-text-primary min-h-screen">
+      <header className="bg-surface/80 backdrop-blur-lg border-b border-border sticky top-0 z-20">
         <div className="container mx-auto max-w-6xl px-4 h-16 flex items-center justify-between">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-600 hover:text-slate-900">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-text-secondary hover:text-text-primary">
             <ArrowLeftIcon className="w-5 h-5" />
             <span className="font-semibold">목록으로</span>
           </button>
           <div className="flex items-center gap-2">
-            <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"><Share2Icon className="w-5 h-5 text-gray-600"/></button>
-            <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"><HeartIcon className="w-5 h-5 text-gray-600"/></button>
+            <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-background transition-colors"><Share2Icon className="w-5 h-5 text-text-secondary"/></button>
+            <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-background transition-colors"><HeartIcon className="w-5 h-5 text-text-secondary"/></button>
           </div>
         </div>
       </header>
       
       <main className="container mx-auto max-w-6xl p-4 flex flex-col gap-8">
+        <div className="pt-6 md:pt-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-text-primary leading-tight">Property <span className="text-primary">Details</span></h2>
+          <p className="text-text-secondary mt-2 text-base md:text-lg">View photos, pricing, nearby infrastructure, and AI analysis in one place</p>
+        </div>
         
         <section>
           <div className='mb-6'>
-              <h1 className="text-3xl font-bold text-slate-900">{estateData.room_type}</h1>
-              <p className="text-gray-500 flex items-center gap-2 mt-1"><MapPinIcon /> {estateData.address}</p>
+              <h1 className="text-3xl font-bold text-text-primary">{estateData.room_type}</h1>
+              <p className="text-text-secondary flex items-center gap-2 mt-1"><MapPinIcon /> {estateData.address}</p>
           </div>
-          <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center divide-x divide-gray-200">
-                <div><p className="text-sm text-gray-500">거래 종류</p><p className="font-bold text-xl text-slate-800 mt-1">{estateData.deal_type}</p></div>
-                <div><p className="text-sm text-gray-500">가격</p><p className="font-bold text-xl text-slate-800 mt-1">{formatPrice(estateData)}</p></div>
-                <div><p className="text-sm text-gray-500">면적</p><p className="font-bold text-xl text-slate-800 mt-1">{`${Math.round(estateData.area_m2 / 3.3)}평`}</p></div>
-                <div><p className="text-sm text-gray-500">층</p><p className="font-bold text-xl text-slate-800 mt-1">{estateData.floor}</p></div>
+          <div className="bg-surface p-6 rounded-2xl shadow-md border border-border">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center divide-x divide-border">
+                <div><p className="text-sm text-text-secondary">거래 종류</p><p className="font-bold text-xl text-text-primary mt-1">{estateData.deal_type}</p></div>
+                <div><p className="text-sm text-text-secondary">가격</p><p className="font-bold text-xl text-text-primary mt-1">{formatPrice(estateData)}</p></div>
+                <div><p className="text-sm text-text-secondary">면적</p><p className="font-bold text-xl text-text-primary mt-1">{`${Math.round(estateData.area_m2 / 3.3)}평`}</p></div>
+                <div><p className="text-sm text-text-secondary">층</p><p className="font-bold text-xl text-text-primary mt-1">{estateData.floor}</p></div>
             </div>
           </div>
         </section>
@@ -296,57 +294,57 @@ const DetailPage = () => {
         </section>
 
         {isReportLoading ? (
-          <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-md text-center">
+          <div className="bg-surface border border-border p-6 rounded-2xl shadow-md text-center">
               <div className="animate-pulse flex flex-col items-center gap-4">
                   <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
                   <div className="h-4 bg-gray-200 rounded w-3/4"></div>
                   <div className="h-4 bg-gray-200 rounded w-1/2"></div>
               </div>
-              <p className="font-semibold text-gray-600 mt-4">AI가 심층 분석 리포트를 생성 중입니다...</p>
+              <p className="font-semibold text-text-secondary mt-4">AI가 심층 분석 리포트를 생성 중입니다...</p>
           </div>
         ) : aiReport && (
-          <section className="bg-white border border-gray-200 p-6 rounded-2xl shadow-md flex flex-col gap-5">
+          <section className="bg-surface border border-border p-6 rounded-2xl shadow-md flex flex-col gap-5">
               <div className="flex items-center gap-3">
-                  <ZapIcon className="w-8 h-8 text-[#FF7E97]" />
-                  <h2 className="text-2xl font-bold text-slate-900">AI 심층 분석</h2>
-                  <span className="px-3 py-1 text-sm font-bold text-white bg-gradient-to-r from-[#FF7E97] to-[#f89baf] rounded-full">
+                  <ZapIcon className="w-8 h-8 text-primary" />
+                  <h2 className="text-2xl font-bold text-text-primary">AI 심층 분석</h2>
+                  <span className="px-3 py-1 text-sm font-bold text-white bg-gradient-to-r from-primary to-secondary rounded-full">
                       적합도 {aiReport.fit_score}점
                   </span>
               </div>
               
-              <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-[#FF7E97]">
-                  <p className="text-sm font-bold text-slate-600 mb-1">"AI 한 줄 총평"</p>
-                  <p className="text-gray-800 text-lg font-semibold italic">{aiReport.summary}</p>
+              <div className="bg-background p-4 rounded-lg border-l-4 border-primary">
+                  <p className="text-sm font-bold text-text-secondary mb-1">"AI 한 줄 총평"</p>
+                  <p className="text-text-primary text-lg font-semibold italic">{aiReport.summary}</p>
               </div>
 
-              <div className='bg-gray-50 p-4 rounded-lg'>
-                  <h4 className="font-bold text-slate-800 mb-2">💰 가격 분석</h4>
+              <div className='bg-background p-4 rounded-lg'>
+                  <h4 className="font-bold text-text-primary mb-2">💰 가격 분석</h4>
                   <div className='flex items-center gap-3'>
                       <span className={`px-3 py-1 text-sm font-bold rounded-full ${priceEvalColors[aiReport.price_analysis.evaluation] || 'bg-gray-100 text-gray-800'}`}>
                           {aiReport.price_analysis.evaluation}
                       </span>
-                      <p className='text-sm text-gray-700'>{aiReport.price_analysis.comment}</p>
+                      <p className='text-sm text-text-secondary'>{aiReport.price_analysis.comment}</p>
                   </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                       <h4 className="font-bold text-green-600 mb-2">👍 추천하는 이유</h4>
-                      <ul className="space-y-2 text-sm text-gray-600">
+                      <ul className="space-y-2 text-sm text-text-secondary">
                           {aiReport.pros.map((pro, i) => <li key={i} className="flex gap-2"><CheckCircleIcon className="text-green-500 flex-shrink-0 mt-0.5"/>{pro}</li>)}
                       </ul>
                   </div>
                   <div>
                       <h4 className="font-bold text-red-600 mb-2">🤔 고려할 점</h4>
-                      <ul className="space-y-2 text-sm text-gray-600">
+                      <ul className="space-y-2 text-sm text-text-secondary">
                           {aiReport.cons.map((con, i) => <li key={i} className="flex gap-2"><XCircleIcon className="text-red-500 flex-shrink-0 mt-0.5"/>{con}</li>)}
                       </ul>
                   </div>
               </div>
 
-              <div className='bg-gray-50 p-4 rounded-lg border-t-2 border-dashed border-pink-200 mt-2'>
-                  <h4 className="font-bold text-slate-800 mb-2">📝 방문 전 체크포인트</h4>
-                  <ul className="space-y-2 text-sm text-gray-600">
+              <div className='bg-background p-4 rounded-lg border-t-2 border-dashed border-primary/30 mt-2'>
+                  <h4 className="font-bold text-text-primary mb-2">📝 방문 전 체크포인트</h4>
+                  <ul className="space-y-2 text-sm text-text-secondary">
                       {aiReport.check_points.map((point, i) => <li key={i} className="flex gap-2"><ClipboardCheckIcon className="text-slate-500 flex-shrink-0 mt-0.5"/>{point}</li>)}
                   </ul>
               </div>
@@ -354,7 +352,7 @@ const DetailPage = () => {
               <div className="mt-4">
                 <button
                   onClick={handleGoToRoomPlanner}
-                  className="w-full bg-gradient-to-r from-[#FF7E97] to-[#F89BAF] text-white font-bold py-3 px-4 rounded-lg text-lg flex items-center justify-center gap-3 shadow-lg shadow-[#FF7E97]/40 hover:scale-105 transition-transform"
+                  className="w-full bg-gradient-to-r from-primary to-secondary text-white font-bold py-3 px-4 rounded-lg text-lg flex items-center justify-center gap-3 shadow-lg hover:scale-105 transition-transform"
                 >
                   <WandIcon className="w-6 h-6" />
                   AI로 이 방 꾸며보기
@@ -363,9 +361,9 @@ const DetailPage = () => {
           </section>
         )}
         
-        <section className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">위치 및 주변 정보</h2>
-            <div className="h-96 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden mb-6">
+        <section className="bg-surface p-6 rounded-2xl shadow-md border border-border">
+            <h2 className="text-2xl font-bold text-text-primary mb-6">위치 및 주변 정보</h2>
+            <div className="h-96 bg-background rounded-lg flex items-center justify-center overflow-hidden mb-6">
               <InfrastructureMap 
                 lat={estateData.latitude} 
                 lng={estateData.longitude} 
@@ -375,25 +373,25 @@ const DetailPage = () => {
               />
             </div>
             {hasCommuteInfo && (
-                <div className="mb-6 pb-4 border-gray-200 flex items-center justify-center">
-                     <h3 className="text-lg font-bold text-slate-800 text-center mr-6">🚶‍♂️ 직장까지 예상 소요 시간</h3>
+                <div className="mb-6 pb-4 border-border flex items-center justify-center">
+                     <h3 className="text-lg font-bold text-text-primary text-center mr-6">🚶‍♂️ 직장까지 예상 소요 시간</h3>
                      <div className="flex justify-center items-center gap-8">
                         {commuteDetails.walking && (
                             <div className="text-center flex gap-2">
-                                <p className="text-sm text-gray-500 mt-1 flex items-center gap-1"><WalkingIcon className="w-4 h-4"/>도보</p>
-                                <p className="font-bold text-2xl text-pink-500">{commuteDetails.walking}분</p>
+                                <p className="text-sm text-text-secondary mt-1 flex items-center gap-1"><WalkingIcon className="w-4 h-4"/>도보</p>
+                                <p className="font-bold text-2xl text-primary">{commuteDetails.walking}분</p>
                             </div>
                         )}
                         {commuteDetails.transit && (
                             <div className="text-center flex gap-2">
-                                <p className="font-bold text-2xl text-pink-500">{commuteDetails.transit}분</p>
-                                <p className="text-sm text-gray-500 mt-1 flex items-center gap-1"><BusIcon className="w-4 h-4"/>대중교통</p>
+                                <p className="font-bold text-2xl text-primary">{commuteDetails.transit}분</p>
+                                <p className="text-sm text-text-secondary mt-1 flex items-center gap-1"><BusIcon className="w-4 h-4"/>대중교통</p>
                             </div>
                         )}
                         {commuteDetails.driving && (
                             <div className="text-center flex gap-2">
-                                <p className="text-sm text-gray-500 mt-1 flex items-center gap-1"><CarIcon className="w-4 h-4"/>자가용</p>
-                                <p className="font-bold text-2xl text-pink-500">{commuteDetails.driving}분</p>
+                                <p className="text-sm text-text-secondary mt-1 flex items-center gap-1"><CarIcon className="w-4 h-4"/>자가용</p>
+                                <p className="font-bold text-2xl text-primary">{commuteDetails.driving}분</p>
                             </div>
                         )}
                      </div>

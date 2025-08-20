@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import AIInteriorGenerator from '../components/AIInteriorGenerator';
-import { listGeneratedImagesFromS3 } from '../utils/api';
 
 const AIInteriorPage = () => {
   const location = useLocation();
   const [capturedScreenshot, setCapturedScreenshot] = useState(null);
-  const [savedItems, setSavedItems] = useState([]);
-  const [isLoadingSaved, setIsLoadingSaved] = useState(false);
-  const [savedError, setSavedError] = useState('');
 
 
   // 라우트 state와 로컬 스토리지에서 캡처 데이터 복원
@@ -32,23 +28,6 @@ const AIInteriorPage = () => {
     }
   }, [location.state]);
 
-  useEffect(() => {
-    const fetchSaved = async () => {
-      try {
-        setIsLoadingSaved(true);
-        setSavedError('');
-        const res = await listGeneratedImagesFromS3({ limit: 12 });
-        setSavedItems(res.items || []);
-      } catch (e) {
-        setSavedError(e?.message || 'Failed to load saved images');
-      } finally {
-        setIsLoadingSaved(false);
-      }
-    };
-    fetchSaved();
-  }, []);
-
-
   // 3D capture handler (for RoomBox component calls)
   const handle3DCapture = () => {
     // Display guide message since this is not the RoomBox component
@@ -68,7 +47,6 @@ const AIInteriorPage = () => {
           </p>
         </div>
 
-
         <div className="max-w-6xl mx-auto">
           {/* AI 인테리어 생성기 */}
           <AIInteriorGenerator 
@@ -77,32 +55,6 @@ const AIInteriorPage = () => {
               console.log('AI 인테리어 이미지 생성 완료:', image);
             }}
           />
-
-          {/* Saved images grid */}
-          <div className="mt-12">
-            <h3 className="text-xl font-semibold text-text-primary mb-4">Saved images</h3>
-            {isLoadingSaved ? (
-              <p className="text-text-secondary">Loading...</p>
-            ) : savedError ? (
-              <p className="text-red-600">{savedError}</p>
-            ) : savedItems.length === 0 ? (
-              <p className="text-text-secondary">No saved images yet.</p>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {savedItems.map((item) => (
-                  <div key={item.key} className="border border-border rounded-xl overflow-hidden bg-surface">
-                    <img src={item.url} alt="saved" className="w-full h-40 object-cover" />
-                    <div className="p-2 text-xs text-text-secondary">
-                      <div className="truncate">{item.key.split('/').slice(-1)[0]}</div>
-                      {item.last_modified && (
-                        <div>{new Date(item.last_modified).toLocaleString()}</div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
 
           {/* 3D Capture Guide */}
           {!capturedScreenshot && (
