@@ -804,7 +804,7 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                   onClick={async () => {
                     try {
                       const res = await uploadGeneratedImageToS3({ imageDataUrl: imageUrl, variant: 'design' });
-                      alert('S3 업로드 완료: ' + res.url);
+                      alert('저장 완료');
                     } catch (e) {
                       alert('S3 업로드 실패: ' + (e?.message || '오류'));
                     }
@@ -918,7 +918,7 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                       onClick={async () => {
                         try {
                           const res = await uploadGeneratedImageToS3({ imageDataUrl: realisticImageUrl, variant: 'realistic' });
-                          alert('S3 업로드 완료: ' + res.url);
+                          alert('저장 완료');
                         } catch (e) {
                           alert('S3 업로드 실패: ' + (e?.message || '오류'));
                         }
