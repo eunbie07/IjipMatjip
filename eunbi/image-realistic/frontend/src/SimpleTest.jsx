@@ -4,7 +4,7 @@ function SimpleTest() {
   // 새로운 프리셋 기반 상태 변수들
   const [selectedPreset, setSelectedPreset] = useState('modern_warm'); // 기본 침실 스타일 프리셋
   const [selectedMood, setSelectedMood] = useState(''); // 사용 목적
-  const [furnitureLayout, setFurnitureLayout] = useState('keep_existing'); // 가구 배치 방식 (기존 유지)
+  const [furnitureLayout, setFurnitureLayout] = useState('add_furniture'); // 가구 배치 방식 (기존 유지)
   const [customPrompt, setCustomPrompt] = useState(''); // 추가 커스텀 요청 (기존 유지)
   
   // 실사화 품질 설정
@@ -45,7 +45,7 @@ function SimpleTest() {
   // 검증된 침실 스타일 프리셋들
   const bedroomPresets = {
     modern_warm: {
-      name: "모던 미니멀 (따뜻한)",
+      name: "Modern Minimal (Warm)",
       description: "깨끗하고 따뜻한 현대적 침실",
       basePrompt: `
 Modern minimal bedroom with warm neutral tones:
@@ -60,7 +60,7 @@ Modern minimal bedroom with warm neutral tones:
     },
     
     modern_cool: {
-      name: "모던 미니멀 (쿨톤)",
+      name: "Modern Minimal (Cool)",
       description: "시원하고 깨끗한 현대적 침실",
       basePrompt: `
 Modern minimal bedroom with cool neutral tones:
@@ -75,7 +75,7 @@ Modern minimal bedroom with cool neutral tones:
     },
     
     scandinavian_cozy: {
-      name: "스칸디나비안",
+      name: "Scandinavian",
       description: "따뜻하고 자연스러운 북유럽 침실",
       basePrompt: `
 Scandinavian cozy bedroom with hygge atmosphere:
@@ -90,7 +90,7 @@ Scandinavian cozy bedroom with hygge atmosphere:
     },
     
     contemporary_bold: {
-      name: "컴템포러리",
+      name: "Contemporary",
       description: "현대적이고 세련된 침실",
       basePrompt: `
 Contemporary sophisticated bedroom with bold design:
@@ -102,6 +102,36 @@ Contemporary sophisticated bedroom with bold design:
 - Rich textures: velvet, silk, leather, polished stone, metal accents
 - Modern art, curated accessories, plants as design elements
 - High-end materials, attention to detail, magazine-worthy styling`
+    },
+    
+    industrial_urban: {
+      name: "Industrial",
+      description: "도시적이고 날것의 인더스트리얼 침실",
+      basePrompt: `
+Industrial urban bedroom with raw, edgy aesthetic:
+- Exposed brick walls, concrete floors, metal beams, raw materials
+- Dark color palette: blacks, grays, browns, with metallic accents
+- Reclaimed wood furniture, metal bed frames, vintage industrial pieces
+- Edison bulbs, metal pendant lights, exposed wiring aesthetic
+- Leather upholstery, distressed finishes, aged patina textures
+- Large factory-style windows, high ceilings, open ductwork
+- Vintage machinery elements, industrial artifacts as decor
+- Urban loft feel with masculine, sophisticated edge`
+    },
+    
+    bohemian_free: {
+      name: "Bohemian",
+      description: "자유롭고 개성있는 보헤미안 침실",
+      basePrompt: `
+Bohemian eclectic bedroom with artistic, free-spirited vibe:
+- Rich, layered textiles: Persian rugs, tapestries, embroidered pillows
+- Warm, earthy colors: terracotta, deep blues, mustard yellows, forest greens
+- Mix of vintage and ethnic furniture, handcrafted pieces, global influences
+- Multiple lighting sources: string lights, lanterns, candles, ambient glow
+- Plants and natural elements: hanging plants, dried flowers, natural materials
+- Artistic elements: gallery walls, handmade ceramics, woven baskets
+- Comfortable, lived-in feel with personal touches and collected treasures
+- Relaxed, creative atmosphere perfect for artistic souls`
     }
   };
 

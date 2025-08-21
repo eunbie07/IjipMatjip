@@ -912,25 +912,7 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
             </div>
           </div>
 
-          <div className="mt-4 p-3 bg-background border border-border rounded-lg">
-            <p className="text-sm text-text-secondary">
-              <strong>How to Use:</strong>
-              <br />
-              • Drag furniture to place in room (preview provided)
-              <br />
-              • Click placed items and drag to move
-              <br />
-              • Use green button to rotate, red button to delete
-              <br />
-              <strong>Shortcuts:</strong>
-              <br />
-              • Ctrl+Z: Undo, Ctrl+Y: Redo
-              <br />
-              • Ctrl+C: Copy, Ctrl+V: Paste
-              <br />
-              • Delete: Delete selected furniture
-            </p>
-          </div>
+
         </div>
 
         {/* 방 평면도 */}
@@ -1446,14 +1428,14 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
             <div className="text-sm text-text-secondary">
               <strong className="text-text-primary">Furniture Placement</strong>
               <ul className="mt-1 space-y-1 ml-4">
-                <li>• Drag from the left list to place</li>
-                <li>• Click to select, drag to move</li>
-                <li>• Use green button to rotate 90°</li>
-                <li>• Use red button to delete</li>
+                <li>• 왼쪽 목록에서 드래그하여 배치</li>
+                <li>• 클릭하여 선택, 드래그하여 이동</li>
+                <li>• 초록색 버튼으로 90° 회전</li>
+                <li>• 빨간색 버튼으로 삭제</li>
               </ul>
             </div>
             <div className="mt-3 text-xs text-text-secondary">
-              Furniture automatically stops when overlapping or going outside the room
+              가구가 겹치거나 방 밖으로 나가면 자동으로 멈춥니다
             </div>
           </div>
         </div>

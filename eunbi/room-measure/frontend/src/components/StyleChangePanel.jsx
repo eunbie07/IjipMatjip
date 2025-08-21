@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 
 // 전체 방 스타일 옵션
 const ROOM_STYLES = [
-  { id: 'scandinavian', name: '스칸디나비안', description: '자연스럽고 따뜻한 북유럽 스타일', icon: 'S' },
-  { id: 'modern', name: '모던', description: '깔끔하고 미니멀한 현대적 스타일', icon: 'M' },
-  { id: 'industrial', name: '인더스트리얼', description: '도시적이고 날것의 스타일', icon: 'I' },
-  { id: 'bohemian', name: '보헤미안', description: '자유롭고 개성있는 보헤미안 스타일', icon: 'B' },
-  { id: 'vintage', name: '빈티지', description: '클래식하고 우아한 빈티지 스타일', icon: 'V' }
+  { id: 'scandinavian', name: 'Scandinavian', description: '자연스럽고 따뜻한 북유럽 스타일', icon: 'S' },
+  { id: 'modern', name: 'Modern', description: '깔끔하고 미니멀한 현대적 스타일', icon: 'M' },
+  { id: 'industrial', name: 'Industrial', description: '도시적이고 날것의 스타일', icon: 'I' },
+  { id: 'bohemian', name: 'Bohemian', description: '자유롭고 개성있는 보헤미안 스타일', icon: 'B' },
+  { id: 'vintage', name: 'Vintage', description: '클래식하고 우아한 빈티지 스타일', icon: 'V' }
 ];
 
 const StyleChangePanel = ({ 
