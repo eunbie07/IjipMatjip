@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { styleImagesData, STYLE_CONFIG } from "../datas/styleData";
 import ImageSlider from "../components/categories/ImageSlider";
@@ -22,12 +22,54 @@ import industrialImage from "../assets/images/Industrial1.png";
 import modernImage from "../assets/images/Modern1.png";
 import scandinavianImage from "../assets/images/Scandinavian1.png";
 
+// 스타일 레이블
+const styleLabels = {
+  all: '전체',
+  modern: '모던/미니멀리스트',
+  scandinavian: '스칸디나비안',
+  industrial: '인더스트리얼',
+  bohemian: '보헤미안/내추럴',
+};
+
+// 스타일 탭 컴포넌트
+const StyleTab = ({ styles, activeStyle, onStyleChange, styleLabels }) => {
+  return (
+    <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8">
+      {styles.map((style) => (
+        <button
+          key={style}
+          onClick={() => onStyleChange(style)}
+          className={`px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold text-sm sm:text-base transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary ${
+            activeStyle === style
+              ? 'bg-primary text-white shadow-lg'
+              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 hover:border-gray-400'
+          }`}
+        >
+          {styleLabels[style]}
+        </button>
+      ))}
+    </div>
+  );
+};
+
 const HomePage = () => {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const [activeStyle, setActiveStyle] = useState('all');
+  const [selectedImage, setSelectedImage] = useState(null);
   const videoRef = useRef(null);
 
-  const styleOrder = Object.keys(STYLE_CONFIG);
+
+  const imagesForSlider = useMemo(() => {
+    if (activeStyle === 'all') {
+      return Object.values(styleImagesData).flat();
+    }
+    return styleImagesData[activeStyle] || [];
+  }, [activeStyle]);
+  
+  useEffect(() => {
+    setSelectedImage(null);
+  }, [activeStyle]);
 
   const handleVideoLoad = () => {
     setVideoLoaded(true);
@@ -39,6 +81,14 @@ const HomePage = () => {
 
   const handleVideoError = () => {
     setVideoError(true);
+  };
+
+  const handleImageSelect = (image) => {
+    if (selectedImage?.id === image.id) {
+      setSelectedImage(null);
+    } else {
+      setSelectedImage(image);
+    }
   };
 
   const scrollToServices = () => {
@@ -255,27 +305,53 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* AI Style Showcase - Each style as its own snap section */}
-      {styleOrder.map((key) => {
-        const style = STYLE_CONFIG[key];
-        const images = styleImagesData[key] || [];
-        if (images.length === 0) return null;
-
-        return (
-          <div key={key} className="py-20 bg-background min-h-screen snap-start flex items-center">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-              <h3 className="text-3xl font-bold text-text-primary mb-8 text-center">
-                {style.label}
-              </h3>
-              <ImageSlider
-                images={images}
-                selectedImage={null}
-                onImageSelect={() => {}}
-              />
-            </div>
+      {/* AI Style Showcase - Interactive Style Selector */}
+      <div className="py-20 bg-surface min-h-screen snap-start flex items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="text-center mb-16">
+            <h2 className="text-base text-primary font-semibold tracking-wide uppercase">
+              AI 인테리어 쇼룸
+            </h2>
+            <p className="mt-2 text-4xl md:text-5xl font-bold text-text-primary leading-tight">
+              원하는 인테리어 스타일을 선택하세요
+            </p>
+            <p className="mt-4 max-w-2xl mx-auto text-lg text-text-secondary">
+              마음에 드는 스타일을 선택하고, AI가 만들어주는 당신만의 공간을 경험해보세요.
+            </p>
           </div>
-        );
-      })}
+
+          <StyleTab
+            styles={Object.keys(styleLabels)}
+            activeStyle={activeStyle}
+            onStyleChange={setActiveStyle}
+            styleLabels={styleLabels}
+          />
+
+          <ImageSlider
+            images={imagesForSlider}
+            selectedImage={selectedImage}
+            onImageSelect={handleImageSelect}
+          />
+
+          {selectedImage && (
+            <div className="mt-8 text-center">
+              <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg inline-block animate-fade-in">
+                <p className="font-semibold text-primary">
+                  <Star className="inline-block w-5 h-5 mr-2" />
+                  선택됨: {selectedImage.alt}
+                </p>
+              </div>
+              <Link
+                to="/room-planner"
+                className="inline-block px-8 py-4 bg-primary text-white font-bold rounded-lg text-lg hover:bg-secondary transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                <Layout className="inline-block w-6 h-6 mr-2" />
+                이 스타일로 시작하기
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* How It Works Section */}
       <div className="py-20 bg-surface min-h-screen snap-start flex items-center">
@@ -380,6 +456,19 @@ const HomePage = () => {
           </div>
         </div>
       </footer>
+      
+      {/* CSS Animations */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .animate-fade-in {
+            animation: fade-in 0.5s ease-out forwards;
+          }
+        `
+      }} />
     </div>
   );
 };
