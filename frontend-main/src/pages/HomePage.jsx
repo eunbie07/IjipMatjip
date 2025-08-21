@@ -17,6 +17,11 @@ import avatarFemale1 from "../assets/images/avatars/avatar_female_1.png";
 import avatarMale1 from "../assets/images/avatars/avatar_male_1.png";
 import avatarFemale2 from "../assets/images/avatars/avatar_female_2.png";
 
+import bohemianImage from "../assets/images/Bohemian1.png";
+import industrialImage from "../assets/images/Industrial1.png";
+import modernImage from "../assets/images/Modern1.png";
+import scandinavianImage from "../assets/images/Scandinavian1.png";
+
 const HomePage = () => {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
@@ -220,6 +225,32 @@ const HomePage = () => {
             <p className="mt-4 max-w-2xl mx-auto text-lg text-text-secondary">
               AI가 제안하는 다양한 스타일을 구경하고, 새로운 인테리어 영감을 얻어보세요.
             </p>
+          </div>
+
+          {/* Image Collage Section */}
+          <div className="mt-16 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 gap-4 md:gap-6">
+              <div className="group relative overflow-hidden rounded-2xl shadow-lg">
+                <img src={bohemianImage} alt="Bohemian Style" className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500 ease-in-out"/>
+                <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-40 transition-opacity duration-300"></div>
+                <span className="absolute bottom-4 left-4 text-white font-bold text-lg md:text-xl drop-shadow-md">Bohemian</span>
+              </div>
+              <div className="group relative overflow-hidden rounded-2xl shadow-lg">
+                <img src={industrialImage} alt="Industrial Style" className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500 ease-in-out"/>
+                <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-40 transition-opacity duration-300"></div>
+                <span className="absolute bottom-4 left-4 text-white font-bold text-lg md:text-xl drop-shadow-md">Industrial</span>
+              </div>
+              <div className="group relative overflow-hidden rounded-2xl shadow-lg">
+                <img src={modernImage} alt="Modern Style" className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500 ease-in-out"/>
+                <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-40 transition-opacity duration-300"></div>
+                <span className="absolute bottom-4 left-4 text-white font-bold text-lg md:text-xl drop-shadow-md">Modern</span>
+              </div>
+              <div className="group relative overflow-hidden rounded-2xl shadow-lg">
+                <img src={scandinavianImage} alt="Scandinavian Style" className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500 ease-in-out"/>
+                <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-40 transition-opacity duration-300"></div>
+                <span className="absolute bottom-4 left-4 text-white font-bold text-lg md:text-xl drop-shadow-md">Scandinavian</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
