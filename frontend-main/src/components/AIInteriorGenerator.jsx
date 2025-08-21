@@ -4,7 +4,7 @@ import { uploadGeneratedImageToS3 } from "../utils/api";
 // 검증된 침실 스타일 프리셋들
 const bedroomPresets = {
   modern_warm: {
-    name: "모던 미니멀 (따뜻한)",
+    name: "Modern Minimal (Warm)",
     description: "깨끗하고 따뜻한 현대적 침실",
     basePrompt: `
 Modern minimal bedroom with warm neutral tones:
@@ -19,7 +19,7 @@ Modern minimal bedroom with warm neutral tones:
   },
   
   modern_cool: {
-    name: "모던 미니멀 (쿨톤)",
+    name: "Modern Minimal (Cool)",
     description: "시원하고 깨끗한 현대적 침실",
     basePrompt: `
 Modern minimal bedroom with cool neutral tones:
@@ -34,7 +34,7 @@ Modern minimal bedroom with cool neutral tones:
   },
   
   scandinavian_cozy: {
-    name: "스칸디나비안",
+    name: "Scandinavian",
     description: "따뜻하고 자연스러운 북유럽 침실",
     basePrompt: `
 Scandinavian cozy bedroom with hygge atmosphere:
@@ -49,7 +49,7 @@ Scandinavian cozy bedroom with hygge atmosphere:
   },
   
   contemporary_bold: {
-    name: "컴템포러리",
+    name: "Contemporary",
     description: "현대적이고 세련된 침실",
     basePrompt: `
 Contemporary sophisticated bedroom with bold design:
@@ -61,6 +61,36 @@ Contemporary sophisticated bedroom with bold design:
 - Rich textures: velvet, silk, leather, polished stone, metal accents
 - Modern art, curated accessories, plants as design elements
 - High-end materials, attention to detail, magazine-worthy styling`
+  },
+  
+  industrial_urban: {
+    name: "Industrial",
+    description: "도시적이고 날것의 인더스트리얼 침실",
+    basePrompt: `
+Industrial urban bedroom with raw, edgy aesthetic:
+- Exposed brick walls, concrete floors, metal beams, raw materials
+- Dark color palette: blacks, grays, browns, with metallic accents
+- Reclaimed wood furniture, metal bed frames, vintage industrial pieces
+- Edison bulbs, metal pendant lights, exposed wiring aesthetic
+- Leather upholstery, distressed finishes, aged patina textures
+- Large factory-style windows, high ceilings, open ductwork
+- Vintage machinery elements, industrial artifacts as decor
+- Urban loft feel with masculine, sophisticated edge`
+  },
+  
+  bohemian_free: {
+    name: "Bohemian",
+    description: "자유롭고 개성있는 보헤미안 침실",
+    basePrompt: `
+Bohemian eclectic bedroom with artistic, free-spirited vibe:
+- Rich, layered textiles: Persian rugs, tapestries, embroidered pillows
+- Warm, earthy colors: terracotta, deep blues, mustard yellows, forest greens
+- Mix of vintage and ethnic furniture, handcrafted pieces, global influences
+- Multiple lighting sources: string lights, lanterns, candles, ambient glow
+- Plants and natural elements: hanging plants, dried flowers, natural materials
+- Artistic elements: gallery walls, handmade ceramics, woven baskets
+- Comfortable, lived-in feel with personal touches and collected treasures
+- Relaxed, creative atmosphere perfect for artistic souls`
   }
 };
 
@@ -136,7 +166,7 @@ const AIInteriorGenerator = ({ onImageGenerated, capturedScreenshot }) => {
   // 새로운 프리셋 기반 상태 변수들
   const [selectedPreset, setSelectedPreset] = useState('modern_warm'); // 기본 침실 스타일 프리셋
   const [selectedMood, setSelectedMood] = useState(''); // 사용 목적
-  const [furnitureLayout, setFurnitureLayout] = useState('keep_existing'); // 가구 배치 방식 (기존 유지)
+  const [furnitureLayout, setFurnitureLayout] = useState('add_furniture'); // 가구 배치 방식 (기존 유지)
   const [customPrompt, setCustomPrompt] = useState(''); // 추가 커스텀 요청 (기존 유지)
   
   // 실사화 품질 설정
@@ -585,7 +615,7 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
             {/* 이미지 업로드 (캡쳐된 이미지가 있으면 표시) */}
             <div className="space-y-2">
               <label htmlFor="image-upload" className="block text-sm font-semibold text-text-primary">
-                인테리어에 참고할 이미지 {capturedScreenshot ? '(3D 캡처됨)' : '업로드 (선택 사항)'}
+                
               </label>
               {!capturedScreenshot && (
                 <input
@@ -601,12 +631,9 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                 <div className="mt-4 border border-border rounded-xl overflow-hidden shadow-sm">
                   <img
                     src={`data:${uploadedImage.mimeType};base64,${uploadedImage.data}`}
-                    alt={capturedScreenshot ? "3D 캡처된 이미지" : "업로드된 이미지 미리보기"}
+                    alt=""
                     className="w-full h-auto max-h-60 object-contain rounded-xl"
                   />
-                  <p className="text-center text-text-secondary text-sm mt-2 p-2">
-                    {capturedScreenshot ? "3D 캡처된 이미지" : "업로드된 이미지 미리보기"}
-                  </p>
                 </div>
               )}
             </div>
@@ -614,9 +641,9 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
             {/* 기본 침실 스타일 */}
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-text-primary">
-                기본 침실 스타일
+                스타일
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {Object.entries(bedroomPresets).map(([key, preset]) => (
                   <button
                     key={key}
@@ -641,7 +668,7 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
               <label className="block text-sm font-semibold text-text-primary">
                 사용 목적 (선택사항)
               </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div className="grid grid-cols-5 gap-2">
                 <button
                   type="button"
                   onClick={() => setSelectedMood('')}
@@ -733,12 +760,6 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                     furnitureLayout === 'add_furniture' ? '기존 배치 + 가구 추가' :
                     '완전 최적화'
                   }
-                </p>
-                <p>
-                  <strong>사람 제거:</strong> {removePeople ? '활성화' : '비활성화'}
-                </p>
-                <p>
-                  <strong>3D 모델:</strong> {apply3DModels ? '활성화' : '비활성화'}
                 </p>
               </div>
             </div>
@@ -924,13 +945,7 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
 
 
         
-        {/* 간단 사용 가이드 */}
-        <div className="mt-8 p-4 bg-pink-50 border border-pink-200 rounded-xl">
-          <h3 className="text-base font-semibold text-text-primary mb-3">How to Use</h3>
-          <div className="text-sm text-text-secondary">
-            <p><strong>1.</strong> Choose style & mood → <strong>2.</strong> Generate design → <strong>3.</strong> Create realistic photo</p>
-          </div>
-        </div>
+
       </div>
     </div>
 

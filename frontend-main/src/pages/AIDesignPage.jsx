@@ -99,13 +99,13 @@ const AIDesignPage = () => {
               onChange={(e) => setSelectedStyle(e.target.value)}
               className="w-full p-3 bg-surface border border-border rounded-lg text-text-primary placeholder-text-secondary focus:ring-primary focus:border-primary"
             >
-              <option value="modern">모던 (Modern)</option>
-              <option value="minimalist">미니멀 (Minimalist)</option>
-              <option value="vintage">빈티지 (Vintage)</option>
-              <option value="industrial">인더스트리얼 (Industrial)</option>
-              <option value="bohemian">보헤미안 (Bohemian)</option>
-              <option value="scandinavian">스칸디나비안 (Scandinavian)</option>
-              <option value="contemporary">컨템포러리 (Contemporary)</option>
+              <option value="modern">Modern</option>
+              <option value="minimalist">Minimalist</option>
+              <option value="vintage">Vintage</option>
+              <option value="industrial">Industrial</option>
+              <option value="bohemian">Bohemian</option>
+              <option value="scandinavian">Scandinavian</option>
+              <option value="contemporary">Contemporary</option>
             </select>
           </div>
 

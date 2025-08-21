@@ -167,8 +167,7 @@ const RoomResult = ({ result, depthImageUrl }) => {
 
   return (
     <div className="mt-10">
-      {/* 신뢰도 표시 */}
-      <ConfidenceIndicator confidence={confidence} reliability={reliability} />
+
 
       {/* 경고 메시지 */}
       {result.warning && (

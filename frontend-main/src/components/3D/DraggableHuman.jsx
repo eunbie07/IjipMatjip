@@ -145,7 +145,7 @@ export const DraggableHuman = React.memo(function DraggableHuman({
         backgroundOpacity={0.8}
         padding={2}
       >
-        {height}cm (GLB)
+        {height}cm
       </Text>
     </group>
   );

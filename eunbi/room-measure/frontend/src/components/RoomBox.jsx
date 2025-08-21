@@ -1735,7 +1735,6 @@ export default function RoomBox({
           </div>
           <div className="text-left">
             <div className="font-bold text-sm">3D 화면 캡처</div>
-            <div className="text-xs text-white/80">가구 스타일 변경용</div>
           </div>
         </button>
 
@@ -1761,9 +1760,6 @@ export default function RoomBox({
           </div>
           <div className="text-left">
             <div className="font-bold text-sm">AI 인테리어 생성</div>
-            <div className="text-xs text-white/80">
-              방 크기 기반 맞춤 디자인
-            </div>
           </div>
           <svg
             className="w-5 h-5 group-hover:translate-x-1 transition-transform"

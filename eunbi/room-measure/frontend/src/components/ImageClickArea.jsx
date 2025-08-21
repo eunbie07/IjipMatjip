@@ -573,30 +573,6 @@ const ImageClickArea = ({ imageUrl, onComplete, depthWidth, depthHeight }) => {
                 <strong>Select Points on Room Photo</strong>
               </h3>
               <div className="flex gap-2">
-                {/* Auto Detect Button */}
-                <button
-                  onClick={handleAutoDetect}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    isAutoDetecting
-                      ? "bg-primary/50 text-white cursor-not-allowed"
-                      : "bg-primary hover:bg-secondary text-white shadow-md hover:shadow-lg transform hover:scale-105"
-                  }`}
-                  disabled={isAutoDetecting || isLoading}
-                  title="AI로 방 경계를 자동 감지합니다"
-                >
-                  {isAutoDetecting ? (
-                    <span className="flex items-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span className="text-xs">AI 분석 중...</span>
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      AI
-                      <strong>Auto Detect</strong>
-                    </span>
-                  )}
-                </button>
-
                 <button
                   onClick={handleReset}
                   className="px-4 py-2 bg-secondary hover:bg-primary text-white rounded-lg text-sm font-medium transition-colors"
@@ -717,24 +693,7 @@ const ImageClickArea = ({ imageUrl, onComplete, depthWidth, depthHeight }) => {
               </div>
             </div>
 
-            <div className="mt-4 p-4 bg-background rounded-lg">
-              <h4 className="text-lg font-semibold text-text-primary mb-2">
-                <strong>Measurement Tips</strong>
-              </h4>
-              <ul className="text-sm text-text-secondary space-y-1">
-                <li>
-                  AI <strong>Auto Detect:</strong> Try AI-powered automatic room
-                  detection first
-                </li>
-                <li>
-                  <strong>Manual:</strong> Select 4 corner points if auto
-                  detection fails
-                </li>
-                <li>First and second points should be vertically aligned</li>
-                <li>Choose walls not blocked by furniture or objects</li>
-                <li>Front-facing photos provide better accuracy</li>
-              </ul>
-            </div>
+
           </div>
         </div>
       </div>
