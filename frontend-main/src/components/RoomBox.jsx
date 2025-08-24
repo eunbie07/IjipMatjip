@@ -153,6 +153,41 @@ export default function RoomBox({
 
   // 3D 모델 사용 상태 (캡처 핸들러보다 먼저 정의)
   const [use3DModels, setUse3DModels] = useState(false);
+  
+  // 가구별 커스텀 크기 상태
+  const [furnitureCustomSizes, setFurnitureCustomSizes] = useState({});
+  
+  // 치수선 표시 상태
+  const [showDimensions, setShowDimensions] = useState(true);
+  
+  // 가구 크기 조절 핸들(빨강/파랑/초록 버튼) 표시 상태
+  const [showResizeHandles, setShowResizeHandles] = useState(true);
+
+  // 가구 크기 조절 핸들러
+  const handleFurnitureResize = useCallback((furnitureId, newSize) => {
+    console.log('🏠 RoomBox handleFurnitureResize:', { furnitureId, newSize });
+    
+    setFurnitureCustomSizes(prev => {
+      const updated = {
+        ...prev,
+        [furnitureId]: newSize
+      };
+      console.log('🏠 Updated furnitureCustomSizes:', updated);
+      return updated;
+    });
+    
+    // furniture 상태도 업데이트 (필요한 경우)
+    setFurniture(prevFurniture => {
+      const updated = prevFurniture.map(f => 
+        f.id === furnitureId 
+          ? { ...f, customSize: newSize }
+          : f
+      );
+      console.log('🏠 Updated furniture array:', updated);
+      return updated;
+    });
+  }, [setFurniture]);
+
 
   // 가구 핸들러들
   const {
@@ -181,7 +216,12 @@ export default function RoomBox({
   const handleAIInteriorGenerate = () => {
     const originalUse3DModels = use3DModels;
     const originalShowHuman = showHuman;
+    const originalShowDimensions = showDimensions;
+    const originalShowResizeHandles = showResizeHandles;
+    
     setShowHuman(false);
+    setShowDimensions(false); // 치수선도 숨김
+    setShowResizeHandles(false); // 가구 크기 조절 핸들(빨강/파랑/초록 버튼)도 숨김
     
     if (!use3DModels) {
       setUse3DModels(true);
@@ -189,7 +229,7 @@ export default function RoomBox({
     
     // 렌더링 완료를 위한 충분한 지연 시간
     setTimeout(() => {
-      console.log('AI 인테리어 생성 실행 - 사람 모델 숨김 상태:', !showHuman);
+      console.log('AI 인테리어 생성 실행 - 사람 모델, 치수선, 크기조절 핸들 숨김 상태:', !showHuman, !showDimensions, !showResizeHandles);
       
       // 원래 핸들러 실행
       createAIInteriorHandler(
@@ -209,6 +249,8 @@ export default function RoomBox({
         console.log('AI 인테리어 생성 완료 - 원래 상태로 복원');
         setUse3DModels(originalUse3DModels);
         setShowHuman(originalShowHuman);
+        setShowDimensions(originalShowDimensions); // 치수선도 복원
+        setShowResizeHandles(originalShowResizeHandles); // 크기조절 핸들도 복원
       }, 500); // 더 긴 지연으로 확실한 복원
     }, 300); // 렌더링 완료를 위한 충분한 시간
   };
@@ -312,6 +354,7 @@ export default function RoomBox({
           : "h-[700px] rounded-xl border border-border"
       }`}
     >
+      
       {/* 키보드 단축키 도움말 */}
       <div className="absolute top-4 right-4 z-20">
         <div className="relative group">
@@ -1143,6 +1186,17 @@ export default function RoomBox({
                 사람 표시
               </span>
             </label>
+            <label className="flex items-center gap-2 group cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showDimensions}
+                onChange={(e) => setShowDimensions(e.target.checked)}
+                className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-1"
+              />
+              <span className="text-text-primary group-hover:text-primary transition-colors duration-200">
+                치수선 표시
+              </span>
+            </label>
           </div>
         </div>
       </div>
@@ -1605,6 +1659,10 @@ export default function RoomBox({
                   updatePlacedFurniturePositionOnDragEnd
                 }
                 use3DModels={use3DModels}
+                showDimensions={showDimensions}
+                showResizeHandles={showResizeHandles}
+                customSize={furnitureCustomSizes[f.id]}
+                onResize={handleFurnitureResize}
               />
             ))}
 
@@ -1628,24 +1686,26 @@ export default function RoomBox({
               visible={measurementMode && !!measurePoints[0]}
             />
 
-            <group position={[0, 0.1, 0]}>
-              <DimensionArrow start={[0, 0, d + 10]} end={[w, 0, d + 10]} />
-              <DimensionLabel
-                position={[w / 2, 0, d + 15]}
-                text={`${(w / 100).toFixed(1)}m`}
-              />
-              <DimensionArrow start={[w + 10, 0, 0]} end={[w + 10, 0, d]} />
-              <DimensionLabel
-                position={[w + 15, 0, d / 2]}
-                text={`${(d / 100).toFixed(1)}m`}
-                rotation={[0, Math.PI / 2, 0]}
-              />
-              <DimensionArrow start={[w + 10, 0, 0]} end={[w + 10, h, 0]} />
-              <DimensionLabel
-                position={[w + 15, h / 2, 0]}
-                text={`${(h / 100).toFixed(1)}m`}
-              />
-            </group>
+            {showDimensions && (
+              <group position={[0, 0.1, 0]}>
+                <DimensionArrow start={[0, 0, d + 10]} end={[w, 0, d + 10]} />
+                <DimensionLabel
+                  position={[w / 2, 0, d + 15]}
+                  text={`${(w / 100).toFixed(1)}m`}
+                />
+                <DimensionArrow start={[w + 10, 0, 0]} end={[w + 10, 0, d]} />
+                <DimensionLabel
+                  position={[w + 15, 0, d / 2]}
+                  text={`${(d / 100).toFixed(1)}m`}
+                  rotation={[0, Math.PI / 2, 0]}
+                />
+                <DimensionArrow start={[w + 10, 0, 0]} end={[w + 10, h, 0]} />
+                <DimensionLabel
+                  position={[w + 15, h / 2, 0]}
+                  text={`${(h / 100).toFixed(1)}m`}
+                />
+              </group>
+            )}
 
             <OrbitControls
               ref={controlsRef}

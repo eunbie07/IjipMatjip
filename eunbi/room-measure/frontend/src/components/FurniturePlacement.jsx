@@ -714,7 +714,19 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
               disabled={selectedFurnitureIndex === null}
               title="복사 (Ctrl+C)"
             >
-              복사
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                />
+              </svg>
             </button>
             <button
               onClick={pasteFurniture}
@@ -722,7 +734,19 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
               disabled={!copiedFurniture}
               title="붙여넣기 (Ctrl+V)"
             >
-              붙여넣기
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                />
+              </svg>
             </button>
           </div>
 
@@ -731,7 +755,7 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
             className="px-4 py-2 bg-danger hover:bg-danger-dark text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={placedFurniture.length === 0}
           >
-            <strong>전체 삭제</strong>
+            <strong>Clear All</strong>
           </button>
         </div>
       </div>
@@ -855,12 +879,12 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
 
           {/* 템플릿 관리 */}
           <div className="mt-4 p-3 bg-background border border-border rounded-lg">
-            <h4 className="text-lg font-semibold mb-3 text-text-primary">템플릿 관리</h4>
+            <h4 className="text-lg font-semibold mb-3 text-text-primary">Template Management</h4>
             <div className="space-y-2">
               <div className="flex gap-1">
                 <input
                   type="text"
-                  placeholder="템플릿 이름"
+                  placeholder="Template Name"
                   id="templateName"
                   className="flex-1 px-2 py-1 text-sm border rounded"
                 />
@@ -875,7 +899,7 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
                   disabled={placedFurniture.length === 0}
                   className="px-3 py-1 bg-primary text-white rounded text-sm font-medium hover:bg-secondary disabled:bg-border disabled:cursor-not-allowed"
                 >
-                  저장
+                  Save
                 </button>
               </div>
               
@@ -888,11 +912,11 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
                         onClick={() => loadTemplate(template.name)}
                         className="px-2 py-1 bg-primary text-white rounded text-xs hover:bg-secondary"
                       >
-                        불러오기
+                        Load
                       </button>
                       <button
                         onClick={() => {
-                          if (confirm(`"${template.name}" 템플릿을 삭제하시겠습니까?`)) {
+                          if (confirm(`Delete template "${template.name}"?`)) {
                             deleteTemplate(template.name);
                             // 강제 리렌더링을 위해 상태 업데이트
                             setSelectedFurnitureIndex(selectedFurnitureIndex);
@@ -900,49 +924,31 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
                         }}
                         className="px-2 py-1 bg-danger text-white rounded text-xs hover:bg-danger-dark"
                       >
-                        삭제
+                        Delete
                       </button>
                     </div>
                   </div>
                 ))}
                 {getSavedTemplates().length === 0 && (
-                  <div className="text-xs text-text-secondary text-center py-2">저장된 템플릿이 없습니다</div>
+                  <div className="text-xs text-text-secondary text-center py-2">No saved templates</div>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="mt-4 p-3 bg-background border border-border rounded-lg">
-            <p className="text-sm text-text-secondary">
-              <strong>사용법:</strong>
-              <br />
-              • 가구를 드래그해서 방에 배치 (미리보기 제공)
-              <br />
-              • 배치된 항목 클릭 후 드래그로 이동
-              <br />
-              • 녹색 버튼으로 회전, 빨간 버튼으로 삭제
-              <br />
-              <strong>단축키:</strong>
-              <br />
-              • Ctrl+Z: 실행취소, Ctrl+Y: 다시실행
-              <br />
-              • Ctrl+C: 복사, Ctrl+V: 붙여넣기
-              <br />
-              • Delete: 선택된 가구 삭제
-            </p>
-          </div>
+
         </div>
 
         {/* 방 평면도 */}
         <div className="lg:col-span-2">
           <h3 className="text-2xl font-bold mb-4 text-text-primary">
-            <strong>방 평면도</strong>
+            <strong>Room Floor Plan</strong>
           </h3>
 
           <div className="border-2 border-dashed border-border rounded-lg p-4 bg-surface">
             <div className="mb-2 text-sm text-text-secondary text-center">
-              실제 비율: {validRoomWidth} × {validRoomDepth} cm (
-              {(validRoomWidth / validRoomDepth).toFixed(2)}:1) - 좌표: 왼쪽 위
+              Actual ratio: {validRoomWidth} × {validRoomDepth} cm (
+              {(validRoomWidth / validRoomDepth).toFixed(2)}:1) - Coordinates: Top-left
               (0,0)
             </div>
 

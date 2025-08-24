@@ -27,9 +27,11 @@ export const fetchImageFromUrl = async (imageUrl) => {
     const candidateUrls = [
       // 개발 환경에서는 Vite 프록시 우선
       ...(isDev ? [viteProxyUrl] : []),
+      // 프로덕션 환경: 백엔드 프록시 API 우선 사용
+      ...(!isDev ? [`${import.meta.env.VITE_CLOUD_API_BASE}/proxy/image?url=${encodeURIComponent(imageUrl)}`] : []),
       // 원본 직접 접근 (CORS 허용 시)
       imageUrl,
-      // 백엔드 프록시 후보들
+      // 기타 백엔드 프록시 후보들
       ...proxyBases.map(base => `${base}/proxy/image?url=${encodeURIComponent(imageUrl)}`)
     ];
 

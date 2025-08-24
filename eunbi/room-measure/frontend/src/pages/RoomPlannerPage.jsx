@@ -9,6 +9,8 @@ import RoomBox from "../components/RoomBox";
 import WebGLErrorBoundary from "../components/WebGLErrorBoundary";
 import WebGLDebugger from "../components/WebGLDebugger";
 import FurniturePlacement from "../components/FurniturePlacement";
+import ProgressBar from "../components/ProgressBar";
+import StickyProgressBar from "../components/StickyProgressBar";
 
 const HOUSING_TYPES = [
   {
@@ -149,6 +151,20 @@ function RoomPlannerPage() {
   const [selectedMethod, setSelectedMethod] = useState("manual");
   const [roomMeasurementPoints, setRoomMeasurementPoints] = useState(null);
 
+  // 진행률 상태 추가
+  const [progress, setProgress] = useState(0);
+  const [currentStep, setCurrentStep] = useState('upload');
+  const [showStickyProgress, setShowStickyProgress] = useState(false);
+
+  // 진행률 단계 정의
+  const progressSteps = [
+    { id: 'upload', name: '이미지 업로드', progress: 20 },
+    { id: 'processing', name: 'AI 분석', progress: 40 },
+    { id: 'clicking', name: '모서리 선택', progress: 60 },
+    { id: 'measuring', name: '측정 중', progress: 80 },
+    { id: 'complete', name: '완료', progress: 100 }
+  ];
+
   const updateRoomMeasurementPoints = (points) => {
     setRoomMeasurementPoints(points);
     window.roomMeasurementPoints = points;
@@ -179,6 +195,10 @@ function RoomPlannerPage() {
     setUploadError(null);
     setUploadStatus(null);
     setIsProcessing(true);
+    
+    // 진행률 초기화 및 업로드 단계 시작
+    setCurrentStep('upload');
+    setProgress(20);
 
     // 파일 유효성 검사
     if (!file) {
@@ -217,6 +237,9 @@ function RoomPlannerPage() {
       setImage(file);
       setImageUrl(URL.createObjectURL(file));
 
+      // AI 분석 단계로 진행
+      setCurrentStep('processing');
+      setProgress(40);
       setUploadStatus("AI 깊이 분석 중... (30초 소요)");
       await generateDepthMap();
       
@@ -238,6 +261,9 @@ function RoomPlannerPage() {
         console.warn("깊이 맵 이미지 로드 실패:", error);
       }
 
+      // 모서리 클릭 단계로 진행
+      setCurrentStep('clicking');
+      setProgress(60);
       setUploadStatus("이미지 업로드 완료! 방 모서리를 클릭하세요.");
     } catch (error) {
       console.error("Upload failed:", error);
@@ -266,6 +292,10 @@ function RoomPlannerPage() {
 
   const handlePointsSubmit = async (points, method = "manual") => {
     try {
+      // 측정 중 단계로 진행
+      setCurrentStep('measuring');
+      setProgress(80);
+      
       updateRoomMeasurementPoints(points);
 
       // 층고 값 검증 및 기본값 설정
@@ -299,6 +329,10 @@ function RoomPlannerPage() {
       }
 
       setResult(resultData);
+      
+      // 완료 단계로 진행
+      setCurrentStep('complete');
+      setProgress(100);
     } catch (error) {
       console.error("Room size estimation failed:", error);
       let message = "방 크기 계산에 실패했습니다.";
@@ -339,6 +373,23 @@ function RoomPlannerPage() {
     }
   };
 
+  // 스크롤 이벤트로 스티키 진행률 표시 제어
+  React.useEffect(() => {
+    const handleScroll = () => {
+      // 진행률이 0보다 크고 결과가 없는 상태에서만 활성화
+      if ((progress > 0 && !result) || isProcessing) {
+        const scrollY = window.scrollY;
+        const shouldShowSticky = scrollY > 200; // 200px 스크롤 후 표시
+        setShowStickyProgress(shouldShowSticky);
+      } else {
+        setShowStickyProgress(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [progress, result, isProcessing]);
+
   React.useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(document.fullscreenElement !== null);
@@ -359,6 +410,14 @@ function RoomPlannerPage() {
 
   return (
     <div className="min-h-screen bg-background py-8">
+      {/* 스티키 진행률 바 */}
+      <StickyProgressBar 
+        currentStep={currentStep}
+        progress={progress}
+        steps={progressSteps}
+        isVisible={showStickyProgress}
+      />
+      
       <div className="container mx-auto px-4">
         <div className="mb-8 pt-24 md:pt-28 max-w-4xl">
           <h1 className="text-4xl md:text-5xl font-bold text-text-primary mb-6 leading-tight">
@@ -371,6 +430,17 @@ function RoomPlannerPage() {
 
       {!result && (
         <div className="max-w-6xl mx-auto">
+          {/* 진행률 표시 (이미지가 업로드된 후부터 표시) */}
+          {(imageUrl || isProcessing || progress > 0) && (
+            <div className="bg-surface border border-border rounded-lg shadow-sm p-4 sm:p-6 lg:p-8 mb-6">
+              <ProgressBar 
+                currentStep={currentStep} 
+                progress={progress} 
+                steps={progressSteps} 
+              />
+            </div>
+          )}
+          
           <div className="bg-surface border border-border rounded-lg shadow-sm p-4 sm:p-6 lg:p-8 mb-6">
             <div className="mb-6">
               {/* 업로드 방법 선택 탭 */}
@@ -817,24 +887,70 @@ function RoomPlannerPage() {
             </div>
           </div>
 
-          <div className="text-center mt-8">
-            <button
-              onClick={() => {
-                setResult(null);
-                setManualResult(null);
-                setAutoResult(null);
-                setSelectedMethod("manual");
-                setImage(null);
-                setImageUrl(null);
-                setDepthImageUrl(null);
-                setUploadStatus(null);
-                setUploadError(null);
-                setPlacedFurniture([]);
-              }}
-              className="px-6 py-3 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition-colors shadow-lg"
-            >
-              새로 측정하기
-            </button>
+          <div className="text-center mt-8 space-y-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <button
+                onClick={() => {
+                  setResult(null);
+                  setManualResult(null);
+                  setAutoResult(null);
+                  setSelectedMethod("manual");
+                  setImage(null);
+                  setImageUrl(null);
+                  setDepthImageUrl(null);
+                  setUploadStatus(null);
+                  setUploadError(null);
+                  setPlacedFurniture([]);
+                  // 진행률 초기화
+                  setProgress(0);
+                  setCurrentStep('upload');
+                }}
+                className="w-40 px-6 py-3 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition-colors shadow-lg"
+              >
+                새로 측정하기
+              </button>
+              
+              {/* Furniture Layout 탭에서만 3D로 보기 버튼 표시 */}
+              {activeTab === "furniture" && (
+                <button
+                  onClick={() => handleTabClick("3d")}
+                  className="w-40 px-6 py-3 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"
+                    />
+                  </svg>
+                  3D로 보기
+                </button>
+              )}
+              
+              {activeTab === "analysis" && (
+                <button
+                  onClick={() => setActiveTab("2d")}
+                  className="w-40 px-6 py-3 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition-colors shadow-lg"
+                >
+                  평면도 보기
+                </button>
+              )}
+              
+              {activeTab === "2d" && (
+                <button
+                  onClick={() => setActiveTab("furniture")}
+                  className="w-40 px-6 py-3 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition-colors shadow-lg"
+                >
+                  가구 배치하기
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

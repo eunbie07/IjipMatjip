@@ -207,15 +207,6 @@ const RoomCanvas = ({ x, y }) => {
           strokeWidth={2}
         />
 
-        {/* 원점 라벨 */}
-        <text
-          x={50}
-          y={canvasHeight + 75}
-          textAnchor="middle"
-          style={{ fontSize: 10, fill: "#EF4444", fontWeight: 600 }}
-        >
-          (0,0)
-        </text>
       </svg>
 
       {/* 비율 정보 */}

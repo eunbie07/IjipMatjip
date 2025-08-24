@@ -3,17 +3,20 @@
  * 포트 분리: 로컬 이미지 처리(3010), 클라우드 데이터(3000)
  */
 
+import { validateHeaders, validateApiResponse, safeLog, escapeHtml } from './sanitizer';
+
 // API 엔드포인트 설정 (환경변수 사용)
 const LOCAL_API_BASE = import.meta.env.VITE_LOCAL_API_BASE || 'http://localhost:3010';  // 로컬 이미지/AI 처리
 const CLOUD_API_BASE = import.meta.env.VITE_CLOUD_API_BASE || 'http://13.55.21.100:3000';  // 클라우드 데이터 저장/조회
 
-// 헤더 생성 함수
+// 헤더 생성 함수 (보안 강화)
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
-  return {
+  const headers = {
     'Content-Type': 'application/json',
-    ...(token && { 'Authorization': `Bearer ${token}` })
+    ...(token && { 'Authorization': `Bearer ${escapeHtml(token)}` })
   };
+  return validateHeaders(headers);
 };
 
 // ---------------------------
@@ -35,7 +38,8 @@ export const signup = async (userData) => {
     throw { response: { data: error } };
   }
   
-  return response.json();
+  const data = await response.json();
+  return validateApiResponse(data);
 };
 
 // 로그인
@@ -53,7 +57,8 @@ export const login = async (userData) => {
     throw { response: { data: error } };
   }
   
-  return response.json();
+  const data = await response.json();
+  return validateApiResponse(data);
 };
 
 // 현재 사용자 정보 조회
@@ -68,7 +73,8 @@ export const getCurrentUser = async () => {
     throw { response: { data: error } };
   }
   
-  return response.json();
+  const data = await response.json();
+  return validateApiResponse(data);
 };
 
 // ---------------------------

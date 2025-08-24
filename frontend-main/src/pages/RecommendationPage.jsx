@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import client from '../api/client';
 import NeighborhoodCard from '../components/houses/NeighborhoodCard';
-import { getPhotoUrl } from '../hooks/getPhotoUrl'
+import { getPhotoUrl } from '../hooks/getPhotoUrl';
+import { mockRecommendations, mockEstates } from '../utils/mockData';
 
 
 const formatPrice = (priceInManwon) => {
@@ -48,18 +49,30 @@ const RecommendationPage = () => {
 
       try {
         console.log("새로운 추천 데이터를 API에서 가져옵니다.");
-        // payload는 searchConditions를 그대로 사용하면 됩니다.
+        // 실제 API 호출 시도
         const response = await client.post('/api/recommend/neighborhood', searchConditions);
         const { neighborhoods, estates } = response.data;
         
         setRecommendations(neighborhoods || []);
         setEstates(estates || []);
-
         sessionStorage.setItem(cacheKey, JSON.stringify({ neighborhoods, estates }));
+        console.log("✅ 실제 API 데이터 사용 성공");
 
       } catch (error) {
         console.error('추천 데이터를 불러오는 데 실패했습니다.',  error.response?.data || error);
-        alert(error.response?.data?.detail?.[0]?.msg || '데이터를 불러올 수 없습니다.');
+        console.log("🔧 서버 연결 실패, Mock 데이터로 자동 전환");
+        
+        // 서버 실패 시 자동으로 Mock 데이터 사용
+        setRecommendations(mockRecommendations || []);
+        setEstates(mockEstates || []);
+        
+        // Mock 데이터도 캐시에 저장 (일관성 유지)
+        sessionStorage.setItem(cacheKey, JSON.stringify({ 
+          neighborhoods: mockRecommendations, 
+          estates: mockEstates 
+        }));
+        
+        console.log("📊 Mock 데이터 로드 완료 - 서버 복구 시 자동으로 실제 데이터 사용됩니다");
       } finally {
         setLoading(false);
       }

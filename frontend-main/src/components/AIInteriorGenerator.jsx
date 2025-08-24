@@ -167,7 +167,6 @@ const AIInteriorGenerator = ({ onImageGenerated, capturedScreenshot }) => {
   const [selectedPreset, setSelectedPreset] = useState('modern_warm'); // 기본 침실 스타일 프리셋
   const [selectedMood, setSelectedMood] = useState(''); // 사용 목적
   const [furnitureLayout, setFurnitureLayout] = useState('add_furniture'); // 가구 배치 방식 (기존 유지)
-  const [customPrompt, setCustomPrompt] = useState(''); // 추가 커스텀 요청 (기존 유지)
   
   // 실사화 품질 설정
   const [photoStyle, setPhotoStyle] = useState('architectural'); // 사진 스타일
@@ -216,7 +215,7 @@ const AIInteriorGenerator = ({ onImageGenerated, capturedScreenshot }) => {
     if (capturedScreenshot && capturedScreenshot.imageData) {
       // capturedScreenshot.imageData가 base64 문자열인 경우
       const base64Data = capturedScreenshot.imageData.split(',')[1] || capturedScreenshot.imageData;
-      setUploadedImage({ 
+      setUploadedImage({
         data: base64Data, 
         mimeType: 'image/png'
       });
@@ -284,7 +283,9 @@ ${layoutDescription}`;
       }
 
       // 공통 디자인 요구사항 추가
-      finalPromptText += `\n\nDESIGN REQUIREMENTS:
+      finalPromptText += `
+
+DESIGN REQUIREMENTS:
 - High-quality bedroom interior design suitable for design magazines
 - Balanced composition with proper proportions for bedroom functionality
 - Cohesive color scheme throughout the space promoting rest and relaxation
@@ -302,7 +303,9 @@ DESK AND WORKSPACE REQUIREMENTS (if present):
 
       // 사람 삭제 옵션 추가
       if (removePeople) {
-        finalPromptText += `\n\nPEOPLE REMOVAL REQUIREMENT:
+        finalPromptText += `
+
+PEOPLE REMOVAL REQUIREMENT:
 - Remove ALL people, human figures, or human-like objects from the scene
 - Ensure the room appears completely empty of any human presence
 - Focus on the interior design and furniture only
@@ -311,7 +314,9 @@ DESK AND WORKSPACE REQUIREMENTS (if present):
 
       // 3D 모델 적용 옵션 추가
       if (apply3DModels) {
-        finalPromptText += `\n\n3D MODEL INTEGRATION:
+        finalPromptText += `
+
+3D MODEL INTEGRATION:
 - Apply realistic 3D furniture models with proper textures and materials
 - Ensure furniture appears as high-quality 3D rendered objects
 - Use realistic lighting and shadows for 3D models
@@ -321,7 +326,9 @@ DESK AND WORKSPACE REQUIREMENTS (if present):
 
       // 기존 배치 유지 시 추가 제한사항
       if (furnitureLayout === 'keep_existing') {
-        finalPromptText += `\n\nCRITICAL CONSTRAINT FOR EXISTING LAYOUT:
+        finalPromptText += `
+
+CRITICAL CONSTRAINT FOR EXISTING LAYOUT:
 - FURNITURE COUNT MUST MATCH ORIGINAL IMAGE EXACTLY
 - If original shows bed + desk only, result must show bed + desk only
 - DO NOT add nightstands, side tables, chairs, plants, lamps, rugs, or any decorative items
@@ -329,15 +336,11 @@ DESK AND WORKSPACE REQUIREMENTS (if present):
 - Focus transformation on: wall colors, flooring materials, existing furniture styling only
 - This is a STRICT requirement - adding furniture violates user preferences`;
       }
-
-      // 커스텀 요청이 있으면 추가
-      if (customPrompt.trim()) {
-        finalPromptText += `\n\nADDITIONAL REQUIREMENTS:
-${customPrompt.trim()}`;
-      }
       
       // 3D 렌더링 품질 지시 (실사화 아님)
-      finalPromptText += `\n\nRENDERING STYLE:
+      finalPromptText += `
+
+RENDERING STYLE:
 - 3D architectural rendering style, not photographic
 - Clean digital rendering with smooth surfaces
 - Computer-generated interior visualization
@@ -354,7 +357,8 @@ ${customPrompt.trim()}`;
             parts: parts
         }],
         generationConfig: {
-          responseModalities: ['TEXT', 'IMAGE']
+          responseModalities: ['TEXT', 'IMAGE'],
+          temperature: 0.2
         },
       };
 
@@ -527,7 +531,8 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
             parts: parts
         }],
         generationConfig: {
-          responseModalities: ['TEXT', 'IMAGE']
+          responseModalities: ['TEXT', 'IMAGE'],
+          temperature: 0.2
         },
       };
 
@@ -649,7 +654,7 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                     key={key}
                     type="button"
                     onClick={() => setSelectedPreset(key)}
-                    className={`p-4 border rounded-xl text-left transition-all duration-200 ${
+                    className={`p-4 border rounded-xl text-left transition-all duration-200 ${ 
                       selectedPreset === key 
                         ? 'border-primary bg-pink-50 shadow-md' 
                         : 'border-border hover:border-primary hover:bg-window-fill'
@@ -672,7 +677,7 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                 <button
                   type="button"
                   onClick={() => setSelectedMood('')}
-                  className={`p-3 border rounded-xl text-sm font-medium transition-all duration-200 ${
+                  className={`p-3 border rounded-xl text-sm font-medium transition-all duration-200 ${ 
                     selectedMood === '' 
                       ? 'border-primary bg-window-fill text-text-primary' 
                       : 'border-border text-text-secondary hover:border-primary'
@@ -686,7 +691,7 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                     key={key}
                     type="button"
                     onClick={() => setSelectedMood(key)}
-                    className={`p-3 border rounded-xl text-sm font-medium transition-all duration-200 ${
+                    className={`p-3 border rounded-xl text-sm font-medium transition-all duration-200 ${ 
                       selectedMood === key 
                         ? 'border-primary bg-pink-50 text-primary' 
                         : 'border-border text-text-secondary hover:border-primary'
@@ -726,21 +731,7 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                 <strong>완전 최적화</strong>: 가구 재배치 + 추가로 스타일에 완벽하게 맞춤
               </p>
             </div>
-            {/* 추가 커스텀 요청 */}
-            <div className="space-y-2">
-              <label htmlFor="custom-prompt" className="block text-sm font-semibold text-text-primary">
-                추가 요청 (선택사항)
-              </label>
-              <textarea
-                id="custom-prompt"
-                rows="3"
-                className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-                placeholder="예: '책상을 창문 쪽으로 배치', '식물을 많이 넣어주세요', '아늑한 독서 공간 만들어주세요'"
-                value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
-                disabled={loading || generatingRealistic}
-              />
-            </div>
+            
 
             {/* 선택된 조합 미리보기 */}
             <div className="p-4 bg-window-fill border border-window-stroke rounded-xl">
@@ -755,7 +746,7 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                   </p>
                 )}
                 <p>
-                  <strong>배치:</strong> {
+                  <strong>배치:</strong> { 
                     furnitureLayout === 'keep_existing' ? '기존 배치 유지' :
                     furnitureLayout === 'add_furniture' ? '기존 배치 + 가구 추가' :
                     '완전 최적화'
@@ -876,7 +867,7 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
             {/* 2단계: 실사화 버튼 */}
             <button
               onClick={generateRealisticImage}
-              className={`w-full py-4 px-6 rounded-xl font-semibold text-lg text-white transition-colors shadow-lg hover:shadow-xl mt-6 ${
+              className={`w-full py-4 px-6 rounded-xl font-semibold text-lg text-white transition-colors shadow-lg hover:shadow-xl mt-6 ${ 
                 generatingRealistic
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-primary hover:bg-secondary'
