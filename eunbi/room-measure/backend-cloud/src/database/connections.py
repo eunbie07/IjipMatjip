@@ -84,6 +84,52 @@ class MongoDBService:
         except Exception as e:
             logger.error(f"MongoDB 저장 오류: {e}")
             return False, None
+    
+    def delete_room_layout(self, layout_id: str, user_id: int):
+        """로그인 사용자의 방 레이아웃 삭제"""
+        if not self.is_connected():
+            return False
+        
+        try:
+            from bson import ObjectId
+            result = self.room_layouts_collection.delete_one({
+                "_id": ObjectId(layout_id),
+                "user_id": user_id
+            })
+            
+            if result.deleted_count > 0:
+                logger.info(f"MongoDB에서 삭제 완료: 레이아웃 ID {layout_id}, 사용자 {user_id}")
+                return True
+            else:
+                logger.warning(f"MongoDB에서 삭제할 레이아웃을 찾을 수 없음: ID {layout_id}, 사용자 {user_id}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"MongoDB 삭제 오류: {e}")
+            return False
+    
+    def delete_room_layout_guest(self, layout_id: str):
+        """게스트 사용자의 방 레이아웃 삭제"""
+        if not self.is_connected():
+            return False
+        
+        try:
+            from bson import ObjectId
+            result = self.room_layouts_collection.delete_one({
+                "_id": ObjectId(layout_id),
+                "user_id": None
+            })
+            
+            if result.deleted_count > 0:
+                logger.info(f"MongoDB에서 삭제 완료 (게스트): 레이아웃 ID {layout_id}")
+                return True
+            else:
+                logger.warning(f"MongoDB에서 삭제할 게스트 레이아웃을 찾을 수 없음: ID {layout_id}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"MongoDB 삭제 오류 (게스트): {e}")
+            return False
 
 
 class SimpleStorageService:
@@ -124,3 +170,25 @@ class SimpleStorageService:
             if layout.get('scene', {}).get('room', {}).get('id') == layout_id:
                 return layout
         return None
+    
+    def delete_room_layout(self, layout_id: str):
+        """JSON 파일에서 방 레이아웃 삭제"""
+        try:
+            original_count = len(self.data)
+            self.data = [
+                layout for layout in self.data 
+                if layout.get('scene', {}).get('room', {}).get('id') != layout_id
+            ]
+            
+            if len(self.data) < original_count:
+                success = self.save_data()
+                if success:
+                    logger.info(f"JSON 파일에서 삭제 완료: 레이아웃 ID {layout_id}")
+                return success
+            else:
+                logger.warning(f"JSON 파일에서 삭제할 레이아웃을 찾을 수 없음: ID {layout_id}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"JSON 파일 삭제 오류: {e}")
+            return False

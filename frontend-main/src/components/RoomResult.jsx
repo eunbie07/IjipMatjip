@@ -85,14 +85,15 @@ const RoomResult = ({ result }) => {
   console.log("RoomResult received:", result);
   console.log("width:", width, "depth:", depth, "height:", height, "confidence:", confidence);
 
-  // NaN 체크 및 기본값 설정
-  const validWidth = isNaN(width) ? 0 : width;
-  const validDepth = isNaN(depth) ? 0 : depth;
-  const validHeight = isNaN(height) ? 0 : height;
+  // NaN 체크 및 기본값 설정 (방 크기 조절 후에도 유효한 값을 보장)
+  const validWidth = isNaN(width) || width <= 0 ? 400 : width;
+  const validDepth = isNaN(depth) || depth <= 0 ? 400 : depth;
+  const validHeight = isNaN(height) || height <= 0 ? 230 : height;
 
   // NaN 값이 있을 때 경고 메시지
-  if (isNaN(width) || isNaN(depth) || isNaN(height)) {
-    console.warn("측정 결과에 NaN 값이 포함되어 있습니다:", { width, depth, height });
+  if (isNaN(width) || isNaN(depth) || isNaN(height) || width <= 0 || depth <= 0 || height <= 0) {
+    console.warn("측정 결과에 유효하지 않은 값이 포함되어 있습니다:", { width, depth, height });
+    console.log("기본값으로 대체됩니다:", { validWidth, validDepth, validHeight });
   }
 
   // 백엔드에서 계산된 값이 있으면 사용, 없으면 프론트엔드에서 계산

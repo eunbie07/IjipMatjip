@@ -11,10 +11,12 @@ const Wall = React.memo(function Wall({
   texture = null,
   roughness = 0.9,
   metalness = 0.02,
+  thickness = 20, // 벽 두께 추가 (기본 20cm)
 }) {
   return (
     <mesh position={position} rotation={rotation} castShadow receiveShadow>
-      <planeGeometry args={[width, height]} />
+      {/* 평면 대신 박스 지오메트리로 실제 두께감 구현 */}
+      <boxGeometry args={[width, height, thickness]} />
       <meshPhysicalMaterial
         color={isWindow ? "#E8F4FD" : color}
         map={texture}
@@ -24,7 +26,6 @@ const Wall = React.memo(function Wall({
         clearcoatRoughness={isWindow ? 0.1 : roughness}
         opacity={isWindow ? 0.3 : 1}
         transparent={isWindow}
-        side={THREE.DoubleSide}
         normalScale={[0.5, 0.5]}
         envMapIntensity={0.7}
         reflectivity={metalness > 0.1 ? 0.8 : 0.2}

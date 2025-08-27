@@ -76,6 +76,9 @@ import { createWindowDetectionHandler } from "../utils/windowDetection";
 import SnapGrid from "./3D/SnapGrid";
 import Wall from "./3D/Wall";
 
+// 로딩 매니저 추가
+import { LoadingProvider, SceneLoadingIndicator } from "./3D/ModelLoadingManager";
+
 // 메인 컴포넌트
 export default function RoomBox({
   width = 400,
@@ -85,6 +88,7 @@ export default function RoomBox({
   uploadedImageFile = null,
   placedFurniture = [],
   onFurnitureChange = null,
+  onTabChange = null,
 }) {
   const w = width;
   const h = height;
@@ -227,6 +231,18 @@ export default function RoomBox({
       setUse3DModels(true);
     }
     
+    // 카메라를 고정된 시점으로 설정 (약간 대각선 위에서 내려다보는 시점)
+    if (controlsRef.current) {
+      const controls = controlsRef.current;
+      // 고정된 카메라 위치 설정 (방의 우측 상단에서 내려다보는 각도)
+      const cameraPosition = [w * 1.5, h * 1.5, d * 1.5];
+      const targetPosition = [w / 2, 0, d / 2]; // 방의 중심을 바라보도록
+      
+      controls.object.position.set(...cameraPosition);
+      controls.target.set(...targetPosition);
+      controls.update();
+    }
+    
     // 렌더링 완료를 위한 충분한 지연 시간
     setTimeout(() => {
       console.log('AI 인테리어 생성 실행 - 사람 모델, 치수선, 크기조절 핸들 숨김 상태:', !showHuman, !showDimensions, !showResizeHandles);
@@ -252,7 +268,7 @@ export default function RoomBox({
         setShowDimensions(originalShowDimensions); // 치수선도 복원
         setShowResizeHandles(originalShowResizeHandles); // 크기조절 핸들도 복원
       }, 500); // 더 긴 지연으로 확실한 복원
-    }, 300); // 렌더링 완료를 위한 충분한 시간
+    }, 500); // 카메라 위치 조정을 위한 더 긴 지연 시간
   };
 
   // 3D 화면 캡처 핸들러
@@ -1573,7 +1589,14 @@ export default function RoomBox({
             physicallyCorrectLights: true,
           }}
         >
-          <Suspense fallback={null}>
+          {/* 로딩 매니저 Provider로 전체 3D 씬 감싸기 */}
+          <LoadingProvider>
+            <Suspense fallback={null}>
+              {/* 전역 로딩 인디케이터 */}
+              <SceneLoadingIndicator 
+                position={[0, h / 2 + 50, 0]} 
+                showWhenLoading={true} 
+              />
             <EnhancedLighting roomSize={roomSize} />
             <Environment
               preset="studio"
@@ -1583,16 +1606,16 @@ export default function RoomBox({
             />
             <color attach="background" args={["#e0f2fe"]} />
 
-            {/* 바닥 */}
+            {/* 바닥 (두께감 있는 박스 형태) */}
             <mesh
-              position={[w / 2, 0, d / 2]}
-              rotation={[-Math.PI / 2, 0, 0]}
+              position={[w / 2, -5, d / 2]} // Y축 위치를 -5로 조정하여 바닥 두께의 절반만큼 아래로
               receiveShadow
+              castShadow
               onClick={(event) =>
                 handleFloorClick(event, measurementMode, setMeasurePoints)
               }
             >
-              <planeGeometry args={[w, d]} />
+              <boxGeometry args={[w + 10, 10, d + 10]} /> {/* 10cm 두께의 바닥, 벽 두께만큼 확장 */}
               <meshPhysicalMaterial
                 color={placementMode ? "#E1F5FE" : floorSettings.color}
                 roughness={floorSettings.roughness}
@@ -1611,22 +1634,24 @@ export default function RoomBox({
             <Wall
               width={d}
               height={h}
-              position={[0, h / 2, d / 2]}
+              position={[-5, h / 2, d / 2]} // X축 위치를 -5로 조정하여 벽 두께의 절반만큼 안쪽으로
               rotation={[0, Math.PI / 2, 0]}
               color={wallSettings.color}
               roughness={wallSettings.roughness}
               metalness={wallSettings.metalness}
+              thickness={10} // 10cm 두께로 변경
             />
 
             {/* 뒤쪽 벽 */}
             <Wall
               width={w}
               height={h}
-              position={[w / 2, h / 2, 0]}
+              position={[w / 2, h / 2, -5]} // Z축 위치를 -5로 조정하여 벽 두께의 절반만큼 안쪽으로
               rotation={[0, 0, 0]}
               color={wallSettings.color}
               roughness={wallSettings.roughness}
               metalness={wallSettings.metalness}
+              thickness={10} // 10cm 두께로 변경
             />
 
             <SnapGrid roomSize={roomSize} visible={showSnapGrid} />
@@ -1688,20 +1713,20 @@ export default function RoomBox({
 
             {showDimensions && (
               <group position={[0, 0.1, 0]}>
-                <DimensionArrow start={[0, 0, d + 10]} end={[w, 0, d + 10]} />
+                <DimensionArrow start={[0, 0, d + 25]} end={[w, 0, d + 25]} />
                 <DimensionLabel
-                  position={[w / 2, 0, d + 15]}
+                  position={[w / 2, 0, d + 30]}
                   text={`${(w / 100).toFixed(1)}m`}
                 />
-                <DimensionArrow start={[w + 10, 0, 0]} end={[w + 10, 0, d]} />
+                <DimensionArrow start={[w + 25, 0, 0]} end={[w + 25, 0, d]} />
                 <DimensionLabel
-                  position={[w + 15, 0, d / 2]}
+                  position={[w + 30, 0, d / 2]}
                   text={`${(d / 100).toFixed(1)}m`}
                   rotation={[0, Math.PI / 2, 0]}
                 />
-                <DimensionArrow start={[w + 10, 0, 0]} end={[w + 10, h, 0]} />
+                <DimensionArrow start={[w + 25, 0, 0]} end={[w + 25, h, 0]} />
                 <DimensionLabel
-                  position={[w + 15, h / 2, 0]}
+                  position={[w + 30, h / 2, 0]}
                   text={`${(h / 100).toFixed(1)}m`}
                 />
               </group>
@@ -1720,6 +1745,7 @@ export default function RoomBox({
               dampingFactor={0.1}
             />
           </Suspense>
+          </LoadingProvider>
         </SafeCanvas>
       </div>
 
@@ -1766,6 +1792,51 @@ export default function RoomBox({
 
       {/* 중앙 하단 버튼들 */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 flex gap-4 items-center">
+        {/* 2D 평면도 가기 버튼 */}
+        <button
+          onClick={() => {
+            console.log("2D 평면도 버튼 클릭됨");
+            if (onTabChange) {
+              onTabChange("furniture");
+            } else {
+              navigate('/room-planner');
+            }
+          }}
+          className="group flex items-center gap-3 px-4 py-3 bg-primary text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+        >
+          <div className="p-2 bg-white/20 rounded-lg group-hover:bg-white/30 transition-colors">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+              />
+            </svg>
+          </div>
+          <div className="text-left">
+            <div className="font-bold text-sm">2D 가구 배치</div>
+          </div>
+          <svg
+            className="w-5 h-5 group-hover:translate-x-1 transition-transform"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </button>
+
         {/* 3D 화면 캡처 버튼 */}
         <button
           onClick={handle3DCapture}

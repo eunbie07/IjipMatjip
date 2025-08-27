@@ -136,6 +136,85 @@ export const saveRoomLayoutToMongoDB = async (saveData) => {
   return result;
 };
 
+// ---------------------------
+// 방 저장/불러오기 API (Room Planner용)
+// ---------------------------
+
+// 전체 방 데이터 저장 (RoomPlanner용)
+export const saveFullRoomData = async (roomData) => {
+  const token = localStorage.getItem('token');
+  const endpoint = token ? '/layouts/save' : '/layouts/save-guest';
+  
+  const response = await fetch(`${CLOUD_API_BASE}${endpoint}`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      scene: roomData,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+  });
+  
+  const result = await response.json();
+  
+  if (!result.success) {
+    throw new Error(result.message || '방 저장 실패');
+  }
+  
+  return result;
+};
+
+// 사용자 방 목록 조회
+export const getUserRooms = async () => {
+  const token = localStorage.getItem('token');
+  const endpoint = token ? '/layouts/' : '/layouts/guest';
+  
+  const response = await fetch(`${CLOUD_API_BASE}${endpoint}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  
+  const result = await response.json();
+  
+  if (!result.success) {
+    throw new Error(result.error || '방 목록 조회 실패');
+  }
+  
+  return result.layouts;
+};
+
+// 특정 방 데이터 로드
+export const loadRoomById = async (layoutId) => {
+  const response = await fetch(`${CLOUD_API_BASE}/layouts/${layoutId}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  
+  const result = await response.json();
+  
+  if (!result.success) {
+    throw new Error(result.error || '방 로드 실패');
+  }
+  
+  return result.layout;
+};
+
+// 방 삭제
+export const deleteRoom = async (layoutId) => {
+  const response = await fetch(`${CLOUD_API_BASE}/layouts/${layoutId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders()
+  });
+  
+  const result = await response.json();
+  
+  if (!result.success) {
+    throw new Error(result.error || '방 삭제 실패');
+  }
+  
+  return result;
+};
+
 // 사용자별 방 레이아웃 조회
 export const getAllRoomLayouts = async () => {
   const token = localStorage.getItem('token');

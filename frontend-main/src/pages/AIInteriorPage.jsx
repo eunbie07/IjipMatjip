@@ -84,48 +84,6 @@ const AIInteriorPage = () => {
                 }}
               />
 
-              {/* 3D Capture Guide */}
-              {!capturedScreenshot && (
-                <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="text-2xl">📸</div>
-                    <h3 className="text-lg font-semibold text-blue-900">3D Capture-based Furniture Style Change</h3>
-                  </div>
-                  <div className="text-blue-800 space-y-2">
-                    <p>To change individual furniture styles:</p>
-                    <ol className="list-decimal list-inside ml-4 space-y-1">
-                      <li>Return to the room editing screen and select furniture</li>
-                      <li>Click the "📸 3D Screen Capture" button</li>
-                      <li>Come back to this page and select "Change Furniture Style"</li>
-                    </ol>
-                    <button
-                      onClick={() => window.history.back()}
-                      className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
-                    >
-                      ← Back to Room Editor
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* No Capture Image Guide */}
-              {!capturedScreenshot && (
-                <div className="text-center py-16">
-                  <div className="text-6xl mb-4">📸</div>
-                  <h2 className="text-xl font-semibold text-text-primary mb-2">
-                    No 3D Capture Image
-                  </h2>
-                  <p className="text-text-secondary mb-6">
-                    To generate AI interior designs, please capture a 3D screen or upload an image directly.
-                  </p>
-                  <Link 
-                    to="/room-planner"
-                    className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-semibold"
-                  >
-                    Go to Room Editor
-                  </Link>
-                </div>
-              )}
             </>
           )}
         </div>

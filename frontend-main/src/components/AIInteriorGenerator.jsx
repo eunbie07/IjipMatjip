@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { uploadGeneratedImageToS3 } from "../utils/api";
 
 // 검증된 침실 스타일 프리셋들
@@ -163,6 +164,8 @@ ROMANTIC ATMOSPHERE OPTIMIZATION:
 };
 
 const AIInteriorGenerator = ({ onImageGenerated, capturedScreenshot }) => {
+  const navigate = useNavigate();
+  
   // 새로운 프리셋 기반 상태 변수들
   const [selectedPreset, setSelectedPreset] = useState('modern_warm'); // 기본 침실 스타일 프리셋
   const [selectedMood, setSelectedMood] = useState(''); // 사용 목적
@@ -358,7 +361,8 @@ RENDERING STYLE:
         }],
         generationConfig: {
           responseModalities: ['TEXT', 'IMAGE'],
-          temperature: 0.2
+          temperature: 0.2,
+          seed: 42
         },
       };
 
@@ -385,7 +389,25 @@ RENDERING STYLE:
           const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
 
           if (base64Data) {
-            setImageUrl(`data:image/png;base64,${base64Data}`);
+            const generatedImageUrl = `data:image/png;base64,${base64Data}`;
+            setImageUrl(generatedImageUrl);
+            
+            // S3에 자동 저장하고 URL 받아오기
+            try {
+              const s3Result = await uploadGeneratedImageToS3({ 
+                imageDataUrl: generatedImageUrl, 
+                variant: 'design' 
+              });
+              
+              // S3 URL을 localStorage에 저장 (방 저장시 사용)
+              if (s3Result.url) {
+                localStorage.setItem('lastGeneratedDesignImage', s3Result.url);
+                localStorage.setItem('lastGeneratedDesignImageLocal', generatedImageUrl); // 로컬 백업
+              }
+            } catch (error) {
+              console.warn('S3 업로드 실패, 로컬 이미지 사용:', error);
+              localStorage.setItem('lastGeneratedDesignImage', generatedImageUrl);
+            }
             
             if (onImageGenerated) {
               onImageGenerated({
@@ -532,7 +554,8 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
         }],
         generationConfig: {
           responseModalities: ['TEXT', 'IMAGE'],
-          temperature: 0.2
+          temperature: 0.2,
+          seed: 42
         },
       };
 
@@ -559,7 +582,25 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
           const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
 
           if (base64Data) {
-            setRealisticImageUrl(`data:image/png;base64,${base64Data}`);
+            const realisticImageUrl = `data:image/png;base64,${base64Data}`;
+            setRealisticImageUrl(realisticImageUrl);
+            
+            // S3에 자동 저장하고 URL 받아오기
+            try {
+              const s3Result = await uploadGeneratedImageToS3({ 
+                imageDataUrl: realisticImageUrl, 
+                variant: 'realistic' 
+              });
+              
+              // S3 URL을 localStorage에 저장 (방 저장시 사용)
+              if (s3Result.url) {
+                localStorage.setItem('lastGeneratedRealisticImage', s3Result.url);
+                localStorage.setItem('lastGeneratedRealisticImageLocal', realisticImageUrl); // 로컬 백업
+              }
+            } catch (error) {
+              console.warn('S3 업로드 실패, 로컬 이미지 사용:', error);
+              localStorage.setItem('lastGeneratedRealisticImage', realisticImageUrl);
+            }
           } else {
             setError('실사화 이미지 생성에 실패했습니다. 다시 시도해주세요.');
           }
@@ -612,9 +653,38 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
     <div className="bg-background min-h-auto">
       <div className="space-y-8">
         <div className="bg-surface rounded-xl border border-border shadow-sm p-6">
-          <h3 className="text-xl font-bold mb-4 text-text-primary">
-            AI 인테리어 디자인 생성기
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-text-primary">
+              AI 인테리어 디자인 생성기
+            </h3>
+            <button
+              onClick={() => {
+                // 이전 측정 결과가 있으면 그것을 사용하고, 없으면 기본값 사용
+                const savedResult = localStorage.getItem('roomPlannerResult');
+                if (savedResult) {
+                  navigate('/room-planner?return=true');
+                } else {
+                  navigate('/room-planner?tab=3d&width=400&height=230&depth=400');
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg font-medium transition-colors shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                />
+              </svg>
+              <strong>3D로 가기</strong>
+            </button>
+          </div>
           
           <form onSubmit={(e) => { e.preventDefault(); generateImage(); }} className="space-y-6">
             {/* 이미지 업로드 (캡쳐된 이미지가 있으면 표시) */}
@@ -791,19 +861,9 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                 }}
               />
               <div className="flex gap-3 mt-4">
-                <button
-                  onClick={async () => {
-                    try {
-                      const res = await uploadGeneratedImageToS3({ imageDataUrl: imageUrl, variant: 'design' });
-                      alert('저장 완료');
-                    } catch (e) {
-                      alert('S3 업로드 실패: ' + (e?.message || '오류'));
-                    }
-                  }}
-                  className="flex-1 bg-primary text-white py-3 px-4 rounded-lg text-sm font-semibold hover:bg-secondary"
-                >
-                  Save
-                </button>
+                <div className="flex-1 bg-green-100 text-green-800 py-3 px-4 rounded-lg text-sm font-semibold text-center">
+                  ✓ S3에 자동 저장됨
+                </div>
                 <button
                   onClick={() => downloadDataUrl(imageUrl, `ai-interior-design-${Date.now()}.png`)}
                   className="flex-1 bg-window-fill border border-window-stroke text-text-primary py-3 px-4 rounded-lg text-sm font-semibold"
@@ -905,19 +965,9 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                     }}
                   />
                   <div className="flex gap-3 mt-4">
-                    <button
-                      onClick={async () => {
-                        try {
-                          const res = await uploadGeneratedImageToS3({ imageDataUrl: realisticImageUrl, variant: 'realistic' });
-                          alert('저장 완료');
-                        } catch (e) {
-                          alert('S3 업로드 실패: ' + (e?.message || '오류'));
-                        }
-                      }}
-                      className="flex-1 bg-primary text-white py-3 px-4 rounded-lg text-sm font-semibold hover:bg-secondary"
-                    >
-                      Save
-                    </button>
+                    <div className="flex-1 bg-green-100 text-green-800 py-3 px-4 rounded-lg text-sm font-semibold text-center">
+                      ✓ S3에 자동 저장됨
+                    </div>
                     <button
                       onClick={() => downloadDataUrl(realisticImageUrl, `ai-interior-realistic-${Date.now()}.png`)}
                       className="flex-1 bg-window-fill border border-window-stroke text-text-primary py-3 px-4 rounded-lg text-sm font-semibold"

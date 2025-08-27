@@ -11,6 +11,7 @@ import SignupPage from "./pages/SignupPage";
 import RecommendationPage from "./pages/RecommendationPage";
 import DetailPage from "./pages/DetailPage";
 import CategoryPage from "./pages/Category";
+import MyRoomsPage from "./pages/MyRoomsPage";
 
 function AppContent() {
   const location = useLocation();
@@ -30,6 +31,7 @@ function AppContent() {
           <Route path="/category" element={<CategoryPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/my-rooms" element={<MyRoomsPage />} />
         </Routes>
       </div>
     </div>

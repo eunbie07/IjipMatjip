@@ -4,7 +4,7 @@ import React from "react";
 const RoomCanvas = ({ x, y }) => {
   // 유효성 검사 및 기본값 설정
   const validX = isNaN(x) || x <= 0 ? 400 : x; // 가로 (width)
-  const validY = isNaN(y) || y <= 0 ? 300 : y; // 세로 (depth)
+  const validY = isNaN(y) || y <= 0 ? 400 : y; // 세로 (depth)
 
   console.log("RoomCanvas 입력값:", { x: validX, y: validY });
   console.log("실제 비율:", (validX / validY).toFixed(2));
