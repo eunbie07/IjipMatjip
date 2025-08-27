@@ -2,67 +2,6 @@
 import React from "react";
 import RoomCanvas from "./RoomCanvas";
 
-const ConfidenceIndicator = ({ confidence, reliability }) => {
-  const getColorClasses = (conf) => {
-    if (conf > 0.8)
-      return {
-        bg: "bg-green-500",
-        border: "border-green-500",
-        text: "text-white",
-        bar: "bg-green-500",
-      };
-    if (conf > 0.6)
-      return {
-        bg: "bg-primary",
-        border: "border-blue-600",
-        text: "text-white",
-        bar: "bg-primary",
-      };
-    return {
-      bg: "bg-danger",
-      border: "border-danger",
-      text: "text-white",
-      bar: "bg-danger",
-    };
-  };
-
-  const colors = getColorClasses(confidence);
-  const percentage = Math.round(confidence * 100);
-
-  return (
-    <div className={`p-4 rounded-lg border ${colors.bg} ${colors.border} mb-4`}>
-      <div className="flex items-center justify-between mb-3">
-        <h3 className={`font-semibold flex items-center gap-2 ${colors.text}`}>
-          측정 신뢰도
-        </h3>
-        <span className={`font-bold text-lg ${colors.text}`}>
-          {percentage}%
-        </span>
-      </div>
-
-      <div className="w-full bg-border rounded-full h-3 mb-2">
-        <div
-          className={`h-3 rounded-full transition-all duration-500 ${colors.bar}`}
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
-
-      <div className={`text-sm ${colors.text}`}>
-        <div className="font-medium mb-1">신뢰도: {reliability}</div>
-        {confidence < 0.7 && (
-          <div className="text-xs opacity-75">
-            더 정확한 측정을 위해 다른 각도에서 시도해보세요
-          </div>
-        )}
-        {confidence >= 0.8 && (
-          <div className="text-xs opacity-75">
-            높은 정확도로 측정되었습니다!
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
 
 const MeasurementDetails = ({ result }) => {
   const hasPixelData = result.pixel_distances;
@@ -70,14 +9,11 @@ const MeasurementDetails = ({ result }) => {
 
   return (
     <div className="bg-surface rounded-lg p-4 mt-4 border border-border">
-      <h4 className="text-lg font-semibold mb-3 text-text-primary flex items-center gap-2">
+      <h4 className="text-lg font-semibold mb-3 text-text-primary">
         측정 세부사항
-        <span className="text-xs bg-primary text-white px-2 py-1 rounded-full">
-          {result.method || "improved_midas_relative"}
-        </span>
       </h4>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* 픽셀 거리 정보 */}
         {hasPixelData && (
           <div className="bg-background p-3 rounded border border-border">
@@ -114,23 +50,26 @@ const MeasurementDetails = ({ result }) => {
         )}
 
         {/* 측정 품질 */}
-        {result.measurement_quality && (
-          <div className="bg-background p-3 rounded border border-border">
-            <h5 className="font-medium text-text-primary mb-2">측정 품질</h5>
-            <div className="space-y-1 text-sm text-text-secondary">
-              <div>
-                신뢰도 점수: {result.measurement_quality.confidence_score}
-              </div>
-              <div>품질 등급: {result.measurement_quality.reliability}</div>
+        <div className="bg-background p-3 rounded border border-border">
+          <h5 className="font-medium text-text-primary mb-2">측정 품질</h5>
+          <div className="space-y-1 text-sm text-text-secondary">
+            <div>
+              알고리즘 신뢰도: {(result.confidence || 0).toFixed(2)}
+            </div>
+            <div>
+              처리 품질: {result.confidence >= 0.8 ? '높음' : result.confidence >= 0.6 ? '보통' : '낮음'}
+            </div>
+            <div className="text-xs text-text-secondary mt-1 opacity-75">
+              * 이미지 분석 알고리즘의 처리 품질을 나타냅니다
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
 };
 
-const RoomResult = ({ result, depthImageUrl }) => {
+const RoomResult = ({ result }) => {
 
   if (!result) return null;
 
@@ -141,21 +80,20 @@ const RoomResult = ({ result, depthImageUrl }) => {
   const confidence = result.confidence || 0;
   const area = result.calculated_values?.area_sqm || result.area_sqm;
   const volume = result.calculated_values?.volume_cum || result.volume_cum;
-  const reliability = result.measurement_quality?.reliability || 
-    (confidence >= 0.8 ? "높음" : confidence >= 0.6 ? "보통" : "낮음");
 
   // 디버깅 로그
   console.log("RoomResult received:", result);
   console.log("width:", width, "depth:", depth, "height:", height, "confidence:", confidence);
 
-  // NaN 체크 및 기본값 설정
-  const validWidth = isNaN(width) ? 0 : width;
-  const validDepth = isNaN(depth) ? 0 : depth;
-  const validHeight = isNaN(height) ? 0 : height;
+  // NaN 체크 및 기본값 설정 (방 크기 조절 후에도 유효한 값을 보장)
+  const validWidth = isNaN(width) || width <= 0 ? 400 : width;
+  const validDepth = isNaN(depth) || depth <= 0 ? 400 : depth;
+  const validHeight = isNaN(height) || height <= 0 ? 230 : height;
 
   // NaN 값이 있을 때 경고 메시지
-  if (isNaN(width) || isNaN(depth) || isNaN(height)) {
-    console.warn("측정 결과에 NaN 값이 포함되어 있습니다:", { width, depth, height });
+  if (isNaN(width) || isNaN(depth) || isNaN(height) || width <= 0 || depth <= 0 || height <= 0) {
+    console.warn("측정 결과에 유효하지 않은 값이 포함되어 있습니다:", { width, depth, height });
+    console.log("기본값으로 대체됩니다:", { validWidth, validDepth, validHeight });
   }
 
   // 백엔드에서 계산된 값이 있으면 사용, 없으면 프론트엔드에서 계산
@@ -165,11 +103,40 @@ const RoomResult = ({ result, depthImageUrl }) => {
   // 평 계산 (1평 = 3.3058㎡)
   const area_pyeong = area_m2 / 3.3058;
 
+  // 극단적 값 감지
+  const getWarningMessages = () => {
+    const warnings = [];
+    
+    // 면적 기준 경고
+    if (area_m2 < 1) {
+      warnings.push("측정된 면적이 1㎡ 미만입니다. 화장실보다 작은 크기로, 측정 오류일 가능성이 높습니다.");
+    } else if (area_m2 > 100) {
+      warnings.push("측정된 면적이 100㎡를 초과합니다. 매우 큰 공간으로, 측정 오류일 가능성이 있습니다.");
+    }
+    
+    // 비율 기준 경고
+    const aspectRatio = validWidth / validDepth;
+    if (aspectRatio > 5 || aspectRatio < 0.2) {
+      warnings.push("가로:세로 비율이 극단적입니다. 일반적인 방 형태가 아닐 수 있습니다.");
+    }
+    
+    // 높이 기준 경고
+    if (validHeight < 200) {
+      warnings.push("천장 높이가 2m 미만으로 측정되었습니다. 일반적인 주거공간보다 낮습니다.");
+    } else if (validHeight > 400) {
+      warnings.push("천장 높이가 4m를 초과합니다. 측정 오류이거나 특수한 공간일 수 있습니다.");
+    }
+    
+    return warnings;
+  };
+
+  const warningMessages = getWarningMessages();
+
   return (
     <div className="mt-10">
 
 
-      {/* 경고 메시지 */}
+      {/* 백엔드 경고 메시지 */}
       {result.warning && (
         <div className="mb-6 p-4 bg-danger border border-danger rounded-lg">
           <div className="flex items-center gap-2">
@@ -180,6 +147,23 @@ const RoomResult = ({ result, depthImageUrl }) => {
         </div>
       )}
 
+      {/* 극단적 값 경고 */}
+      {warningMessages.length > 0 && (
+        <div className="mb-6 p-4 bg-orange-100 border border-orange-300 rounded-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-orange-600 font-medium">측정 결과 검토 필요</span>
+          </div>
+          <div className="space-y-1">
+            {warningMessages.map((message, index) => (
+              <p key={index} className="text-orange-800 text-sm">• {message}</p>
+            ))}
+          </div>
+          <p className="text-orange-700 text-sm mt-2 font-medium">
+            다른 각도나 조명에서 재측정해보시기 바랍니다.
+          </p>
+        </div>
+      )}
+
       {/* 2D 평면도 내용 */}
       <div>
           {/* 기존 RoomCanvas */}
@@ -187,11 +171,8 @@ const RoomResult = ({ result, depthImageUrl }) => {
 
           {/* 측정 결과 표시 */}
           <div className="mt-6 p-6 border border-border rounded-xl bg-surface shadow-lg">
-            <h2 className="text-xl font-bold mb-6 text-text-primary flex items-center gap-2">
+            <h2 className="text-xl font-bold mb-6 text-text-primary">
               방 크기 측정 결과
-              <span className="text-sm font-normal bg-primary text-white px-2 py-1 rounded-full">
-                개선된 알고리즘
-              </span>
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -253,17 +234,55 @@ const RoomResult = ({ result, depthImageUrl }) => {
             {/* 측정 세부사항 */}
             <MeasurementDetails result={result} />
 
+            {/* 실용적 참고 정보 */}
             <div className="mt-6 p-4 bg-window-fill border border-window-stroke rounded-lg">
-              <div className="flex items-start gap-2">
-                <span className="text-primary mt-0.5"></span>
-                <div>
-                  <div className="font-medium text-accent-dark mb-1">참고사항</div>
-                  <p className="text-sm text-secondary">
-                    이 측정은 개선된 알고리즘으로 층고{" "}
-                    {Math.round(validHeight)}cm를 기준으로 계산되었습니다.
-                    신뢰도가 높을수록 실제 크기에 가까운 결과입니다.
-                  </p>
+              <div className="font-medium text-text-primary mb-2">공간 활용 참고</div>
+              <div className="text-sm text-text-primary space-y-1">
+                {area_m2 < 6 ? (
+                  <p>• 소형 개인실/서재 크기 ({area_pyeong.toFixed(1)}평)</p>
+                ) : area_m2 < 10 ? (
+                  <p>• 원룸/스튜디오 크기 ({area_pyeong.toFixed(1)}평)</p>
+                ) : area_m2 < 16 ? (
+                  <p>• 작은 방/침실 크기 ({area_pyeong.toFixed(1)}평)</p>
+                ) : area_m2 < 25 ? (
+                  <p>• 거실/큰 방 크기 ({area_pyeong.toFixed(1)}평)</p>
+                ) : area_m2 < 40 ? (
+                  <p>• 넓은 거실/오피스 크기 ({area_pyeong.toFixed(1)}평)</p>
+                ) : (
+                  <p>• 매우 큰 공간 ({area_pyeong.toFixed(1)}평)</p>
+                )}
+                
+                {validWidth > validDepth * 2 ? (
+                  <p>• 복도형 공간 - 길고 좁은 형태</p>
+                ) : Math.abs(validWidth - validDepth) < validWidth * 0.2 ? (
+                  <p>• 정방형 공간 - 가구 배치가 자유로운 형태</p>
+                ) : (
+                  <p>• 직사각형 공간 - 일반적인 방 형태</p>
+                )}
+              </div>
+            </div>
+
+            {/* 신뢰도 기반 안내 */}
+            {confidence < 0.7 && (
+              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="font-medium text-yellow-800 mb-2">측정 정확도 개선 권장</div>
+                <div className="text-sm text-yellow-700 space-y-1">
+                  <p>• 현재 측정 신뢰도가 낮아 오차가 클 수 있습니다</p>
+                  <p>• 더 나은 결과를 위한 촬영 팁:</p>
+                  <p className="ml-4">- 밝은 조명에서 촬영하세요</p>
+                  <p className="ml-4">- 방의 모서리가 명확히 보이는 각도에서 촬영하세요</p>
+                  <p className="ml-4">- 카메라를 안정적으로 고정하여 촬영하세요</p>
+                  <p className="text-xs mt-2 opacity-75">하단의 "새로 측정하기" 버튼을 눌러 다시 시도하세요.</p>
                 </div>
+              </div>
+            )}
+
+            <div className="mt-4 p-4 bg-window-fill border border-window-stroke rounded-lg">
+              <div className="font-medium text-text-primary mb-2">측정 정보</div>
+              <div className="text-sm text-text-primary space-y-1">
+                <p>• AI 기반 이미지 분석으로 추정된 결과입니다</p>
+                <p>• 층고 {Math.round(validHeight)}cm를 기준으로 계산되었습니다</p>
+                <p>• 실제 측정값과 차이가 있을 수 있으니 참고용으로 활용하세요</p>
               </div>
             </div>
           </div>

@@ -211,3 +211,69 @@ async def get_room_layout(layout_id: str):
             status_code=500,
             content={"success": False, "error": "레이아웃 조회 중 오류가 발생했습니다"}
         )
+
+
+@router.delete("/{layout_id}")
+async def delete_room_layout(layout_id: str, current_user_id: int = Depends(verify_token)):
+    """방 레이아웃 삭제 (로그인 사용자)"""
+    try:
+        # MongoDB에서 삭제 시도
+        mongodb_success = mongodb_service.delete_room_layout(layout_id, current_user_id)
+        
+        # MySQL에서도 삭제 시도 (있다면)
+        mysql_success = False
+        conn = db_service.get_connection()
+        if conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "DELETE FROM room_layouts WHERE id = %s AND user_id = %s",
+                    (layout_id, current_user_id)
+                )
+                mysql_success = cursor.rowcount > 0
+                conn.commit()
+        
+        # JSON 파일에서도 삭제 (백업)
+        json_success = storage_service.delete_room_layout(layout_id)
+        
+        if mongodb_success or mysql_success or json_success:
+            logger.info(f"방 레이아웃 삭제 완료: 레이아웃 ID {layout_id}, 사용자 {current_user_id}")
+            return {"success": True, "message": "방 레이아웃이 삭제되었습니다"}
+        else:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "삭제할 레이아웃을 찾을 수 없습니다"}
+            )
+            
+    except Exception as e:
+        logger.error(f"레이아웃 삭제 오류: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": "레이아웃 삭제 중 오류가 발생했습니다"}
+        )
+
+
+@router.delete("/guest/{layout_id}")
+async def delete_room_layout_guest(layout_id: str):
+    """방 레이아웃 삭제 (게스트 사용자)"""
+    try:
+        # MongoDB에서 삭제 시도 (게스트)
+        mongodb_success = mongodb_service.delete_room_layout_guest(layout_id)
+        
+        # JSON 파일에서도 삭제
+        json_success = storage_service.delete_room_layout(layout_id)
+        
+        if mongodb_success or json_success:
+            logger.info(f"방 레이아웃 삭제 완료 (게스트): 레이아웃 ID {layout_id}")
+            return {"success": True, "message": "방 레이아웃이 삭제되었습니다"}
+        else:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "삭제할 레이아웃을 찾을 수 없습니다"}
+            )
+            
+    except Exception as e:
+        logger.error(f"레이아웃 삭제 오류 (게스트): {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": "레이아웃 삭제 중 오류가 발생했습니다"}
+        )

@@ -3,17 +3,20 @@
  * 포트 분리: 로컬 이미지 처리(3010), 클라우드 데이터(3000)
  */
 
+import { validateHeaders, validateApiResponse, safeLog, escapeHtml } from './sanitizer';
+
 // API 엔드포인트 설정 (환경변수 사용)
 const LOCAL_API_BASE = import.meta.env.VITE_LOCAL_API_BASE || 'http://localhost:3010';  // 로컬 이미지/AI 처리
 const CLOUD_API_BASE = import.meta.env.VITE_CLOUD_API_BASE || 'http://13.55.21.100:3000';  // 클라우드 데이터 저장/조회
 
-// 헤더 생성 함수
+// 헤더 생성 함수 (보안 강화)
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
-  return {
+  const headers = {
     'Content-Type': 'application/json',
-    ...(token && { 'Authorization': `Bearer ${token}` })
+    ...(token && { 'Authorization': `Bearer ${escapeHtml(token)}` })
   };
+  return validateHeaders(headers);
 };
 
 // ---------------------------
@@ -35,7 +38,8 @@ export const signup = async (userData) => {
     throw { response: { data: error } };
   }
   
-  return response.json();
+  const data = await response.json();
+  return validateApiResponse(data);
 };
 
 // 로그인
@@ -53,7 +57,8 @@ export const login = async (userData) => {
     throw { response: { data: error } };
   }
   
-  return response.json();
+  const data = await response.json();
+  return validateApiResponse(data);
 };
 
 // 현재 사용자 정보 조회
@@ -68,7 +73,43 @@ export const getCurrentUser = async () => {
     throw { response: { data: error } };
   }
   
-  return response.json();
+  const data = await response.json();
+  return validateApiResponse(data);
+};
+
+// ---------------------------
+// 이미지(S3) 업로드
+// ---------------------------
+
+export const uploadGeneratedImageToS3 = async ({ imageDataUrl, variant = 'design', roomId = null }) => {
+  const response = await fetch(`${CLOUD_API_BASE}/images/upload`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ image_data_url: imageDataUrl, variant, room_id: roomId })
+  });
+
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result?.detail || result?.message || 'S3 업로드 실패');
+  }
+  return result; // { success, key, url }
+};
+
+export const listGeneratedImagesFromS3 = async ({ limit = 20, continuationToken = null } = {}) => {
+  const url = new URL(`${CLOUD_API_BASE}/images/list`);
+  url.searchParams.set('limit', limit);
+  if (continuationToken) url.searchParams.set('continuation_token', continuationToken);
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
+
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result?.detail || result?.message || 'S3 목록 조회 실패');
+  }
+  return result; // { success, items, next_continuation_token }
 };
 
 // ---------------------------
@@ -90,6 +131,85 @@ export const saveRoomLayoutToMongoDB = async (saveData) => {
   
   if (!result.success) {
     throw new Error(result.message);
+  }
+  
+  return result;
+};
+
+// ---------------------------
+// 방 저장/불러오기 API (Room Planner용)
+// ---------------------------
+
+// 전체 방 데이터 저장 (RoomPlanner용)
+export const saveFullRoomData = async (roomData) => {
+  const token = localStorage.getItem('token');
+  const endpoint = token ? '/layouts/save' : '/layouts/save-guest';
+  
+  const response = await fetch(`${CLOUD_API_BASE}${endpoint}`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      scene: roomData,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+  });
+  
+  const result = await response.json();
+  
+  if (!result.success) {
+    throw new Error(result.message || '방 저장 실패');
+  }
+  
+  return result;
+};
+
+// 사용자 방 목록 조회
+export const getUserRooms = async () => {
+  const token = localStorage.getItem('token');
+  const endpoint = token ? '/layouts/' : '/layouts/guest';
+  
+  const response = await fetch(`${CLOUD_API_BASE}${endpoint}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  
+  const result = await response.json();
+  
+  if (!result.success) {
+    throw new Error(result.error || '방 목록 조회 실패');
+  }
+  
+  return result.layouts;
+};
+
+// 특정 방 데이터 로드
+export const loadRoomById = async (layoutId) => {
+  const response = await fetch(`${CLOUD_API_BASE}/layouts/${layoutId}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  
+  const result = await response.json();
+  
+  if (!result.success) {
+    throw new Error(result.error || '방 로드 실패');
+  }
+  
+  return result.layout;
+};
+
+// 방 삭제
+export const deleteRoom = async (layoutId) => {
+  const response = await fetch(`${CLOUD_API_BASE}/layouts/${layoutId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders()
+  });
+  
+  const result = await response.json();
+  
+  if (!result.success) {
+    throw new Error(result.error || '방 삭제 실패');
   }
   
   return result;

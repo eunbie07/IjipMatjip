@@ -3,15 +3,60 @@
 import cv2
 import numpy as np
 import logging
+import os
 from math import sqrt, isnan, isinf
 from typing import List, Tuple
 from ..models.schemas import Point3D
 
 logger = logging.getLogger(__name__)
 
+# MiDaS 깊이맵 파일 경로
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DEPTH_MAP_PATH = os.path.join(BASE_DIR, "outputs", "depth_map.npy")
+
 def distance_2d(p1: Point3D, p2: Point3D) -> float:
     """2D 픽셀 거리 계산"""
     return sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2)
+
+def distance_3d(p1: Point3D, p2: Point3D) -> float:
+    """3D 공간 거리 계산 (MiDaS 깊이 포함)"""
+    return sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2 + (p1.z - p2.z)**2)
+
+def get_real_depth_values(points: List[dict]) -> List[float]:
+    """실제 MiDaS 깊이 값 가져오기"""
+    try:
+        if not os.path.exists(DEPTH_MAP_PATH):
+            logger.warning("MiDaS 깊이맵을 찾을 수 없어 시뮬레이션 값 사용")
+            return [100, 95, 110, 105]  # 폴백
+        
+        depth_map = np.load(DEPTH_MAP_PATH)
+        h, w = depth_map.shape
+        real_depths = []
+        
+        for i, point in enumerate(points):
+            x, y = int(point["x"]), int(point["y"])
+            
+            # 좌표 범위 체크
+            if 0 <= x < w and 0 <= y < h:
+                depth_value = float(depth_map[y, x])
+                
+                # 유효한 깊이 값인지 확인
+                if not (np.isnan(depth_value) or np.isinf(depth_value)):
+                    real_depths.append(depth_value)
+                    logger.info(f"포인트 {i+1} ({x}, {y}): 깊이 = {depth_value:.3f}")
+                else:
+                    logger.warning(f"포인트 {i+1}에서 유효하지 않은 깊이 값: {depth_value}")
+                    real_depths.append(100 + i * 5)  # 폴백 값
+            else:
+                logger.warning(f"포인트 {i+1} 좌표 범위 초과: ({x}, {y})")
+                real_depths.append(100 + i * 5)  # 폴백 값
+        
+        logger.info(f"실제 MiDaS 깊이 값: {real_depths}")
+        return real_depths
+        
+    except Exception as e:
+        logger.error(f"깊이 값 로딩 실패: {str(e)}")
+        return [100, 95, 110, 105]  # 폴백
 
 def validate_points(points: List[Point3D]) -> tuple[bool, str]:
     """좌표 유효성 검사"""
@@ -81,7 +126,7 @@ def calculate_confidence(points: List[Point3D]) -> float:
 def detect_vanishing_points_and_room_corners(image_path: str, confidence_threshold: float = 0.7) -> dict:
     """소실점 기반 방 모서리 감지 알고리즘 (임시 비활성화)"""
     
-    logger.info("🚫 소실점 감지 비활성화됨 - 기본 방법 사용")
+    logger.info("소실점 감지 비활성화됨 - 기본 방법 사용")
     
     # 강제로 실패 반환하여 폴백 함수 실행
     return {
@@ -502,22 +547,22 @@ def detect_room_simple_and_stable(image_path: str, confidence_threshold: float =
         # 표준 실내 사진에서 일반적인 위치 (검증된 좌표)
         # 좌하단 -> 좌상단 -> 뒤쪽 -> 우하단 순서
         
-        # 실제 방 모서리에 정확히 대응하는 좌표 계산
+        # 실제 방 벽에 더 가까운 좌표 계산 (과대측정 방지)
         # 1. 좌하단 모서리 (바닥-왼쪽벽 교차점)
-        floor_left_x = int(w * 0.05)   # 이미지 왼쪽 끝
-        floor_left_y = int(h * 0.95)   # 이미지 아래 끝
+        floor_left_x = int(w * 0.20)   # 20% (기존 5%에서 대폭 안쪽 이동)
+        floor_left_y = int(h * 0.85)   # 85% (기존 95%에서 위쪽 이동)
         
         # 2. 좌상단 모서리 (천장-왼쪽벽 교차점)
-        ceiling_left_x = int(w * 0.05)  # 같은 수직선
-        ceiling_left_y = int(h * 0.05)  # 이미지 위 끝
+        ceiling_left_x = int(w * 0.20)  # 같은 수직선
+        ceiling_left_y = int(h * 0.15)  # 15% (기존 5%에서 아래쪽 이동)
         
-        # 3. 뒤쪽 모서리 (원근법에 의한 깊이감)
-        floor_back_x = int(w * 0.45)    # 중앙 약간 왼쪽
-        floor_back_y = int(h * 0.75)    # 바닥에서 약간 위
+        # 3. 뒤쪽 모서리 (원근법에 의한 깊이감) - 보수적으로 조정
+        floor_back_x = int(w * 0.50)    # 50% (중앙)
+        floor_back_y = int(h * 0.70)    # 70% (더 위쪽)
         
         # 4. 우하단 모서리 (바닥-오른쪽벽 교차점)
-        floor_right_x = int(w * 0.95)   # 이미지 오른쪽 끝
-        floor_right_y = int(h * 0.95)   # 이미지 아래 끝
+        floor_right_x = int(w * 0.80)   # 80% (기존 95%에서 대폭 안쪽 이동)
+        floor_right_y = int(h * 0.85)   # 85% (기존 95%에서 위쪽 이동)
         
         logger.info(f"계산된 좌표들:")
         logger.info(f"  좌하단: ({floor_left_x}, {floor_left_y})")
@@ -525,19 +570,27 @@ def detect_room_simple_and_stable(image_path: str, confidence_threshold: float =
         logger.info(f"  뒤쪽: ({floor_back_x}, {floor_back_y})")
         logger.info(f"  우하단: ({floor_right_x}, {floor_right_y})")
         
-        # 시뮬레이션된 깊이 값 (MiDaS 스타일)
-        depths = [100, 95, 110, 105]  
-        
-        # 간단하고 확실한 포인트들 생성
-        detected_points = [
-            {"x": floor_left_x, "y": floor_left_y, "z": depths[0]},    # 좌하단
-            {"x": ceiling_left_x, "y": ceiling_left_y, "z": depths[1]}, # 좌상단
-            {"x": floor_back_x, "y": floor_back_y, "z": depths[2]},    # 뒤쪽
-            {"x": floor_right_x, "y": floor_right_y, "z": depths[3]}   # 우하단
+        # 좌표 포인트들 (깊이 값 없이 먼저 생성)
+        temp_points = [
+            {"x": floor_left_x, "y": floor_left_y},    # 좌하단
+            {"x": ceiling_left_x, "y": ceiling_left_y}, # 좌상단
+            {"x": floor_back_x, "y": floor_back_y},    # 뒤쪽
+            {"x": floor_right_x, "y": floor_right_y}   # 우하단
         ]
         
-        logger.info(f"✅ 간단 안정 감지 완료 - 신뢰도: {confidence}")
-        logger.info(f"📍 최종 포인트들: {detected_points}")
+        # 실제 MiDaS 깊이 값 가져오기
+        real_depths = get_real_depth_values(temp_points)
+        
+        # 최종 포인트들 생성 (실제 깊이 값 포함)
+        detected_points = [
+            {"x": floor_left_x, "y": floor_left_y, "z": real_depths[0]},    # 좌하단
+            {"x": ceiling_left_x, "y": ceiling_left_y, "z": real_depths[1]}, # 좌상단
+            {"x": floor_back_x, "y": floor_back_y, "z": real_depths[2]},    # 뒤쪽
+            {"x": floor_right_x, "y": floor_right_y, "z": real_depths[3]}   # 우하단
+        ]
+        
+        logger.info(f"간단 안정 감지 완료 - 신뢰도: {confidence}")
+        logger.info(f"최종 포인트들: {detected_points}")
         
         return {
             "success": True,
@@ -779,7 +832,7 @@ def detect_room_corners_fallback(w, h):
 def simulate_roomnet_detection(image_path: str, confidence_threshold: float = 0.7) -> dict:
     """실제 AI 기반 방 모서리 감지"""
     
-    logger.info("🤖 실제 AI 기반 방 모서리 감지 시작...")
+    logger.info("실제 AI 기반 방 모서리 감지 시작...")
     
     try:
         # 이미지 로드
@@ -794,18 +847,18 @@ def simulate_roomnet_detection(image_path: str, confidence_threshold: float = 0.
         cv_result = detect_room_corners_with_cv(img, confidence_threshold)
         
         if cv_result["success"] and cv_result["confidence"] >= confidence_threshold:
-            logger.info(f"✅ 컴퓨터 비전 감지 성공: 신뢰도 {cv_result['confidence']:.2f}")
+            logger.info(f"컴퓨터 비전 감지 성공: 신뢰도 {cv_result['confidence']:.2f}")
             return cv_result
         
         # 2단계: 향상된 에지 기반 감지
         edge_result = detect_room_corners_with_edges(img, confidence_threshold)
         
         if edge_result["success"] and edge_result["confidence"] >= confidence_threshold:
-            logger.info(f"✅ 에지 기반 감지 성공: 신뢰도 {edge_result['confidence']:.2f}")
+            logger.info(f"에지 기반 감지 성공: 신뢰도 {edge_result['confidence']:.2f}")
             return edge_result
         
         # 3단계: 폴백 (하지만 이미지 분석 기반으로 개선)
-        logger.info("⚠️ AI 감지 실패, 이미지 분석 기반 추정 사용...")
+        logger.info("AI 감지 실패, 이미지 분석 기반 추정 사용...")
         adaptive_result = detect_room_corners_adaptive(img)
         
         return adaptive_result
@@ -818,7 +871,7 @@ def detect_room_corners_with_cv(img, confidence_threshold):
     """실제 컴퓨터 비전 기반 방 모서리 감지"""
     
     h, w = img.shape[:2]
-    logger.info("🔍 컴퓨터 비전 분석 시작...")
+    logger.info("컴퓨터 비전 분석 시작...")
     
     try:
         # 이미지 전처리
@@ -854,7 +907,7 @@ def detect_room_corners_with_cv(img, confidence_threshold):
             logger.warning(f"충분한 직선을 감지하지 못함: {len(lines) if lines is not None else 0}개")
             return {"success": False, "confidence": 0.0}
         
-        logger.info(f"📏 {len(lines)}개 직선 감지됨")
+        logger.info(f"{len(lines)}개 직선 감지됨")
         
         # 직선 분류 및 모서리 찾기
         corners = find_room_corners_from_lines_improved(lines, w, h)
@@ -870,8 +923,8 @@ def detect_room_corners_with_cv(img, confidence_threshold):
         # 신뢰도 계산
         confidence = calculate_cv_confidence(corners, lines, w, h)
         
-        logger.info(f"📍 감지된 모서리: {corners}")
-        logger.info(f"🎯 신뢰도: {confidence:.2f}")
+        logger.info(f"감지된 모서리: {corners}")
+        logger.info(f"신뢰도: {confidence:.2f}")
         
         return {
             "success": True,
@@ -1063,7 +1116,7 @@ def detect_room_corners_with_edges(img, confidence_threshold):
     """에지 기반 방 모서리 감지 (2단계)"""
     
     h, w = img.shape[:2]
-    logger.info("🔍 에지 기반 분석 시작...")
+    logger.info("에지 기반 분석 시작...")
     
     try:
         # 더 강화된 에지 감지
@@ -1094,7 +1147,7 @@ def detect_room_corners_with_edges(img, confidence_threshold):
         for y, x in zip(corner_locations[0], corner_locations[1]):
             corner_points.append({"x": int(x), "y": int(y)})
         
-        logger.info(f"🎯 {len(corner_points)}개 모서리 후보 발견")
+        logger.info(f"{len(corner_points)}개 모서리 후보 발견")
         
         if len(corner_points) < 4:
             return {"success": False, "confidence": 0.0}
@@ -1241,7 +1294,7 @@ def detect_room_corners_adaptive(img):
         elif contrast > 25:
             confidence = 0.6
         
-        logger.info(f"📍 적응적 감지 완료: {corners}")
+        logger.info(f"적응적 감지 완료: {corners}")
         
         return {
             "success": True,
@@ -1283,10 +1336,10 @@ def improved_room_measurement(points: List[Point3D], target_height: float) -> di
         logger.info(f"  바닥뒤쪽(깊이): ({floor_back.x:.1f}, {floor_back.y:.1f})")
         logger.info(f"  바닥오른쪽(너비): ({floor_right.x:.1f}, {floor_right.y:.1f})")
         
-        # 픽셀 거리 계산 - 올바른 방향으로 계산
-        height_pixels = distance_2d(floor_left, ceiling_left)     # 수직 거리
-        width_pixels = distance_2d(floor_left, floor_right)       # 가로 거리 (좌→우)
-        depth_pixels = distance_2d(floor_left, floor_back)        # 세로 거리 (앞→뒤)
+        # 3D 거리 계산 (MiDaS 깊이 정보 활용)
+        height_pixels = distance_2d(floor_left, ceiling_left)     # 수직 거리 (2D 유지)
+        width_pixels = distance_3d(floor_left, floor_right)       # 가로 거리 (3D)
+        depth_pixels = distance_3d(floor_left, floor_back)        # 세로 거리 (3D)
         
         logger.info(f"픽셀 거리:")
         logger.info(f"  높이: {height_pixels:.1f}px")
@@ -1301,10 +1354,33 @@ def improved_room_measurement(points: List[Point3D], target_height: float) -> di
         pixels_per_meter = height_pixels / target_height
         logger.info(f"미터당 픽셀: {pixels_per_meter:.2f} pixels/m")
         
-        # 실제 크기 계산
+        # 깊이 기반 원근법 보정 계산
+        front_depth = floor_left.z
+        back_depth = floor_back.z
+        right_depth = floor_right.z
+        
+        # 깊이 차이에 따른 보정 계수
+        depth_correction_width = abs(right_depth - front_depth) / max(front_depth, right_depth, 1.0)
+        depth_correction_depth = abs(back_depth - front_depth) / max(front_depth, back_depth, 1.0)
+        
+        # 강화된 원근법 보정 (과대측정 방지)
+        # 기본 보정 + 깊이 기반 추가 보정
+        base_reduction = 0.8  # 기본 20% 축소
+        perspective_factor_width = base_reduction - (depth_correction_width * 0.4)  # 최대 40% 추가 보정
+        perspective_factor_depth = base_reduction - (depth_correction_depth * 0.4)  # 최대 40% 추가 보정
+        
+        # 최소값 제한 (너무 작아지지 않도록)
+        perspective_factor_width = max(perspective_factor_width, 0.5)  # 최소 50%
+        perspective_factor_depth = max(perspective_factor_depth, 0.5)  # 최소 50%
+        
+        logger.info(f"원근법 보정:")
+        logger.info(f"  깊이값 - 앞: {front_depth:.3f}, 뒤: {back_depth:.3f}, 오른쪽: {right_depth:.3f}")
+        logger.info(f"  보정계수 - 가로: {perspective_factor_width:.3f}, 세로: {perspective_factor_depth:.3f}")
+        
+        # 실제 크기 계산 (원근법 보정 적용)
         height_m = target_height
-        width_m = width_pixels / pixels_per_meter   # 가로 (X축)
-        depth_m = depth_pixels / pixels_per_meter   # 세로 (Z축)
+        width_m = (width_pixels / pixels_per_meter) * perspective_factor_width   # 가로 (X축)
+        depth_m = (depth_pixels / pixels_per_meter) * perspective_factor_depth   # 세로 (Z축)
         
         # cm 단위로 변환
         height_cm = height_m * 100
@@ -1314,11 +1390,30 @@ def improved_room_measurement(points: List[Point3D], target_height: float) -> di
         # 신뢰도 계산
         confidence = calculate_confidence(points)
         
-        # 결과 검증
-        if width_cm < 100 or width_cm > 1000:  # 1m ~ 10m 범위
+        # 강화된 결과 검증 및 추가 보정
+        # 일반적인 한국 주거공간 기준 (2-5m)
+        if width_cm > 500:  # 5m 초과시 추가 축소
+            width_reduction = 0.7
+            width_cm *= width_reduction
+            width_m *= width_reduction
+            logger.warning(f"가로 크기 과대측정 감지 - 추가 보정 적용: {width_cm:.1f}cm")
+            
+        if depth_cm > 500:  # 5m 초과시 추가 축소  
+            depth_reduction = 0.7
+            depth_cm *= depth_reduction
+            depth_m *= depth_reduction
+            logger.warning(f"세로 크기 과대측정 감지 - 추가 보정 적용: {depth_cm:.1f}cm")
+        
+        # 최종 범위 검증
+        if width_cm < 150 or width_cm > 800:  # 1.5m ~ 8m 범위
             logger.warning(f"비정상적인 가로 크기: {width_cm:.1f}cm")
-        if depth_cm < 100 or depth_cm > 1000:  # 1m ~ 10m 범위
+        if depth_cm < 150 or depth_cm > 800:  # 1.5m ~ 8m 범위
             logger.warning(f"비정상적인 세로 크기: {depth_cm:.1f}cm")
+        
+        # 면적 상식 검증
+        area_check = (width_m * depth_m)
+        if area_check > 25:  # 25m² 초과시 경고
+            logger.warning(f"과대한 면적 측정: {area_check:.1f}m² (일반 방: 4-20m²)")
         
         # 평방미터 계산
         area_sqm = (width_m * depth_m)

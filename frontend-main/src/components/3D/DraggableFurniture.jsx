@@ -7,6 +7,7 @@ import PositionSnapper from "../../utils/PositionSnapper";
 import { FurnitureDimensions } from "./DimensionComponents";
 import { CollisionIndicator } from "./CollisionComponents";
 import { FurnitureModel } from "./FurnitureModel";
+import { ResizeHandles } from "./ResizeHandles";
 
 // 향상된 가구 컴포넌트 (드래그 시스템 개선)
 export const DraggableFurnitureWithCollision = React.memo(
@@ -28,26 +29,39 @@ export const DraggableFurnitureWithCollision = React.memo(
     customFurnitureData = null,
     updatePlacedFurniturePosition,
     use3DModels = false, // 3D 모델 사용 여부
+    showDimensions = true, // 치수선 표시 여부
+    showResizeHandles = true, // 가구 크기 조절 핸들 표시 여부
+    onResize, // 크기 조절 콜백
+    customSize, // 사용자 조절된 크기
   }) {
     const mesh = useRef();
 
-    // 커스텀 가구인 경우 전달된 size를 직접 사용, 아니면 preset에서 가져오기
+    // 크기 결정 로직: customSize > customFurnitureData.size > preset.size
     let size, color, preset;
     if (customFurnitureData && customFurnitureData.size) {
-      size = customFurnitureData.size;
+      size = customSize || customFurnitureData.size;
       color = customFurnitureData.color || "#cccccc";
       preset = null;
     } else {
       preset = furniturePresets[type];
-      size = preset?.size || [100, 100, 100];
+      size = customSize || preset?.size || [100, 100, 100];
       color = preset?.color || "#cccccc";
     }
+    
+    // 디버깅 로그
+    console.log(`🔧 Furniture ${id} size calculation:`, {
+      customSize,
+      customFurnitureData: customFurnitureData?.size,
+      presetSize: preset?.size,
+      finalSize: size
+    });
 
     // 3D 모델 사용 가능 여부 체크
     const canUse3DModel = use3DModels && preset && preset.model3D && !customFurnitureData;
 
     const [hovered, setHovered] = useState(false);
     const [dragging, setDragging] = useState(false);
+    const [resizing, setResizing] = useState(false);
     const [collisions, setCollisions] = useState([]);
     const { camera, gl, raycaster, mouse } = useThree();
 
@@ -61,9 +75,54 @@ export const DraggableFurnitureWithCollision = React.memo(
       lastValidPosition.current = position;
     }, [position]);
 
+    // customSize 변경 감지
+    React.useEffect(() => {
+      if (customSize) {
+        console.log(`🔄 Furniture ${id} customSize updated:`, customSize);
+      }
+    }, [customSize, id]);
+
+    // 크기 조절 핸들러들
+    const handleResizeStart = useCallback(() => {
+      setResizing(true);
+      onDragStateChange?.(true);
+    }, [onDragStateChange]);
+
+    const handleResize = useCallback((newSize) => {
+      console.log(`🎯 Furniture ${id} handleResize called:`, newSize);
+      
+      // 높이 변경 시 Y 위치 조정 (바닥에 고정)
+      const currentHeight = size[1];
+      const newHeight = newSize[1];
+      const heightDifference = newHeight - currentHeight;
+      
+      if (heightDifference !== 0) {
+        // 새로운 Y 위치 = 현재 Y 위치 + (높이 차이 / 2)
+        const newYPosition = position[1] + (heightDifference / 2);
+        // 바닥을 뚫지 않도록 최소값 보장
+        const minY = newHeight / 2;
+        const safeYPosition = Math.max(minY, newYPosition);
+        
+        console.log(`📏 Height adjusted: ${currentHeight} → ${newHeight}, Y: ${position[1]} → ${safeYPosition}`);
+        
+        // 위치와 크기를 함께 업데이트
+        onMove?.(id, [position[0], safeYPosition, position[2]]);
+      }
+      
+      onResize?.(id, newSize);
+    }, [id, onResize, onMove, position, size]);
+
+    const handleResizeEnd = useCallback(() => {
+      setResizing(false);
+      onDragStateChange?.(false);
+    }, [onDragStateChange]);
+
     // 마우스/터치 다운 이벤트
     const handlePointerDown = useCallback(
       (e) => {
+        // 리사이징 중일 때는 드래그 방지
+        if (resizing) return;
+        
         e.stopPropagation();
 
         const rect = gl.domElement.getBoundingClientRect();
@@ -101,7 +160,9 @@ export const DraggableFurnitureWithCollision = React.memo(
             const intersection = new THREE.Vector3();
 
             if (raycaster.ray.intersectPlane(plane, intersection)) {
-              let newPosition = [intersection.x, size[1] / 2, intersection.z];
+              // Y 위치는 바닥을 뚫지 않도록 최소값 보장
+              const minY = size[1] / 2; // 가구 높이의 절반 (바닥에서 중심까지)
+              let newPosition = [intersection.x, Math.max(minY, intersection.y), intersection.z];
 
               // 극단적인 좌표값 방지 - 방 크기의 10배를 넘으면 무시
               const maxDistance = Math.max(roomSize[0], roomSize[2]) * 10;
@@ -244,30 +305,35 @@ export const DraggableFurnitureWithCollision = React.memo(
         </group>
 
         {/* 가구 이름 텍스트 */}
-        <Text
-          position={[0, size[1] / 2 + 10, 0]} // 가구 위에 표시
-          rotation={[0, -rotation[1], 0]} // 가구 회전과 반대로 회전하여 항상 정면을 보도록
-          fontSize={15}
-          color="white"
-          anchorX="center"
-          anchorY="middle"
-          depthTest={false} // 다른 오브젝트에 가려지지 않도록
-        >
-          {customFurnitureData?.name || furniturePresets[type]?.name}
-        </Text>
+        {showDimensions && (
+          <Text
+            position={[0, size[1] / 2 + 10, 0]} // 가구 위에 표시
+            rotation={[0, -rotation[1], 0]} // 가구 회전과 반대로 회전하여 항상 정면을 보도록
+            fontSize={15}
+            color="white"
+            anchorX="center"
+            anchorY="middle"
+            depthTest={false} // 다른 오브젝트에 가려지지 않도록
+          >
+            {customFurnitureData?.name || furniturePresets[type]?.name}
+          </Text>
+        )}
 
         {/* 가구 치수 텍스트 */}
-        <Text
-          position={[0, size[1] / 2 - 5, 0]} // 가구 이름 아래에 표시
-          rotation={[0, -rotation[1], 0]} // 가구 회전과 반대로 회전하여 항상 정면을 보도록
-          fontSize={10}
-          color="white"
-          anchorX="center"
-          anchorY="middle"
-          depthTest={false} // 다른 오브젝트에 가려지지 않도록
-        >
-          {`${size[0]}x${size[2]}x${size[1]}cm`}
-        </Text>
+        {showDimensions && (
+          <Text
+            position={[0, size[1] / 2 - 5, 0]} // 가구 이름 아래에 표시
+            rotation={[0, -rotation[1], 0]} // 가구 회전과 반대로 회전하여 항상 정면을 보도록
+            fontSize={10}
+            color="white"
+            anchorX="center"
+            anchorY="middle"
+            depthTest={false} // 다른 오브젝트에 가려지지 않도록
+          >
+            {`${Math.round(size[0])}x${Math.round(size[2])}x${Math.round(size[1])}cm`}
+          </Text>
+        )}
+        
 
         <ContactShadows
           position={[0, -size[1] / 2 + 0.1, 0]}
@@ -277,7 +343,7 @@ export const DraggableFurnitureWithCollision = React.memo(
           far={size[1]}
         />
 
-        {selected && (
+        {selected && showDimensions && (
           <mesh rotation={rotation}>
             <boxGeometry args={size.map((s) => s + 5)} />
             <meshBasicMaterial
@@ -304,6 +370,22 @@ export const DraggableFurnitureWithCollision = React.memo(
           size={size}
           rotation={rotation}
           selected={selected}
+          showDimensions={showDimensions}
+        />
+
+        {/* 리사이징 핸들 - AI 인테리어 생성 시 숨김 */}
+        <ResizeHandles
+          position={[0, 0, 0]}
+          size={size}
+          rotation={rotation}
+          visible={selected && !dragging && showResizeHandles}
+          onResize={handleResize}
+          onResizeStart={handleResizeStart}
+          onResizeEnd={handleResizeEnd}
+          furniture={furniture}
+          furniturePresets={furniturePresets}
+          roomSize={roomSize}
+          furnitureId={id}
         />
       </group>
     );

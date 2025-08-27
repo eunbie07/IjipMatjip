@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
+import { FurnitureLoadingPlaceholder } from "../UI/Loading3D";
 
 // 재질 설정 헬퍼 함수
 const setupMaterial = (material, selected, hasCollision) => {
@@ -34,6 +35,11 @@ export const FurnitureModel = React.memo(function FurnitureModel({
   hasCollision,
   isChildComponent = false, // 부모 컴포넌트 내에서 사용되는지 여부
 }) {
+  // 로딩 상태 추가
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingError, setLoadingError] = useState(null);
+
   // 실시간 offset 조정을 위한 상태
   const [dynamicOffset, setDynamicOffset] = useState(() => {
     const initialOffset = modelConfig.offset || [0, 0, 0];
@@ -44,10 +50,22 @@ export const FurnitureModel = React.memo(function FurnitureModel({
   const [loadedModel, setLoadedModel] = useState(null);
   const [modelMeshes, setModelMeshes] = useState([]);
 
-  // GLTF 모델 로드
+  // GLTF 모델 로드 with 로딩 상태 관리
   const { scene, error } = useGLTF(modelConfig.path, true, true, (loader) => {
+    loader.manager.onLoad = () => {
+      setIsLoading(false);
+      setLoadingProgress(100);
+    };
+    
+    loader.manager.onProgress = (url, itemsLoaded, itemsTotal) => {
+      const progress = itemsTotal > 0 ? (itemsLoaded / itemsTotal) * 100 : 0;
+      setLoadingProgress(progress);
+    };
+    
     loader.manager.onError = (url) => {
       console.warn("Failed to load 3D model:", url);
+      setLoadingError(`Failed to load: ${url}`);
+      setIsLoading(false);
     };
   });
 
@@ -85,8 +103,16 @@ export const FurnitureModel = React.memo(function FurnitureModel({
     if (!scene || error) {
       setLoadedModel(null);
       setModelMeshes([]);
+      if (error) {
+        setLoadingError(error.message || 'Failed to load 3D model');
+        setIsLoading(false);
+      }
       return;
     }
+
+    // 모델이 성공적으로 로드되면 로딩 상태 해제
+    setIsLoading(false);
+    setLoadingError(null);
 
     try {
       // 간단 모드: meshNames가 ["*"] 이면 전체 scene 사용
@@ -294,9 +320,18 @@ export const FurnitureModel = React.memo(function FurnitureModel({
     }
   }, [modelMeshes, size, modelConfig.scale, modelConfig.rotation, isChildComponent, dynamicOffset]);
 
-  // 모델이 로드되지 않은 경우 null 반환 (폴백으로 박스 렌더링)
-  if (!loadedModel || modelMeshes.length === 0) {
-    return null;
+  // 로딩 중이거나 에러가 있는 경우 플레이스홀더 표시
+  if (isLoading || loadingError || !loadedModel || modelMeshes.length === 0) {
+    // 가구 타입 추출 (path에서 파일명 기반으로)
+    const furnitureType = modelConfig.path.split('/').pop().split('.')[0];
+    
+    return (
+      <FurnitureLoadingPlaceholder 
+        furnitureType={furnitureType}
+        size={size}
+        position={[0, 0, 0]}
+      />
+    );
   }
 
   return (

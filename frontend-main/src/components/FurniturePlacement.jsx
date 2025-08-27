@@ -13,6 +13,7 @@ import {
 
 // Import furniture presets from constants
 import { FURNITURE_PRESETS } from '../constants/furniture';
+import RoomSizeController from './RoomSizeController';
 
 // Convert furniture presets to catalog format
 const FURNITURE_CATALOG = Object.entries(FURNITURE_PRESETS).map(([id, preset]) => ({
@@ -58,7 +59,15 @@ const FurnitureItem = ({ furniture, onDragStart }) => (
   </div>
 );
 
-const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurnitureChange, detectedWindows = [], roomHeight = 250 }) => {
+const FurniturePlacement = ({ 
+  roomWidth, 
+  roomDepth, 
+  roomHeight = 250,
+  placedFurniture, 
+  onFurnitureChange, 
+  onRoomSizeChange,
+  detectedWindows = [] 
+}) => {
   // 유효성 검사 - Width(X), Depth(Y) 단위: cm (먼저 선언)
   const validRoomWidth = isNaN(roomWidth) || roomWidth <= 0 ? 400 : roomWidth;
   const validRoomDepth = isNaN(roomDepth) || roomDepth <= 0 ? 300 : roomDepth;
@@ -681,6 +690,16 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
 
   return (
     <div className="mt-8 p-6 bg-surface rounded-xl shadow-lg border border-border">
+      {/* 방 크기 조절 패널 */}
+      <RoomSizeController
+        roomWidth={validRoomWidth}
+        roomDepth={validRoomDepth}
+        roomHeight={roomHeight}
+        onRoomSizeChange={onRoomSizeChange}
+        placedFurniture={placedFurniture}
+        onFurnitureUpdate={onFurnitureChange}
+      />
+      
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-text-primary flex items-center gap-2">
           Furniture Layout Simulator
@@ -714,7 +733,19 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
               disabled={selectedFurnitureIndex === null}
               title="복사 (Ctrl+C)"
             >
-              📋
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                />
+              </svg>
             </button>
             <button
               onClick={pasteFurniture}
@@ -722,7 +753,19 @@ const FurniturePlacement = ({ roomWidth, roomDepth, placedFurniture, onFurniture
               disabled={!copiedFurniture}
               title="붙여넣기 (Ctrl+V)"
             >
-              📌
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                />
+              </svg>
             </button>
           </div>
 

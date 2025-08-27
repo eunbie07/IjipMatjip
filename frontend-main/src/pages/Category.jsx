@@ -4,6 +4,7 @@ import StyleTab from '../components/categories/StyleTab';
 import ImageSlider from '../components/categories/ImageSlider'
 import MessageBox from '../components/categories/MessageBox'
 import { styleImagesData, styleLabels } from '../datas/styleData';
+import '../styles/animations.css';
 
 // --- category 컴포넌트 ---
 export default function CategoryPage() {
@@ -88,14 +89,4 @@ export default function CategoryPage() {
   );
 }
 
-const style = document.createElement('style');
-style.innerHTML = `
-  @keyframes fade-in {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .animate-fade-in {
-    animation: fade-in 0.5s ease-out forwards;
-  }
-`;
-document.head.appendChild(style);
+// CSS animations moved to separate file for security (animations.css)

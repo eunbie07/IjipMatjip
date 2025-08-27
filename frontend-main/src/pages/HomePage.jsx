@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { styleImagesData, STYLE_CONFIG } from "../datas/styleData";
 import ImageSlider from "../components/categories/ImageSlider";
+import "../styles/animations.css";
 import {
   UploadCloud,
   ScanSearch,
@@ -457,18 +458,7 @@ const HomePage = () => {
         </div>
       </footer>
       
-      {/* CSS Animations */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @keyframes fade-in {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          .animate-fade-in {
-            animation: fade-in 0.5s ease-out forwards;
-          }
-        `
-      }} />
+      {/* CSS Animations moved to separate file for security */}
     </div>
   );
 };

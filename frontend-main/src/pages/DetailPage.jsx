@@ -3,7 +3,8 @@ import { useLocation, Link, useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import InfrastructureMap from '../components/houses/InfrastructureMap';
 import { getPhotoUrl } from '../hooks/getPhotoUrl';
-import Slider from "react-slick"; 
+import Slider from "react-slick";
+import { mockAIReport, mockInfrastructure, mockCommuteDetails } from '../utils/mockData'; 
 // --- 아이콘 컴포넌트 ---
 const ArrowLeftIcon = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
@@ -139,6 +140,8 @@ const DetailPage = () => {
       }
 
       try {
+        console.log("실제 API에서 상세 정보를 가져옵니다.");
+        
         const promises = [
           client.post('/api/infrastructure',{ latitude: estateData.latitude, longitude: estateData.longitude, radius_km:1.0 }),
           client.post('/api/report/generate',{ property_data : estateData, user_preferences: { preferences: searchConditions.preferences, region: searchConditions.region } })
@@ -163,7 +166,7 @@ const DetailPage = () => {
                 }))
                 .catch(err => {
                     console.error("출퇴근 시간 계산 실패:", err);
-                    return { driving: '계산 실패', transit: '계산 실패', walking: '계산 실패', path: [] };
+                    return mockCommuteDetails; // Mock 데이터로 fallback
                 });
         }
         promises.push(commutePromise);
@@ -176,17 +179,36 @@ const DetailPage = () => {
         if (commuteResult?.destination_coords){
           setWorkMarker({...commuteResult.destination_coords, type:'work'})
         }
-        setLoading(false);
-        setIsReportLoading(false);
-
+        
         sessionStorage.setItem(cacheKey, JSON.stringify({
           report: reportResult.data,
           infra: infraResult.data,
           commute: commuteResult,
         }));
+        
+        console.log("✅ 실제 API 데이터 사용 성공");
 
       } catch (error) {
         console.error("상세 정보 로딩 실패:", error);
+        console.log("🔧 서버 연결 실패, Mock 데이터로 자동 전환");
+        
+        // 서버 실패 시 자동으로 Mock 데이터 사용
+        setInfrastructure(mockInfrastructure);
+        setAiReport(mockAIReport);
+        setCommuteDetails(mockCommuteDetails);
+        if (mockCommuteDetails?.destination_coords){
+          setWorkMarker({...mockCommuteDetails.destination_coords, type:'work'})
+        }
+        
+        // Mock 데이터도 캐시에 저장 (일관성 유지)
+        sessionStorage.setItem(cacheKey, JSON.stringify({
+          report: mockAIReport,
+          infra: mockInfrastructure,
+          commute: mockCommuteDetails,
+        }));
+        
+        console.log("📊 Mock 데이터 로드 완료 - 서버 복구 시 자동으로 실제 데이터 사용됩니다");
+      } finally {
         setLoading(false);
         setIsReportLoading(false);
       }

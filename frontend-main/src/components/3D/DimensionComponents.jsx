@@ -98,8 +98,9 @@ export const FurnitureDimensions = React.memo(function FurnitureDimensions({
   size,
   rotation = [0, 0, 0],
   selected,
+  showDimensions = true,
 }) {
-  if (!selected || !size) return null;
+  if (!selected || !size || !showDimensions) return null;
 
   const [originalWidth, height, originalDepth] = size;
   const [x, y, z] = position;

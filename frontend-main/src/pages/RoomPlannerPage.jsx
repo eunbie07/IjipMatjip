@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { undistortImage, generateDepthMap, getDepthMapImage, getDepthMeta, estimateRoomSize } from "../utils/api";
+import { undistortImage, generateDepthMap, getDepthMapImage, getDepthMeta, estimateRoomSize, saveFullRoomData, getUserRooms, loadRoomById } from "../utils/api";
 import ImageUploader from "../components/ImageUploader";
 import ImageUrlInput from "../components/ImageUrlInput";
 import ImageClickArea from "../components/ImageClickArea";
@@ -9,6 +9,9 @@ import RoomBox from "../components/RoomBox";
 import WebGLErrorBoundary from "../components/WebGLErrorBoundary";
 import WebGLDebugger from "../components/WebGLDebugger";
 import FurniturePlacement from "../components/FurniturePlacement";
+import ProgressBar from "../components/ProgressBar";
+import StickyProgressBar from "../components/StickyProgressBar";
+import RoomSizeInput from "../components/RoomSizeInput";
 
 const HOUSING_TYPES = [
   {
@@ -142,12 +145,26 @@ function RoomPlannerPage() {
 
   const [activeTab, setActiveTab] = useState("analysis");
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [uploadMethod, setUploadMethod] = useState("file"); // "file" 또는 "url"
+  const [uploadMethod, setUploadMethod] = useState("file"); // "file", "url", 또는 "manual"
 
   const [manualResult, setManualResult] = useState(null);
   const [autoResult, setAutoResult] = useState(null);
   const [selectedMethod, setSelectedMethod] = useState("manual");
   const [roomMeasurementPoints, setRoomMeasurementPoints] = useState(null);
+
+  // 진행률 상태 추가
+  const [progress, setProgress] = useState(0);
+  const [currentStep, setCurrentStep] = useState('upload');
+  const [showStickyProgress, setShowStickyProgress] = useState(false);
+
+  // 진행률 단계 정의
+  const progressSteps = [
+    { id: 'upload', name: '이미지 업로드', progress: 20 },
+    { id: 'processing', name: 'AI 분석', progress: 40 },
+    { id: 'clicking', name: '모서리 선택', progress: 60 },
+    { id: 'measuring', name: '측정 중', progress: 80 },
+    { id: 'complete', name: '완료', progress: 100 }
+  ];
 
   const updateRoomMeasurementPoints = (points) => {
     setRoomMeasurementPoints(points);
@@ -156,6 +173,7 @@ function RoomPlannerPage() {
   };
 
   const handleTabClick = (tabName) => {
+    console.log("탭 변경:", tabName);
     setActiveTab(tabName);
     if (tabName === "3d") {
       setTimeout(() => {
@@ -179,6 +197,10 @@ function RoomPlannerPage() {
     setUploadError(null);
     setUploadStatus(null);
     setIsProcessing(true);
+    
+    // 진행률 초기화 및 업로드 단계 시작
+    setCurrentStep('upload');
+    setProgress(20);
 
     // 파일 유효성 검사
     if (!file) {
@@ -217,6 +239,9 @@ function RoomPlannerPage() {
       setImage(file);
       setImageUrl(URL.createObjectURL(file));
 
+      // AI 분석 단계로 진행
+      setCurrentStep('processing');
+      setProgress(40);
       setUploadStatus("AI 깊이 분석 중... (30초 소요)");
       await generateDepthMap();
       
@@ -238,6 +263,9 @@ function RoomPlannerPage() {
         console.warn("깊이 맵 이미지 로드 실패:", error);
       }
 
+      // 모서리 클릭 단계로 진행
+      setCurrentStep('clicking');
+      setProgress(60);
       setUploadStatus("이미지 업로드 완료! 방 모서리를 클릭하세요.");
     } catch (error) {
       console.error("Upload failed:", error);
@@ -264,8 +292,170 @@ function RoomPlannerPage() {
     }
   };
 
+  const handleRoomSizeSubmit = async (roomData) => {
+    setIsProcessing(true);
+    try {
+      // 완료 단계로 바로 설정
+      setCurrentStep('complete');
+      setProgress(100);
+      
+      // 결과 설정
+      setResult(roomData);
+      setManualResult(roomData);
+      
+      // 가구배치 탭으로 바로 이동
+      setActiveTab("furniture");
+      
+      // 측정 결과를 localStorage에 저장
+      localStorage.setItem('roomPlannerResult', JSON.stringify(roomData));
+      localStorage.setItem('roomPlannerImage', ''); // 이미지 없음
+      localStorage.setItem('roomPlannerPlacedFurniture', JSON.stringify([]));
+      
+    } catch (error) {
+      console.error("Room size setup failed:", error);
+      alert("방 크기 설정에 실패했습니다.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // 현재 방 저장하기 (MongoDB)
+  const handleSaveRoom = async () => {
+    if (!result) {
+      alert("측정된 방이 없습니다. 먼저 방을 측정해주세요.");
+      return;
+    }
+
+    const roomName = prompt("방 이름을 입력하세요 (예: 우리집 거실)", "내 방");
+    if (!roomName) return;
+
+    try {
+      const roomData = {
+        id: Date.now(),
+        name: roomName,
+        createdAt: new Date().toISOString(),
+        result: result,
+        placedFurniture: placedFurniture,
+        imageUrl: imageUrl,
+        roomMeasurementPoints: roomMeasurementPoints,
+        uploadMethod: uploadMethod,
+        // AI 생성 이미지 정보 (있다면 포함)
+        aiGeneratedImages: {
+          designImage: localStorage.getItem('lastGeneratedDesignImage') || null,
+          realisticImage: localStorage.getItem('lastGeneratedRealisticImage') || null
+        }
+      };
+
+      const response = await saveFullRoomData(roomData);
+      alert(`"${roomName}" 방이 저장되었습니다!`);
+      console.log('방 저장 성공:', response);
+      
+      // localStorage에 백업 (옵션)
+      const savedRooms = JSON.parse(localStorage.getItem('savedRooms') || '[]');
+      savedRooms.push({ ...roomData, mongoId: response.layout_id });
+      localStorage.setItem('savedRooms', JSON.stringify(savedRooms));
+      
+    } catch (error) {
+      console.error('방 저장 실패:', error);
+      alert(`방 저장 실패: ${error.message}`);
+    }
+  };
+
+  // 저장된 방 불러오기 (MongoDB)
+  const handleLoadRoom = async () => {
+    try {
+      const rooms = await getUserRooms();
+      
+      if (rooms.length === 0) {
+        alert("저장된 방이 없습니다.");
+        return;
+      }
+
+      // 가장 최근 저장된 방 선택
+      const latestRoom = rooms[0]; // 백엔드에서 최신순으로 정렬됨
+      
+      // 방 이름 표시 (scene 내부에 있을 수 있음)
+      const roomName = latestRoom.scene?.name || latestRoom.layout_data?.scene?.name || "저장된 방";
+      
+      if (confirm(`"${roomName}" 방을 불러오시겠습니까?\n(현재 작업이 사라집니다)`)) {
+        // MongoDB에서 가져온 데이터 구조에 맞게 복원
+        const roomData = latestRoom.scene || latestRoom.layout_data?.scene;
+        
+        if (roomData) {
+          setResult(roomData.result);
+          setPlacedFurniture(roomData.placedFurniture || []);
+          setImageUrl(roomData.imageUrl || null);
+          setRoomMeasurementPoints(roomData.roomMeasurementPoints || null);
+          setUploadMethod(roomData.uploadMethod || "manual");
+          
+          // 진행률 완료 상태로 설정
+          setCurrentStep('complete');
+          setProgress(100);
+          
+          // Furniture Layout 탭으로 이동
+          setActiveTab("furniture");
+          
+          alert(`"${roomName}" 방을 불러왔습니다!`);
+        } else {
+          throw new Error("방 데이터 형식이 올바르지 않습니다.");
+        }
+      }
+      
+    } catch (error) {
+      console.error('방 불러오기 실패:', error);
+      alert(`방 불러오기 실패: ${error.message}`);
+      
+      // 실패 시 localStorage 백업 사용
+      const savedRooms = JSON.parse(localStorage.getItem('savedRooms') || '[]');
+      if (savedRooms.length > 0) {
+        const latestRoom = savedRooms[savedRooms.length - 1];
+        if (confirm(`네트워크 오류입니다. 로컬 백업 "${latestRoom.name}" 방을 불러오시겠습니까?`)) {
+          setResult(latestRoom.result);
+          setPlacedFurniture(latestRoom.placedFurniture || []);
+          setImageUrl(latestRoom.imageUrl || null);
+          setRoomMeasurementPoints(latestRoom.roomMeasurementPoints || null);
+          setUploadMethod(latestRoom.uploadMethod || "manual");
+          
+          setCurrentStep('complete');
+          setProgress(100);
+          setActiveTab("furniture");
+          
+          alert(`"${latestRoom.name}" 방을 불러왔습니다! (로컬 백업)`);
+        }
+      }
+    }
+  };
+
+  // 가구배치 중 방 크기 변경 핸들러
+  const handleRoomSizeChange = (newSize) => {
+    const updatedResult = {
+      ...result,
+      width_cm: newSize.width,
+      depth_cm: newSize.depth,
+      height_cm: newSize.height,
+      dimensions: {
+        width_cm: newSize.width,
+        depth_cm: newSize.depth,
+        height_cm: newSize.height
+      },
+      calculated_values: {
+        area_sqm: (newSize.width * newSize.depth) / 10000,
+        volume_cum: (newSize.width * newSize.depth * newSize.height) / 1000000
+      }
+    };
+    
+    setResult(updatedResult);
+    
+    // localStorage 업데이트
+    localStorage.setItem('roomPlannerResult', JSON.stringify(updatedResult));
+  };
+
   const handlePointsSubmit = async (points, method = "manual") => {
     try {
+      // 측정 중 단계로 진행
+      setCurrentStep('measuring');
+      setProgress(80);
+      
       updateRoomMeasurementPoints(points);
 
       // 층고 값 검증 및 기본값 설정
@@ -299,6 +489,15 @@ function RoomPlannerPage() {
       }
 
       setResult(resultData);
+      
+      // 측정 결과를 localStorage에 저장
+      localStorage.setItem('roomPlannerResult', JSON.stringify(resultData));
+      localStorage.setItem('roomPlannerImage', image ? URL.createObjectURL(image) : '');
+      localStorage.setItem('roomPlannerPlacedFurniture', JSON.stringify(placedFurniture));
+      
+      // 완료 단계로 진행
+      setCurrentStep('complete');
+      setProgress(100);
     } catch (error) {
       console.error("Room size estimation failed:", error);
       let message = "방 크기 계산에 실패했습니다.";
@@ -315,12 +514,100 @@ function RoomPlannerPage() {
     }
   };
 
-  // URL 파라미터에서 이미지 URL 확인
+  // URL 파라미터 처리
   React.useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const imageUrlParam = urlParams.get('imageUrl');
+    const tabParam = urlParams.get('tab');
+    const widthParam = urlParams.get('width');
+    const heightParam = urlParams.get('height');
+    const depthParam = urlParams.get('depth');
+    const shouldLoadRoom = urlParams.get('loadRoom') === 'true';
     
-    if (imageUrlParam) {
+    // MyRooms 페이지에서 방 선택해서 온 경우
+    if (shouldLoadRoom) {
+      const tempRoomData = localStorage.getItem('tempLoadedRoom');
+      if (tempRoomData) {
+        try {
+          const roomData = JSON.parse(tempRoomData);
+          
+          // 방 데이터 복원
+          setResult(roomData.result);
+          setPlacedFurniture(roomData.placedFurniture || []);
+          setImageUrl(roomData.imageUrl || null);
+          setRoomMeasurementPoints(roomData.roomMeasurementPoints || null);
+          setUploadMethod(roomData.uploadMethod || 'manual');
+          
+          // 진행률 완료 상태로 설정
+          setCurrentStep('complete');
+          setProgress(100);
+          
+          // Furniture Layout 탭으로 이동
+          setActiveTab("furniture");
+          
+          // 임시 데이터 정리
+          localStorage.removeItem('tempLoadedRoom');
+          
+          // URL 파라미터 정리
+          window.history.replaceState({}, '', '/room-planner');
+          
+          return; // 나머지 URL 파라미터 처리 건너뛰기
+        } catch (error) {
+          console.error('임시 방 데이터 로드 실패:', error);
+          localStorage.removeItem('tempLoadedRoom');
+        }
+      }
+    }
+    const returnParam = urlParams.get('return');
+    
+    // AI 인테리어에서 돌아오는 경우 (저장된 결과 복원)
+    if (returnParam === 'true') {
+      const savedResult = localStorage.getItem('roomPlannerResult');
+      const savedImage = localStorage.getItem('roomPlannerImage');
+      const savedFurniture = localStorage.getItem('roomPlannerPlacedFurniture');
+      
+      if (savedResult) {
+        try {
+          const resultData = JSON.parse(savedResult);
+          setResult(resultData);
+          setActiveTab("3d"); // 3D 탭으로 이동
+          setCurrentStep('complete');
+          setProgress(100);
+          
+          if (savedImage && savedImage !== '') {
+            setImageUrl(savedImage);
+          }
+          
+          if (savedFurniture) {
+            const furnitureData = JSON.parse(savedFurniture);
+            setPlacedFurniture(furnitureData);
+          }
+        } catch (error) {
+          console.error('저장된 결과 복원 실패:', error);
+        }
+      }
+    }
+    // 3D 탭으로 직접 이동하는 경우 (기본 방 크기로 설정)
+    else if (tabParam === '3d' && widthParam && heightParam && depthParam) {
+      const defaultResult = {
+        width_cm: parseInt(widthParam),
+        height_cm: parseInt(heightParam),
+        depth_cm: parseInt(depthParam),
+        dimensions: {
+          width_cm: parseInt(widthParam),
+          height_cm: parseInt(heightParam), 
+          depth_cm: parseInt(depthParam)
+        },
+        confidence: 0.85,
+        detectionMethod: "default"
+      };
+      setResult(defaultResult);
+      setActiveTab("3d");
+      setCurrentStep('complete');
+      setProgress(100);
+    }
+    // 이미지 URL이 있는 경우
+    else if (imageUrlParam) {
       setUploadMethod("url");
       // URL 파라미터가 있으면 자동으로 이미지 로드
       handleImageUploadFromUrl(imageUrlParam);
@@ -338,6 +625,23 @@ function RoomPlannerPage() {
       setUploadError(`URL에서 이미지를 가져올 수 없습니다: ${error.message}`);
     }
   };
+
+  // 스크롤 이벤트로 스티키 진행률 표시 제어
+  React.useEffect(() => {
+    const handleScroll = () => {
+      // 진행률이 0보다 크고 결과가 없는 상태에서만 활성화
+      if ((progress > 0 && !result) || isProcessing) {
+        const scrollY = window.scrollY;
+        const shouldShowSticky = scrollY > 200; // 200px 스크롤 후 표시
+        setShowStickyProgress(shouldShowSticky);
+      } else {
+        setShowStickyProgress(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [progress, result, isProcessing]);
 
   React.useEffect(() => {
     const handleFullscreenChange = () => {
@@ -359,6 +663,14 @@ function RoomPlannerPage() {
 
   return (
     <div className="min-h-screen bg-background py-8">
+      {/* 스티키 진행률 바 */}
+      <StickyProgressBar 
+        currentStep={currentStep}
+        progress={progress}
+        steps={progressSteps}
+        isVisible={showStickyProgress}
+      />
+      
       <div className="container mx-auto px-4">
         <div className="mb-8 pt-24 md:pt-28 max-w-4xl">
           <h1 className="text-4xl md:text-5xl font-bold text-text-primary mb-6 leading-tight">
@@ -371,13 +683,52 @@ function RoomPlannerPage() {
 
       {!result && (
         <div className="max-w-6xl mx-auto">
+          {/* 저장된 방 불러오기 버튼 */}
+          <div className="bg-surface border border-border rounded-lg shadow-sm p-4 sm:p-6 lg:p-8 mb-6">
+            <div className="text-center">
+              <button
+                onClick={handleLoadRoom}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition-colors shadow-lg"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                저장된 방 불러오기
+              </button>
+              <p className="text-text-secondary text-sm mt-2">
+                이전에 저장한 방이 있다면 바로 불러올 수 있습니다
+              </p>
+            </div>
+          </div>
+
+          {/* 진행률 표시 (이미지가 업로드된 후부터 표시) */}
+          {(imageUrl || isProcessing || progress > 0) && (
+            <div className="bg-surface border border-border rounded-lg shadow-sm p-4 sm:p-6 lg:p-8 mb-6">
+              <ProgressBar 
+                currentStep={currentStep} 
+                progress={progress} 
+                steps={progressSteps} 
+              />
+            </div>
+          )}
+          
           <div className="bg-surface border border-border rounded-lg shadow-sm p-4 sm:p-6 lg:p-8 mb-6">
             <div className="mb-6">
               {/* 업로드 방법 선택 탭 */}
               <div className="flex border-b border-border mb-6">
                 <button
                   onClick={() => setUploadMethod("file")}
-                  className={`flex-1 px-4 py-3 text-center font-medium transition-colors text-sm sm:text-base ${
+                  className={`flex-1 px-3 py-3 text-center font-medium transition-colors text-xs sm:text-sm lg:text-base ${
                     uploadMethod === "file"
                       ? "text-primary border-b-2 border-primary"
                       : "text-text-secondary hover:text-text-primary"
@@ -387,13 +738,23 @@ function RoomPlannerPage() {
                 </button>
                 <button
                   onClick={() => setUploadMethod("url")}
-                  className={`flex-1 px-4 py-3 text-center font-medium transition-colors text-sm sm:text-base ${
+                  className={`flex-1 px-3 py-3 text-center font-medium transition-colors text-xs sm:text-sm lg:text-base ${
                     uploadMethod === "url"
                       ? "text-primary border-b-2 border-primary"
                       : "text-text-secondary hover:text-text-primary"
                   }`}
                 >
                   URL에서 가져오기
+                </button>
+                <button
+                  onClick={() => setUploadMethod("manual")}
+                  className={`flex-1 px-3 py-3 text-center font-medium transition-colors text-xs sm:text-sm lg:text-base ${
+                    uploadMethod === "manual"
+                      ? "text-primary border-b-2 border-primary"
+                      : "text-text-secondary hover:text-text-primary"
+                  }`}
+                >
+                  방 크기 입력
                 </button>
               </div>
 
@@ -423,78 +784,88 @@ function RoomPlannerPage() {
                 </div>
               )}
 
-              {isProcessing && <LoadingSpinner message={uploadStatus} />}
-              <UploadStatus status={uploadStatus} error={uploadError} />
+              {/* 방 크기 직접 입력 섹션 */}
+              {uploadMethod === "manual" && (
+                <RoomSizeInput 
+                  onRoomSizeSubmit={handleRoomSizeSubmit}
+                  isProcessing={isProcessing}
+                />
+              )}
+
+              {isProcessing && uploadMethod !== "manual" && <LoadingSpinner message={uploadStatus} />}
+              {uploadMethod !== "manual" && <UploadStatus status={uploadStatus} error={uploadError} />}
             </div>
 
-            <div className="border-t border-border pt-6">
-              <h3 className="font-medium text-lg mb-4 text-text-primary">
-                측정 설정
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                <div>
-                  <label className="block font-medium text-text-primary mb-2">
-                    건물 유형
-                  </label>
-                  <select
-                    className="w-full border border-border rounded-lg px-4 py-3 focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-opacity-50"
-                    value={housingType}
-                    onChange={(e) => setHousingType(e.target.value)}
-                  >
-                    {HOUSING_TYPES.map((h) => (
-                      <option key={h.value} value={h.value}>
-                        {h.label} ({h.description})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-medium text-text-primary mb-2">
-                    천장 높이
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="number"
-                      min="200"
-                      max="400"
-                      step="5"
-                      value={ceilingHeight}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        const numValue = parseFloat(value);
-                        
-                        // 유효성 검사
-                        if (value === '' || isNaN(numValue)) {
-                          setCeilingHeight('');
-                        } else if (numValue < 200) {
-                          setCeilingHeight(200);
-                        } else if (numValue > 400) {
-                          setCeilingHeight(400);
-                        } else {
-                          setCeilingHeight(value);
-                        }
-                      }}
-                      onBlur={(e) => {
-                        // 포커스를 잃을 때 기본값 설정
-                        if (e.target.value === '' || isNaN(parseFloat(e.target.value))) {
-                          setCeilingHeight(230);
-                        }
-                      }}
-                      className="flex-1 border border-border rounded-lg px-4 py-3 focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-opacity-50"
-                      placeholder="230"
-                    />
-                    <span className="text-text-secondary text-base font-medium">
-                      cm
-                    </span>
+            {uploadMethod !== "manual" && (
+              <div className="border-t border-border pt-6">
+                <h3 className="font-medium text-lg mb-4 text-text-primary">
+                  측정 설정
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  <div>
+                    <label className="block font-medium text-text-primary mb-2">
+                      건물 유형
+                    </label>
+                    <select
+                      className="w-full border border-border rounded-lg px-4 py-3 focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-opacity-50"
+                      value={housingType}
+                      onChange={(e) => setHousingType(e.target.value)}
+                    >
+                      {HOUSING_TYPES.map((h) => (
+                        <option key={h.value} value={h.value}>
+                          {h.label} ({h.description})
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  {ceilingHeight && (parseFloat(ceilingHeight) < 200 || parseFloat(ceilingHeight) > 400) && (
-                    <p className="text-red-500 text-sm mt-1">
-                      층고는 200cm ~ 400cm 사이의 값이어야 합니다.
-                    </p>
-                  )}
+                  <div>
+                    <label className="block font-medium text-text-primary mb-2">
+                      천장 높이
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="number"
+                        min="200"
+                        max="400"
+                        step="5"
+                        value={ceilingHeight}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const numValue = parseFloat(value);
+                          
+                          // 유효성 검사
+                          if (value === '' || isNaN(numValue)) {
+                            setCeilingHeight('');
+                          } else if (numValue < 200) {
+                            setCeilingHeight(200);
+                          } else if (numValue > 400) {
+                            setCeilingHeight(400);
+                          } else {
+                            setCeilingHeight(value);
+                          }
+                        }}
+                        onBlur={(e) => {
+                          // 포커스를 잃을 때 기본값 설정
+                          if (e.target.value === '' || isNaN(parseFloat(e.target.value))) {
+                            setCeilingHeight(230);
+                          }
+                        }}
+                        className="flex-1 border border-border rounded-lg px-4 py-3 focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-opacity-50"
+                        placeholder="230"
+                      />
+                      <span className="text-text-secondary text-base font-medium">
+                        cm
+                      </span>
+                    </div>
+                    {ceilingHeight && (parseFloat(ceilingHeight) < 200 || parseFloat(ceilingHeight) > 400) && (
+                      <p className="text-red-500 text-sm mt-1">
+                        층고는 200cm ~ 400cm 사이의 값이어야 합니다.
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
@@ -515,7 +886,7 @@ function RoomPlannerPage() {
           <div className="bg-surface rounded-lg shadow-sm border border-border overflow-visible">
             <div className="flex flex-wrap border-b border-border">
               <button
-                onClick={() => setActiveTab("analysis")}
+                onClick={() => handleTabClick("analysis")}
                 className={`flex-1 min-w-[120px] px-4 sm:px-6 py-3 sm:py-4 text-center font-medium transition-colors text-sm sm:text-base ${
                   activeTab === "analysis"
                     ? "bg-surface text-primary border-b-2 border-blue-600"
@@ -525,7 +896,7 @@ function RoomPlannerPage() {
                 Analysis
               </button>
               <button
-                onClick={() => setActiveTab("2d")}
+                onClick={() => handleTabClick("2d")}
                 className={`flex-1 min-w-[120px] px-4 sm:px-6 py-3 sm:py-4 text-center font-medium transition-colors text-sm sm:text-base ${
                   activeTab === "2d"
                     ? "bg-surface text-primary border-b-2 border-blue-600"
@@ -535,7 +906,7 @@ function RoomPlannerPage() {
                 2D Floor Plan
               </button>
               <button
-                onClick={() => setActiveTab("furniture")}
+                onClick={() => handleTabClick("furniture")}
                 className={`flex-1 min-w-[120px] px-4 sm:px-6 py-3 sm:py-4 text-center font-medium transition-colors text-sm sm:text-base ${
                   activeTab === "furniture"
                     ? "bg-surface text-primary border-b-2 border-blue-600"
@@ -795,6 +1166,7 @@ function RoomPlannerPage() {
                           uploadedImageUrl={imageUrl}
                           placedFurniture={placedFurniture}
                           onFurnitureChange={setPlacedFurniture}
+                          onTabChange={handleTabClick}
                         />
                       </WebGLErrorBoundary>
                     </div>
@@ -810,6 +1182,7 @@ function RoomPlannerPage() {
                     roomHeight={result.dimensions?.height_cm || result.height_cm}
                     placedFurniture={placedFurniture}
                     onFurnitureChange={setPlacedFurniture}
+                    onRoomSizeChange={handleRoomSizeChange}
                     detectedWindows={[]}
                   />
                 </div>
@@ -817,24 +1190,111 @@ function RoomPlannerPage() {
             </div>
           </div>
 
-          <div className="text-center mt-8">
-            <button
-              onClick={() => {
-                setResult(null);
-                setManualResult(null);
-                setAutoResult(null);
-                setSelectedMethod("manual");
-                setImage(null);
-                setImageUrl(null);
-                setDepthImageUrl(null);
-                setUploadStatus(null);
-                setUploadError(null);
-                setPlacedFurniture([]);
-              }}
-              className="px-6 py-3 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition-colors shadow-lg"
-            >
-              새로 측정하기
-            </button>
+          <div className="text-center mt-8 space-y-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <button
+                onClick={handleSaveRoom}
+                className="w-40 px-6 py-3 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12"
+                  />
+                </svg>
+                방 저장하기
+              </button>
+              
+              <button
+                onClick={handleLoadRoom}
+                className="w-40 px-6 py-3 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                방 불러오기
+              </button>
+
+              <button
+                onClick={() => {
+                  setResult(null);
+                  setManualResult(null);
+                  setAutoResult(null);
+                  setSelectedMethod("manual");
+                  setImage(null);
+                  setImageUrl(null);
+                  setDepthImageUrl(null);
+                  setUploadStatus(null);
+                  setUploadError(null);
+                  setPlacedFurniture([]);
+                  setUploadMethod("file"); // 방법 초기화
+                  // 진행률 초기화
+                  setProgress(0);
+                  setCurrentStep('upload');
+                }}
+                className="w-40 px-6 py-3 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition-colors shadow-lg"
+              >
+                새로 측정하기
+              </button>
+              
+              {/* Furniture Layout 탭에서만 3D로 보기 버튼 표시 */}
+              {activeTab === "furniture" && (
+                <button
+                  onClick={() => handleTabClick("3d")}
+                  className="w-40 px-6 py-3 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"
+                    />
+                  </svg>
+                  3D로 보기
+                </button>
+              )}
+              
+              {activeTab === "analysis" && (
+                <button
+                  onClick={() => handleTabClick("2d")}
+                  className="w-40 px-6 py-3 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition-colors shadow-lg"
+                >
+                  평면도 보기
+                </button>
+              )}
+              
+              {activeTab === "2d" && (
+                <button
+                  onClick={() => handleTabClick("furniture")}
+                  className="w-40 px-6 py-3 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition-colors shadow-lg"
+                >
+                  가구 배치하기
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
