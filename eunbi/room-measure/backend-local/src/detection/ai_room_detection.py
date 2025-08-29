@@ -54,10 +54,21 @@ def detect_room_with_ai(image_path: str, confidence_threshold: float = 0.7) -> d
         h, w = img.shape[:2]
         logger.info(f"이미지 크기: {w} x {h}")
         
-        # 첫 번째: 개선된 AI 감지 시도
+        # 첫 번째: 앙상블 AI 감지 시도 (최신 개선 버전)
+        from .ensemble_detection import ensemble_detector
+        
+        logger.info("🎯 앙상블 AI 감지 시도...")
+        
+        ensemble_result = ensemble_detector.detect_room_with_ensemble(image_path, confidence_threshold, debug=True)
+        
+        if ensemble_result["success"] and ensemble_result["confidence"] >= confidence_threshold:
+            logger.info(f"✅ 앙상블 AI 감지 성공: 신뢰도 {ensemble_result['confidence']:.2f}, 방법: {ensemble_result['method']}")
+            return ensemble_result
+        
+        # 두 번째: 개선된 AI 감지 폴백
         from .improved_ai_detection import detect_room_corners_improved
         
-        logger.info("🎯 개선된 AI 감지 시도...")
+        logger.info("🎯 개선된 AI 감지 폴백...")
         
         improved_result = detect_room_corners_improved(image_path, debug=True)
         
@@ -65,7 +76,7 @@ def detect_room_with_ai(image_path: str, confidence_threshold: float = 0.7) -> d
             logger.info(f"✅ 개선된 AI 감지 성공: 신뢰도 {improved_result['confidence']:.2f}")
             return improved_result
         
-        # 두 번째: 세 선 교차점 감지 (기하학적 방법) 
+        # 세 번째: 세 선 교차점 감지 (기하학적 방법) 
         from .corner_intersection_detection import detect_three_line_intersections, find_best_floor_corner_intersection
         
         logger.info("🎯 세 선 교차점 감지 시작...")

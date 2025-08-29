@@ -54,13 +54,25 @@ const MeasurementDetails = ({ result }) => {
           <h5 className="font-medium text-text-primary mb-2">측정 품질</h5>
           <div className="space-y-1 text-sm text-text-secondary">
             <div>
-              알고리즘 신뢰도: {(result.confidence || 0).toFixed(2)}
+              AI 신뢰도: {(result.confidence || 0).toFixed(2)}
             </div>
-            <div>
-              처리 품질: {result.confidence >= 0.8 ? '높음' : result.confidence >= 0.6 ? '보통' : '낮음'}
-            </div>
+            {result.quality && (
+              <div className="space-y-1">
+                <div style={{ color: result.quality.color === 'green' ? '#16a34a' : 
+                             result.quality.color === 'blue' ? '#2563eb' : 
+                             result.quality.color === 'orange' ? '#ea580c' : '#dc2626' }}>
+                  측정 품질: {result.quality.quality_score}점 ({result.quality.grade})
+                </div>
+                <div className="text-xs">
+                  {result.quality.reliability}
+                </div>
+                <div className="text-xs opacity-75">
+                  {result.quality.basis}
+                </div>
+              </div>
+            )}
             <div className="text-xs text-text-secondary mt-1 opacity-75">
-              * 이미지 분석 알고리즘의 처리 품질을 나타냅니다
+              * AI 신뢰도와 물리적 타당성을 종합한 측정 품질 점수
             </div>
           </div>
         </div>
@@ -285,6 +297,8 @@ const RoomResult = ({ result }) => {
                 <p>• 실제 측정값과 차이가 있을 수 있으니 참고용으로 활용하세요</p>
               </div>
             </div>
+
+
           </div>
 
         </div>

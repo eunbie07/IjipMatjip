@@ -71,7 +71,7 @@ const WebGLFallback = ({ error, webglTest, onRetry }) => {
           </h3>
           <p className="text-text-secondary mb-4">
             {!webglSupported 
-              ? "브라우저에서 WebGL을 지원하지 않습니다."
+              ? "3D 기능을 지원하지 않는 브라우저입니다."
               : "3D 그래픽 처리 중 오류가 발생했습니다."}
           </p>
         </div>
@@ -80,10 +80,10 @@ const WebGLFallback = ({ error, webglTest, onRetry }) => {
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-left">
           <h4 className="font-medium text-red-800 mb-2">기술적 정보</h4>
           <div className="text-sm text-red-700 space-y-1">
-            <div>WebGL 지원: {webglSupported ? '✅ 지원됨' : '❌ 지원안됨'}</div>
+            <div>3D 기능 지원: {webglSupported ? '✅ 지원됨' : '❌ 지원안됨'}</div>
             {webglTest && (
               <>
-                <div>WebGL 2.0: {webglTest.webgl2 ? '✅ 지원됨' : '❌ 지원안됨'}</div>
+                <div>고급 3D 기능: {webglTest.webgl2 ? '✅ 지원됨' : '❌ 지원안됨'}</div>
                 {webglTest.renderer && <div>렌더러: {webglTest.renderer}</div>}
                 {webglTest.error && <div>오류: {webglTest.error}</div>}
               </>
@@ -106,11 +106,11 @@ const WebGLFallback = ({ error, webglTest, onRetry }) => {
             
             <div className="pt-2">기타 해결방법:</div>
             <ul className="space-y-1">
-              <li>• GPU 드라이버를 최신 버전으로 업데이트</li>
+              <li>• 그래픽 카드 프로그램을 최신 버전으로 업데이트</li>
               <li>• <code className="bg-blue-200 px-1 rounded">chrome://flags/#ignore-gpu-blocklist</code>에서 GPU 블록리스트 무시 활성화</li>
               <li>• 다른 브라우저 (Firefox, Safari, Edge) 사용해보기</li>
               <li>• 시크릿/프라이빗 모드에서 실행해보기</li>
-              {!webglSupported && <li>• GPU가 WebGL을 지원하는지 확인</li>}
+              {!webglSupported && <li>• 그래픽 카드가 3D 기능을 지원하는지 확인</li>}
             </ul>
           </div>
         </div>

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { uploadGeneratedImageToS3 } from "../utils/api";
+import AILoadingOverlay from "./UI/AILoadingOverlay";
+import { safeLocalStorageSetItem } from "../utils/imageCompression";
 
 // 검증된 침실 스타일 프리셋들
 const bedroomPresets = {
@@ -66,7 +68,7 @@ Contemporary sophisticated bedroom with bold design:
   
   industrial_urban: {
     name: "Industrial",
-    description: "도시적이고 날것의 인더스트리얼 침실",
+    description: "어반 팩토리 침실",
     basePrompt: `
 Industrial urban bedroom with raw, edgy aesthetic:
 - Exposed brick walls, concrete floors, metal beams, raw materials
@@ -186,6 +188,8 @@ const AIInteriorGenerator = ({ onImageGenerated, capturedScreenshot }) => {
   const [loading, setLoading] = useState(false); // 첫 번째 생성 로딩 상태
   const [generatingRealistic, setGeneratingRealistic] = useState(false); // 두 번째(실사화) 생성 로딩 상태
   const [error, setError] = useState(''); // 에러 메시지
+  const [loadingComplete, setLoadingComplete] = useState(false); // 로딩 완료 상태
+  const [realisticLoadingComplete, setRealisticLoadingComplete] = useState(false); // 실사화 로딩 완료 상태
 
   // data:URL을 Blob으로 변환해 안전하게 다운로드 (anchor href=data:URL 사용 시 브라우저 콘솔 경고 방지)
   const downloadDataUrl = async (dataUrl, filename) => {
@@ -367,7 +371,8 @@ RENDERING STYLE:
       };
 
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${apiKey}`;
+      // const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${apiKey}`;
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
 
       let attempt = 0;
       const maxAttempts = 5;
@@ -391,6 +396,12 @@ RENDERING STYLE:
           if (base64Data) {
             const generatedImageUrl = `data:image/png;base64,${base64Data}`;
             setImageUrl(generatedImageUrl);
+            setLoadingComplete(true);
+            
+            // 완료 애니메이션을 위한 지연
+            setTimeout(() => {
+              setLoadingComplete(false);
+            }, 2000);
             
             // S3에 자동 저장하고 URL 받아오기
             try {
@@ -401,12 +412,23 @@ RENDERING STYLE:
               
               // S3 URL을 localStorage에 저장 (방 저장시 사용)
               if (s3Result.url) {
-                localStorage.setItem('lastGeneratedDesignImage', s3Result.url);
-                localStorage.setItem('lastGeneratedDesignImageLocal', generatedImageUrl); // 로컬 백업
+                try {
+                  localStorage.setItem('lastGeneratedDesignImage', s3Result.url);
+                  // 압축된 로컬 백업 저장
+                  await safeLocalStorageSetItem('lastGeneratedDesignImageLocal', generatedImageUrl);
+                } catch (error) {
+                  console.warn('로컬 백업 저장 실패, S3 URL만 저장:', error);
+                  localStorage.setItem('lastGeneratedDesignImage', s3Result.url);
+                }
               }
             } catch (error) {
-              console.warn('S3 업로드 실패, 로컬 이미지 사용:', error);
-              localStorage.setItem('lastGeneratedDesignImage', generatedImageUrl);
+              console.warn('S3 업로드 실패, 압축된 로컬 이미지 사용:', error);
+              // 압축하여 안전하게 저장
+              try {
+                await safeLocalStorageSetItem('lastGeneratedDesignImage', generatedImageUrl);
+              } catch (storageError) {
+                console.error('압축된 이미지 저장도 실패:', storageError);
+              }
             }
             
             if (onImageGenerated) {
@@ -584,6 +606,12 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
           if (base64Data) {
             const realisticImageUrl = `data:image/png;base64,${base64Data}`;
             setRealisticImageUrl(realisticImageUrl);
+            setRealisticLoadingComplete(true);
+            
+            // 완료 애니메이션을 위한 지연
+            setTimeout(() => {
+              setRealisticLoadingComplete(false);
+            }, 2000);
             
             // S3에 자동 저장하고 URL 받아오기
             try {
@@ -594,12 +622,23 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
               
               // S3 URL을 localStorage에 저장 (방 저장시 사용)
               if (s3Result.url) {
-                localStorage.setItem('lastGeneratedRealisticImage', s3Result.url);
-                localStorage.setItem('lastGeneratedRealisticImageLocal', realisticImageUrl); // 로컬 백업
+                try {
+                  localStorage.setItem('lastGeneratedRealisticImage', s3Result.url);
+                  // 압축된 로컬 백업 저장
+                  await safeLocalStorageSetItem('lastGeneratedRealisticImageLocal', realisticImageUrl);
+                } catch (error) {
+                  console.warn('로컬 백업 저장 실패, S3 URL만 저장:', error);
+                  localStorage.setItem('lastGeneratedRealisticImage', s3Result.url);
+                }
               }
             } catch (error) {
-              console.warn('S3 업로드 실패, 로컬 이미지 사용:', error);
-              localStorage.setItem('lastGeneratedRealisticImage', realisticImageUrl);
+              console.warn('S3 업로드 실패, 압축된 로컬 이미지 사용:', error);
+              // 압축하여 안전하게 저장
+              try {
+                await safeLocalStorageSetItem('lastGeneratedRealisticImage', realisticImageUrl);
+              } catch (storageError) {
+                console.error('압축된 이미지 저장도 실패:', storageError);
+              }
             }
           } else {
             setError('실사화 이미지 생성에 실패했습니다. 다시 시도해주세요.');
@@ -838,7 +877,7 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
               disabled={loading || generatingRealistic}
               className="w-full bg-primary text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-secondary transition-colors shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? '생성 중...' : '1단계: 인테리어 디자인 생성하기'}
+              {loading ? '' : '1단계: 인테리어 디자인 생성하기'}
             </button>
           </form>
         </div>
@@ -862,7 +901,7 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
               />
               <div className="flex gap-3 mt-4">
                 <div className="flex-1 bg-green-100 text-green-800 py-3 px-4 rounded-lg text-sm font-semibold text-center">
-                  ✓ S3에 자동 저장됨
+                  ✓ 자동 저장됨
                 </div>
                 <button
                   onClick={() => downloadDataUrl(imageUrl, `ai-interior-design-${Date.now()}.png`)}
@@ -934,17 +973,7 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
               }`}
               disabled={generatingRealistic || loading}
             >
-              {generatingRealistic ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12V4a8 8 0 018 8z"></path>
-                  </svg>
-                  실사 방 사진 생성 중...
-                </span>
-              ) : (
-                '2단계: 실제 방 사진처럼 만들기'
-              )}
+              {generatingRealistic ? '' : '2단계: 실제 방 사진처럼 만들기'}
             </button>
 
             {/* 실사화된 이미지 결과 */}
@@ -966,7 +995,7 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
                   />
                   <div className="flex gap-3 mt-4">
                     <div className="flex-1 bg-green-100 text-green-800 py-3 px-4 rounded-lg text-sm font-semibold text-center">
-                      ✓ S3에 자동 저장됨
+                      ✓ 자동 저장됨
                     </div>
                     <button
                       onClick={() => downloadDataUrl(realisticImageUrl, `ai-interior-realistic-${Date.now()}.png`)}
@@ -988,6 +1017,24 @@ PEOPLE REMOVAL FOR REALISTIC PHOTO:
         
 
       </div>
+      
+      {/* AI 로딩 오버레이 */}
+      <AILoadingOverlay 
+        isVisible={loading}
+        title="AI가 인테리어를 생성하고 있습니다..."
+        subtitle="선택하신 스타일과 설정으로 맞춤 인테리어를 만들어드려요"
+        estimatedTime={30}
+        onComplete={loadingComplete}
+      />
+      
+      {/* 실사화 로딩 오버레이 */}
+      <AILoadingOverlay 
+        isVisible={generatingRealistic}
+        title="실제 방 사진처럼 변환하고 있습니다..."
+        subtitle="전문 사진작가 수준의 퀄리티로 실사화 중이에요"
+        estimatedTime={25}
+        onComplete={realisticLoadingComplete}
+      />
     </div>
 
   );

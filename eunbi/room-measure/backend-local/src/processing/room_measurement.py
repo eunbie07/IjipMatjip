@@ -7,6 +7,8 @@ import os
 from math import sqrt, isnan, isinf
 from typing import List, Tuple
 from ..models.schemas import Point3D
+from .accuracy_validator import accuracy_validator
+from .enhanced_image_processing import enhanced_processor
 
 logger = logging.getLogger(__name__)
 
@@ -145,33 +147,38 @@ def detect_vanishing_points_and_room_corners(image_path: str, confidence_thresho
         h, w = img.shape[:2]
         logger.info(f"이미지 크기: {w} x {h}")
         
-        # 이미지 전처리
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # 강화된 이미지 전처리
+        logger.info("🔧 강화된 이미지 전처리 시작...")
+        enhanced_image, processing_info = enhanced_processor.enhance_image_quality(img)
         
-        # 적응적 히스토그램 평활화
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        enhanced = clahe.apply(gray)
+        # 적응적 감지 파라미터 계산
+        adaptive_params = enhanced_processor.get_adaptive_detection_params(
+            enhanced_image, processing_info['final_quality']
+        )
         
-        # 가우시안 블러로 노이즈 제거
-        blurred = cv2.GaussianBlur(enhanced, (5, 5), 0)
+        logger.info(f"적응적 파라미터: {adaptive_params}")
+        logger.info(f"이미지 품질 개선: {processing_info.get('improvement_score', 0)}점")
         
-        # 에지 감지 (다중 임계값)
-        edges1 = cv2.Canny(blurred, 50, 150, apertureSize=3)
-        edges2 = cv2.Canny(blurred, 100, 200, apertureSize=3)
-        edges = cv2.bitwise_or(edges1, edges2)
+        # 적응적 Canny 엣지 감지
+        edges = cv2.Canny(
+            enhanced_image, 
+            adaptive_params['canny_low'], 
+            adaptive_params['canny_high'], 
+            apertureSize=3
+        )
         
         # 형태학적 연산으로 에지 연결
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
         edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
         
-        # Hough Line Transform (향상된 매개변수)
+        # 적응적 Hough Line Transform
         lines = cv2.HoughLinesP(
             edges, 
             rho=1, 
             theta=np.pi/180, 
-            threshold=50,
-            minLineLength=int(min(w, h) * 0.1),  # 이미지 크기에 비례
-            maxLineGap=int(min(w, h) * 0.02)
+            threshold=adaptive_params['hough_threshold'],
+            minLineLength=int(min(w, h) * adaptive_params['min_line_length_ratio']),
+            maxLineGap=int(min(w, h) * adaptive_params['max_line_gap_ratio'])
         )
         
         if lines is None or len(lines) < 4:
@@ -1419,6 +1426,17 @@ def improved_room_measurement(points: List[Point3D], target_height: float) -> di
         area_sqm = (width_m * depth_m)
         volume_cum = (width_m * depth_m * height_m)
         
+        # 정확도 검증 시스템 적용
+        validation_result = accuracy_validator.validate_physical_constraints(
+            width_m, depth_m, height_m
+        )
+        
+        quality_assessment = accuracy_validator.estimate_measurement_quality(
+            confidence, validation_result, processing_info.get('final_quality')
+        )
+        
+        suggestions = accuracy_validator.suggest_improvements(validation_result)
+        
         logger.info(f"측정 결과:")
         logger.info(f"  가로: {width_cm:.1f}cm ({width_m:.2f}m)")
         logger.info(f"  세로: {depth_cm:.1f}cm ({depth_m:.2f}m)")
@@ -1426,6 +1444,12 @@ def improved_room_measurement(points: List[Point3D], target_height: float) -> di
         logger.info(f"  면적: {area_sqm:.2f}m²")
         logger.info(f"  부피: {volume_cum:.2f}m³")
         logger.info(f"  신뢰도: {confidence:.1%}")
+        logger.info(f"  측정 품질: {quality_assessment['quality_score']}점 ({quality_assessment['grade']}) - {quality_assessment['reliability']}")
+        
+        if not validation_result['is_valid']:
+            logger.warning(f"물리적 제약 조건 위반: {validation_result['issues']}")
+        if validation_result['warnings']:
+            logger.warning(f"경고사항: {validation_result['warnings']}")
         
         return {
             "success": True,
@@ -1448,6 +1472,20 @@ def improved_room_measurement(points: List[Point3D], target_height: float) -> di
                 "depth_pixels": round(depth_pixels, 1)
             },
             "confidence": round(confidence, 3),
+            "quality": {
+                "quality_score": quality_assessment['quality_score'],
+                "grade": quality_assessment['grade'],
+                "color": quality_assessment['color'],
+                "reliability": quality_assessment['reliability'],
+                "breakdown": quality_assessment['breakdown'],
+                "basis": quality_assessment['basis'],
+                "validation": {
+                    "is_valid": validation_result['is_valid'],
+                    "issues": validation_result['issues'],
+                    "warnings": validation_result['warnings']
+                },
+                "suggestions": suggestions
+            },
             "target_height": target_height,
             "method": "improved_measurement",
             "timestamp": "2024-01-20T10:30:00Z",

@@ -6,12 +6,12 @@ export default {
       fontFamily: {
         'sans': [
           'Inter',
-          'system-ui',
           'Pretendard',
           '-apple-system', 
           'BlinkMacSystemFont',
           'Segoe UI',
           'Roboto',
+          'system-ui',
           'Oxygen',
           'Ubuntu',
           'Cantarell',

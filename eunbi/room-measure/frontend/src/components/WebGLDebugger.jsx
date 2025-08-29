@@ -45,20 +45,20 @@ const WebGLDebugger = () => {
     return (
       <div className="p-4 bg-gray-100 rounded-lg">
         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-        <p className="text-center mt-2">WebGL 진단 중...</p>
+        <p className="text-center mt-2">3D 기능 확인 중...</p>
       </div>
     );
   }
 
   return (
     <div className="p-4 bg-gray-100 rounded-lg space-y-4">
-      <h3 className="font-bold text-lg">WebGL 진단 정보</h3>
+      <h3 className="font-bold text-lg">3D 기능 진단 정보</h3>
       
       {/* 기본 지원 여부 */}
       <div className="bg-white p-3 rounded border">
         <h4 className="font-semibold mb-2">기본 지원 상태</h4>
         <div className="text-sm space-y-1">
-          <div>WebGL 지원: {debugInfo?.supported ? '지원됨' : '지원안됨'}</div>
+          <div>3D 기능 지원: {debugInfo?.supported ? '✅ 지원됨' : '❌ 지원안됨'}</div>
           {debugInfo?.error && (
             <div className="text-red-600">오류: {debugInfo.error}</div>
           )}
@@ -70,8 +70,8 @@ const WebGLDebugger = () => {
         <div className="bg-white p-3 rounded border">
           <h4 className="font-semibold mb-2">상세 테스트 결과</h4>
           <div className="text-sm space-y-1">
-            <div>WebGL 지원: {debugInfo.testResult.supported ? '지원됨' : '지원안됨'}</div>
-            <div>WebGL 2.0: {debugInfo.testResult.webgl2 ? '지원됨' : '지원안됨'}</div>
+            <div>3D 기능 지원: {debugInfo.testResult.supported ? '✅' : '❌'}</div>
+            <div>고급 3D 기능: {debugInfo.testResult.webgl2 ? '✅' : '❌'}</div>
             {debugInfo.testResult.renderer && (
               <div>렌더러: {debugInfo.testResult.renderer}</div>
             )}

@@ -12,6 +12,7 @@ import FurniturePlacement from "../components/FurniturePlacement";
 import ProgressBar from "../components/ProgressBar";
 import StickyProgressBar from "../components/StickyProgressBar";
 import RoomSizeInput from "../components/RoomSizeInput";
+import ProcessingSteps from "../components/UI/ProcessingSteps";
 
 const HOUSING_TYPES = [
   {
@@ -792,19 +793,19 @@ function RoomPlannerPage() {
                 />
               )}
 
-              {isProcessing && uploadMethod !== "manual" && <LoadingSpinner message={uploadStatus} />}
+              {isProcessing && uploadMethod !== "manual" && <ProcessingSteps message={uploadStatus} />}
               {uploadMethod !== "manual" && <UploadStatus status={uploadStatus} error={uploadError} />}
             </div>
 
             {uploadMethod !== "manual" && (
               <div className="border-t border-border pt-6">
                 <h3 className="font-medium text-lg mb-4 text-text-primary">
-                  측정 설정
+                  Measurement Settings
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <label className="block font-medium text-text-primary mb-2">
-                      건물 유형
+                      Building Type
                     </label>
                     <select
                       className="w-full border border-border rounded-lg px-4 py-3 focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-opacity-50"
@@ -820,7 +821,7 @@ function RoomPlannerPage() {
                   </div>
                   <div>
                     <label className="block font-medium text-text-primary mb-2">
-                      천장 높이
+                      Ceiling Height
                     </label>
                     <div className="flex items-center gap-3">
                       <input
