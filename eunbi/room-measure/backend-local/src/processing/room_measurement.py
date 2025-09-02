@@ -7,6 +7,10 @@ import os
 from math import sqrt, isnan, isinf
 from typing import List, Tuple
 from ..models.schemas import Point3D
+from .accuracy_validator import accuracy_validator
+from .enhanced_image_processing import enhanced_processor
+from .simple_distortion_correction import get_measurement_correction_factor
+from .quality_assessment import calculate_hybrid_quality_score
 
 logger = logging.getLogger(__name__)
 
@@ -145,33 +149,50 @@ def detect_vanishing_points_and_room_corners(image_path: str, confidence_thresho
         h, w = img.shape[:2]
         logger.info(f"이미지 크기: {w} x {h}")
         
-        # 이미지 전처리
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # 강화된 이미지 전처리 (기본값 설정)
+        processing_info = {'final_quality': {'total_score': 10}}  # 기본값
+        enhanced_image = img  # 기본값
         
-        # 적응적 히스토그램 평활화
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        enhanced = clahe.apply(gray)
+        try:
+            logger.info("강화된 이미지 전처리 시작...")
+            enhanced_image, processing_info = enhanced_processor.enhance_image_quality(img)
+            logger.info(f"이미지 품질 개선: {processing_info.get('improvement_score', 0)}점")
+        except Exception as e:
+            logger.warning(f"이미지 전처리 실패, 원본 이미지 사용: {e}")
         
-        # 가우시안 블러로 노이즈 제거
-        blurred = cv2.GaussianBlur(enhanced, (5, 5), 0)
+        # 적응적 감지 파라미터 계산
+        try:
+            adaptive_params = enhanced_processor.get_adaptive_detection_params(
+                enhanced_image, processing_info.get('final_quality', {'total_score': 10})
+            )
+            logger.info(f"적응적 파라미터: {adaptive_params}")
+        except Exception as e:
+            logger.warning(f"적응적 파라미터 계산 실패, 기본값 사용: {e}")
+            adaptive_params = {
+                'canny_low': 50, 'canny_high': 150, 'hough_threshold': 50,
+                'min_line_length_ratio': 0.1, 'max_line_gap_ratio': 0.02
+            }
         
-        # 에지 감지 (다중 임계값)
-        edges1 = cv2.Canny(blurred, 50, 150, apertureSize=3)
-        edges2 = cv2.Canny(blurred, 100, 200, apertureSize=3)
-        edges = cv2.bitwise_or(edges1, edges2)
+        # 적응적 Canny 엣지 감지
+        edges = cv2.Canny(
+            enhanced_image, 
+            adaptive_params['canny_low'], 
+            adaptive_params['canny_high'], 
+            apertureSize=3
+        )
         
         # 형태학적 연산으로 에지 연결
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
         edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
         
-        # Hough Line Transform (향상된 매개변수)
+        # 적응적 Hough Line Transform
         lines = cv2.HoughLinesP(
             edges, 
             rho=1, 
             theta=np.pi/180, 
-            threshold=50,
-            minLineLength=int(min(w, h) * 0.1),  # 이미지 크기에 비례
-            maxLineGap=int(min(w, h) * 0.02)
+            threshold=adaptive_params['hough_threshold'],
+            minLineLength=int(min(w, h) * adaptive_params['min_line_length_ratio']),
+            maxLineGap=int(min(w, h) * adaptive_params['max_line_gap_ratio'])
         )
         
         if lines is None or len(lines) < 4:
@@ -1308,7 +1329,7 @@ def detect_room_corners_adaptive(img):
         # 최종 폴백
         return detect_room_corners_fallback(w, h)
 
-def improved_room_measurement(points: List[Point3D], target_height: float) -> dict:
+def improved_room_measurement(points: List[Point3D], target_height: float, correction_info: dict = None) -> dict:
     """개선된 방 크기 측정 함수"""
     
     logger.info("개선된 방 크기 측정 시작...")
@@ -1365,7 +1386,7 @@ def improved_room_measurement(points: List[Point3D], target_height: float) -> di
         
         # 강화된 원근법 보정 (과대측정 방지)
         # 기본 보정 + 깊이 기반 추가 보정
-        base_reduction = 0.8  # 기본 20% 축소
+        base_reduction = 0.9  # 기본 10% 축소 (완화)
         perspective_factor_width = base_reduction - (depth_correction_width * 0.4)  # 최대 40% 추가 보정
         perspective_factor_depth = base_reduction - (depth_correction_depth * 0.4)  # 최대 40% 추가 보정
         
@@ -1377,10 +1398,37 @@ def improved_room_measurement(points: List[Point3D], target_height: float) -> di
         logger.info(f"  깊이값 - 앞: {front_depth:.3f}, 뒤: {back_depth:.3f}, 오른쪽: {right_depth:.3f}")
         logger.info(f"  보정계수 - 가로: {perspective_factor_width:.3f}, 세로: {perspective_factor_depth:.3f}")
         
-        # 실제 크기 계산 (원근법 보정 적용)
+        # 광각 왜곡 보정 계수 적용
+        wide_angle_factor = 1.0  # 기본값
+        
+        # 촬영 위치에 따른 추가 보정 (카메라 높이 추정)
+        camera_height_factor = 1.0
+        
+        # 천장과 바닥의 y좌표 차이로 촬영 각도 추정
+        ceiling_y = ceiling_left.y
+        floor_y = floor_left.y  
+        y_ratio = ceiling_y / floor_y if floor_y > 0 else 1.0
+        
+        if y_ratio < 0.3:  # 매우 낮은 각도 (바닥에서 촬영)
+            camera_height_factor = 0.85  # 15% 축소
+            logger.info(f"촬영 위치: 낮은 각도 감지 → 보정 적용 ({camera_height_factor})")
+        elif y_ratio < 0.5:  # 낮은 각도
+            camera_height_factor = 0.92  # 8% 축소  
+            logger.info(f"촬영 위치: 중간 각도 감지 → 보정 적용 ({camera_height_factor})")
+        else:  # 일반적 각도
+            logger.info(f"촬영 위치: 일반 각도 (y_ratio: {y_ratio:.2f})")
+        if correction_info:
+            wide_angle_factor = get_measurement_correction_factor(correction_info)
+            logger.info(f"광각 보정:")
+            logger.info(f"  왜곡 레벨: {correction_info.get('correction_level', 'unknown')}")
+            logger.info(f"  측정 보정 계수: {wide_angle_factor:.3f}")
+        else:
+            logger.info("광각 보정 정보 없음 - 기본값 사용")
+        
+        # 실제 크기 계산 (원근법 보정 + 광각 보정 적용)
         height_m = target_height
-        width_m = (width_pixels / pixels_per_meter) * perspective_factor_width   # 가로 (X축)
-        depth_m = (depth_pixels / pixels_per_meter) * perspective_factor_depth   # 세로 (Z축)
+        width_m = (width_pixels / pixels_per_meter) * perspective_factor_width * wide_angle_factor * camera_height_factor   # 가로 (X축)
+        depth_m = (depth_pixels / pixels_per_meter) * perspective_factor_depth * wide_angle_factor * camera_height_factor   # 세로 (Z축)
         
         # cm 단위로 변환
         height_cm = height_m * 100
@@ -1419,6 +1467,41 @@ def improved_room_measurement(points: List[Point3D], target_height: float) -> di
         area_sqm = (width_m * depth_m)
         volume_cum = (width_m * depth_m * height_m)
         
+        # 정확도 검증 시스템 적용
+        validation_result = accuracy_validator.validate_physical_constraints(
+            width_m, depth_m, height_m
+        )
+        
+        # 하이브리드 품질 평가 시스템 적용
+        measurement_data = {
+            "dimensions": {
+                "width_m": width_m,
+                "depth_m": depth_m,
+                "height_m": height_m
+            },
+            "calculated_values": {
+                "area_sqm": area_sqm,
+                "pixels_per_meter": pixels_per_meter
+            },
+            "pixel_distances": {
+                "height_pixels": height_pixels,
+                "width_pixels": width_pixels,
+                "depth_pixels": depth_pixels
+            },
+            "confidence": confidence
+        }
+        
+        # 깊이 추정 방법 결정 (depth_processing.py의 결과에서 가져와야 하지만 임시로 기본값)
+        depth_method = "hybrid_opencv_midas"  # 하이브리드 방식이 기본
+        
+        quality_assessment = calculate_hybrid_quality_score(
+            measurement_data, 
+            depth_method, 
+            correction_info.get("level", "none")
+        )
+        
+        suggestions = quality_assessment.get("suggestions", [])
+        
         logger.info(f"측정 결과:")
         logger.info(f"  가로: {width_cm:.1f}cm ({width_m:.2f}m)")
         logger.info(f"  세로: {depth_cm:.1f}cm ({depth_m:.2f}m)")
@@ -1426,6 +1509,12 @@ def improved_room_measurement(points: List[Point3D], target_height: float) -> di
         logger.info(f"  면적: {area_sqm:.2f}m²")
         logger.info(f"  부피: {volume_cum:.2f}m³")
         logger.info(f"  신뢰도: {confidence:.1%}")
+        logger.info(f"  측정 품질: {quality_assessment['quality_score']}점 ({quality_assessment['grade']}) - {quality_assessment['reliability']}")
+        
+        if not validation_result['is_valid']:
+            logger.warning(f"물리적 제약 조건 위반: {validation_result['issues']}")
+        if validation_result['warnings']:
+            logger.warning(f"경고사항: {validation_result['warnings']}")
         
         return {
             "success": True,
@@ -1448,6 +1537,20 @@ def improved_room_measurement(points: List[Point3D], target_height: float) -> di
                 "depth_pixels": round(depth_pixels, 1)
             },
             "confidence": round(confidence, 3),
+            "quality": {
+                "quality_score": quality_assessment['quality_score'],
+                "grade": quality_assessment['grade'],
+                "color": quality_assessment['color'],
+                "reliability": quality_assessment['reliability'],
+                "breakdown": quality_assessment['breakdown'],
+                "basis": quality_assessment['basis'],
+                "validation": {
+                    "is_valid": validation_result['is_valid'],
+                    "issues": validation_result['issues'],
+                    "warnings": validation_result['warnings']
+                },
+                "suggestions": suggestions
+            },
             "target_height": target_height,
             "method": "improved_measurement",
             "timestamp": "2024-01-20T10:30:00Z",

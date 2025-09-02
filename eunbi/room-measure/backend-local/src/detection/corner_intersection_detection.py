@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def detect_three_line_intersections(img, w, h):
     """세 선이 만나는 모서리 점 감지"""
     
-    logger.info("🔍 세 선 교차점 감지 시작...")
+    logger.info("세 선 교차점 감지 시작...")
     
     try:
         # 이미지 전처리
@@ -41,7 +41,7 @@ def detect_three_line_intersections(img, w, h):
             logger.warning(f"충분한 직선을 감지하지 못함: {len(lines) if lines is not None else 0}개")
             return []
         
-        logger.info(f"📏 {len(lines)}개 직선 감지됨")
+        logger.info(f"{len(lines)}개 직선 감지됨")
         
         # 직선 분류 (수직선, 수평선, 대각선)
         vertical_lines, horizontal_lines, diagonal_lines = classify_lines_detailed(lines)
@@ -53,7 +53,7 @@ def detect_three_line_intersections(img, w, h):
             vertical_lines, horizontal_lines, diagonal_lines, w, h
         )
         
-        logger.info(f"🎯 세 선 교차점 후보: {len(three_line_intersections)}개")
+        logger.info(f"세 선 교차점 후보: {len(three_line_intersections)}개")
         
         return three_line_intersections
         
@@ -325,7 +325,7 @@ def find_best_floor_corner_intersection(intersections, w, h):
     if not intersections:
         return None
     
-    logger.info(f"🔍 1번 포인트 찾기: 총 {len(intersections)}개 교차점 분석")
+    logger.info(f"1번 포인트 찾기: 총 {len(intersections)}개 교차점 분석")
     
     # 중앙 영역 정의 (좀 더 넓게)
     center_x = w * 0.5
@@ -371,11 +371,11 @@ def find_best_floor_corner_intersection(intersections, w, h):
                 best_candidate = candidate
         
         if best_candidate:
-            logger.info(f"✅ 중앙 바닥 최적 후보 선택: ({best_candidate['x']}, {best_candidate['y']}) 점수: {best_score:.3f}")
+            logger.info(f"중앙 바닥 최적 후보 선택: ({best_candidate['x']}, {best_candidate['y']}) 점수: {best_score:.3f}")
             return best_candidate
     
     # 2단계: 중앙 바닥 영역에 후보가 없으면 범위 확장
-    logger.info("⚠️ 중앙 바닥 후보 없음, 범위 확장...")
+    logger.info("중앙 바닥 후보 없음, 범위 확장...")
     
     # 바닥 영역에서 중앙에 가장 가까운 점
     floor_candidates = [
@@ -389,7 +389,7 @@ def find_best_floor_corner_intersection(intersections, w, h):
         return best_floor
     
     # 3단계: 최종 폴백 - 전체에서 중앙+아래쪽 우선
-    logger.info("⚠️ 바닥 후보 없음, 전체 영역에서 선택...")
+    logger.info("바닥 후보 없음, 전체 영역에서 선택...")
     
     best_fallback = min(intersections, 
                        key=lambda c: abs(c["x"] - center_x) * 0.7 + (h - c["y"]) * 0.3)

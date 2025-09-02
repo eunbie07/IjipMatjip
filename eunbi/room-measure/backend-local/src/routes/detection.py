@@ -52,11 +52,11 @@ async def auto_detect_room(file: UploadFile = File(...), confidence_threshold: f
             result = detect_room_with_ai(temp_image_path, adjusted_threshold)
             
             if result and result.get("success"):
-                logger.info(f"✅ AI 감지 완료: {len(result.get('detected_points', []))}개 포인트, 방법: {result.get('method')}")
+                logger.info(f"AI 감지 완료: {len(result.get('detected_points', []))}개 포인트, 방법: {result.get('method')}")
                 return result
             else:
                 # AI 감지 실패시 기존 방법으로 폴백
-                logger.info("⚠️ AI 감지 실패, 기존 방법으로 폴백...")
+                logger.info("AI 감지 실패, 기존 방법으로 폴백...")
                 fallback_result = simulate_roomnet_detection(temp_image_path, confidence_threshold)
                 
                 if fallback_result and fallback_result.get("success"):
@@ -96,8 +96,21 @@ async def estimate_room_size(room_points: RoomPoints):
             logger.warning(f"유효하지 않은 target_height: {room_points.target_height}, 기본값 2.3m 사용")
             room_points.target_height = 2.3
         
-        # 개선된 방 측정 알고리즘 사용 (target_height 전달)
-        result = improved_room_measurement(room_points.points, room_points.target_height)
+        # 보정 정보 로드 (광각 왜곡 보정에서 저장된 정보)
+        correction_info = None
+        try:
+            import json
+            correction_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 
+                                         "outputs", "correction_info.json")
+            if os.path.exists(correction_file):
+                with open(correction_file, 'r') as f:
+                    correction_info = json.load(f)
+                    logger.info(f"광각 보정 정보 로드됨: {correction_info.get('correction_level', 'unknown')}")
+        except Exception as e:
+            logger.warning(f"보정 정보 로드 실패: {e}, 기본값 사용")
+        
+        # 개선된 방 측정 알고리즘 사용 (target_height + correction_info 전달)
+        result = improved_room_measurement(room_points.points, room_points.target_height, correction_info)
         
         if result and result.get('success'):
             logger.info(f"방 크기 측정 완료: {result}")

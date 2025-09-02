@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserRooms, loadRoomById, deleteRoom } from '../utils/api';
+import RoomCardSkeleton from '../components/UI/RoomCardSkeleton';
 
 const MyRoomsPage = () => {
   const navigate = useNavigate();
@@ -135,11 +136,20 @@ const MyRoomsPage = () => {
     return (
       <div className="min-h-screen bg-background py-8">
         <div className="container mx-auto px-4 pt-24">
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-text-secondary">방 목록을 불러오는 중...</p>
-            </div>
+          <div className="mb-8">
+            <h1 className="text-4xl md:text-5xl font-bold text-text-primary mb-4">
+              내 <span className="text-primary">방 목록</span>
+            </h1>
+            <p className="text-lg text-text-secondary">
+              저장된 방들을 확인하고 다시 불러올 수 있습니다
+            </p>
+          </div>
+          
+          {/* 스켈레톤 카드들 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <RoomCardSkeleton key={index} />
+            ))}
           </div>
         </div>
       </div>

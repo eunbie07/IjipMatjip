@@ -10,9 +10,10 @@ import tempfile
 
 from ..models.schemas import DepthDistanceRequest
 from ..processing.depth_processing import (
-    generate_depth_map, get_depth_image_path, get_depth_at_point,
+    generate_depth_map, generate_depth_map_legacy, get_depth_image_path, get_depth_at_point,
     get_depth_map_meta, compute_3d_distance
 )
+from ..processing.simple_distortion_correction import apply_simple_correction
 
 logger = logging.getLogger(__name__)
 
@@ -42,37 +43,74 @@ async def undistort_image(file: UploadFile = File(...)):
                 content={"error": "이미지를 읽을 수 없습니다"}
             )
 
-        # 이미지 왜곡 보정 처리
-        h, w = img.shape[:2]
+        # 이미지 분석 기반 적응적 광각 보정
+        undistorted, correction_info = apply_simple_correction(img)
         
-        # 카메라 캘리브레이션 매개변수 (일반적인 값들)
-        camera_matrix = np.array([[w, 0, w/2],
-                                 [0, w, h/2],
-                                 [0, 0, 1]], dtype=np.float32)
-        
-        dist_coeffs = np.array([0.1, -0.2, 0, 0, 0], dtype=np.float32)
-        
-        # 왜곡 보정
-        undistorted = cv2.undistort(img, camera_matrix, dist_coeffs)
+        logger.info(f"감지된 왜곡 레벨: {correction_info.get('correction_level', 'unknown')}")
+        if correction_info.get('focal_factor'):
+            logger.info(f"초점거리 계수: {correction_info['focal_factor']:.2f}")
+        if correction_info.get('additional_correction_applied'):
+            logger.info(f"추가 보정 적용됨")
         
         # 보정된 이미지 저장
         output_path = os.path.join(OUTPUTS_DIR, "undistorted_image.jpg")
         cv2.imwrite(output_path, undistorted)
         
+        # 보정 정보 저장 (측정시 활용)
+        import json
+        correction_file = os.path.join(OUTPUTS_DIR, "correction_info.json")
+        try:
+            with open(correction_file, 'w') as f:
+                json.dump(correction_info, f)
+            logger.info(f"보정 정보 저장됨: {correction_file}")
+        except Exception as e:
+            logger.warning(f"보정 정보 저장 실패: {e}")
+        
         logger.info(f"이미지 왜곡 보정 완료: {output_path}")
         
-        # 보정된 이미지를 바로 반환
-        return FileResponse(
-            path=output_path,
-            media_type="image/jpeg",
-            filename="undistorted_image.jpg"
-        )
+        # 보정 정보와 함께 응답 반환
+        return JSONResponse(content={
+            "success": True,
+            "message": "이미지 왜곡 보정이 완료되었습니다",
+            "correction_info": {
+                "correction_level": correction_info.get('correction_level', 'moderate'),
+                "focal_factor": correction_info.get('focal_factor', 0.8),
+                "distortion_strength": correction_info.get('distortion_strength', 0.2),
+                "additional_correction_applied": correction_info.get('additional_correction_applied', False),
+                "fallback": correction_info.get('fallback', False)
+            },
+            "output_path": "undistorted_image.jpg"
+        })
         
     except Exception as e:
         logger.error(f"이미지 왜곡 보정 실패: {e}")
         return JSONResponse(
             status_code=500,
             content={"error": f"이미지 처리 중 오류가 발생했습니다: {str(e)}"}
+        )
+
+@router.get("/undistorted-image")
+async def get_undistorted_image():
+    """보정된 이미지 파일 다운로드"""
+    try:
+        output_path = os.path.join(OUTPUTS_DIR, "undistorted_image.jpg")
+        
+        if os.path.exists(output_path):
+            return FileResponse(
+                path=output_path,
+                media_type="image/jpeg",
+                filename="undistorted_image.jpg"
+            )
+        else:
+            return JSONResponse(
+                status_code=404,
+                content={"error": "보정된 이미지를 찾을 수 없습니다. 먼저 이미지 보정을 수행해주세요."}
+            )
+    except Exception as e:
+        logger.error(f"보정된 이미지 조회 실패: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"이미지 조회 중 오류가 발생했습니다: {str(e)}"}
         )
 
 @router.post("/depth-map")
@@ -87,7 +125,7 @@ async def create_depth_map():
                 content={"error": "왜곡 보정된 이미지를 찾을 수 없습니다. 먼저 이미지를 업로드하고 왜곡 보정을 수행해주세요."}
             )
         
-        success = await generate_depth_map(undistorted_path)
+        success = await generate_depth_map_legacy(undistorted_path)
         
         if success:
             logger.info("깊이 맵 생성 완료")

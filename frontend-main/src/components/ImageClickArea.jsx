@@ -5,32 +5,32 @@ import { getDepthMeta, getDepthAtPoint, autoDetectRoom } from "../utils/api";
 const CLICK_INSTRUCTIONS = [
   {
     step: 1,
-    text: "Floor-wall corner",
+    text: "바닥-벽 모서리",
     icon: "1",
-    detail: "Base point for height measurement",
+    detail: "높이 측정을 위한 기준점",
   },
   {
     step: 2,
-    text: "Ceiling-wall corner (same wall)",
+    text: "천장-벽 모서리 (같은 벽)",
     icon: "2",
-    detail: "Ceiling corner vertically above first point",
+    detail: "첫 번째 점의 수직 위 천장 모서리",
   },
   {
     step: 3,
-    text: "Left wall floor corner",
+    text: "왼쪽 벽 바닥 모서리",
     icon: "3",
-    detail: "Point for measuring room depth",
+    detail: "방 깊이 측정을 위한 점",
   },
   {
     step: 4,
-    text: "Right wall floor corner",
+    text: "오른쪽 벽 바닥 모서리",
     icon: "4",
-    detail: "Point for measuring room width",
+    detail: "방 너비 측정을 위한 점",
   },
 ];
 
 const ClickGuide = ({ currentStep, warnings }) => (
-  <div className="bg-surface p-4 rounded-xl border border-border">
+  <div className="bg-surface p-4 rounded-xl border border-border h-full flex flex-col">
     <h3 className="text-2xl font-bold mb-4 text-text-primary flex items-center gap-2">
       <strong>Click Guide</strong>
       <span className="text-sm font-normal text-text-secondary">
@@ -50,9 +50,15 @@ const ClickGuide = ({ currentStep, warnings }) => (
               : "bg-surface border-border text-text-secondary"
           }`}
         >
-          <span className="text-xl flex-shrink-0 mt-0.5">
-            {idx < currentStep ? "✓" : instruction.icon}
-          </span>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+            idx < currentStep 
+              ? "bg-green-500 text-white" 
+              : idx === currentStep
+              ? "bg-white text-primary"
+              : "bg-primary text-white"
+          }`}>
+            {idx < currentStep ? "✓" : instruction.step}
+          </div>
           <div className="flex-1">
             <div
               className={`font-semibold ${
@@ -65,6 +71,29 @@ const ClickGuide = ({ currentStep, warnings }) => (
           </div>
         </div>
       ))}
+    </div>
+
+    {/* 사용법 예시 이미지 */}
+    <div className="mt-6 p-4 bg-background rounded-lg border border-border">
+      <h4 className="font-semibold text-text-primary mb-3">사용법 예시</h4>
+      <div className="w-64 h-48 mx-auto rounded-lg overflow-hidden border-2 border-gray-200" style={{borderRadius: '8px'}}>
+        <div 
+          className="relative w-full h-full bg-gray-50"
+          style={{
+            backgroundImage: 'url("/image.png")',
+            backgroundSize: 'cover',
+            backgroundPosition: '5% bottom',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
+          <div className="absolute top-1 left-1 bg-primary text-white px-2 py-1 rounded text-xs">
+            예시 이미지
+          </div>
+        </div>
+      </div>
+      <p className="text-sm text-text-secondary mt-3 text-center">
+        방의 네 모서리를 위 이미지처럼 순서대로 클릭하세요
+      </p>
     </div>
 
     {warnings.length > 0 && (
@@ -559,7 +588,7 @@ const ImageClickArea = ({ imageUrl, onComplete, depthWidth, depthHeight }) => {
 
   return (
     <div className="mt-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-stretch">
         {/* 왼쪽: 클릭 가이드 */}
         <div className="lg:col-span-1">
           <ClickGuide currentStep={currentStep} warnings={warnings} />
@@ -567,7 +596,7 @@ const ImageClickArea = ({ imageUrl, onComplete, depthWidth, depthHeight }) => {
 
         {/* 오른쪽: 이미지 클릭 영역 */}
         <div className="lg:col-span-2">
-          <div className="bg-surface rounded-xl shadow-lg p-6">
+          <div className="bg-surface rounded-xl border border-border p-6 h-full flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-2xl font-bold text-text-primary">
                 <strong>Select Points on Room Photo</strong>
@@ -663,10 +692,10 @@ const ImageClickArea = ({ imageUrl, onComplete, depthWidth, depthHeight }) => {
                 ref={imageRef}
                 src={imageUrl}
                 alt="측정할 방 이미지"
-                className="max-w-full h-auto cursor-crosshair"
+                className="w-full h-auto cursor-crosshair block"
                 onClick={handleImageClick}
                 onLoad={handleImageLoad}
-                style={{ maxHeight: "600px" }}
+                style={{ maxHeight: "600px", maxWidth: "100%" }}
               />
 
               {/* 클릭된 점들 표시 */}

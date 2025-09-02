@@ -143,3 +143,9 @@ bfg-report/
 # Obsidian settings
 .obsidian/
 **/.obsidian/
+
+# Blog documentation
+series-outline.md
+
+# Analysis reports
+SYSTEM_ANALYSIS_REPORT.md

@@ -5,11 +5,13 @@ export default {
     extend: {
       fontFamily: {
         'sans': [
+          'Inter',
           'Pretendard',
           '-apple-system', 
           'BlinkMacSystemFont',
           'Segoe UI',
           'Roboto',
+          'system-ui',
           'Oxygen',
           'Ubuntu',
           'Cantarell',
@@ -17,6 +19,18 @@ export default {
           'Helvetica Neue',
           'sans-serif'
         ],
+        'display': ['Inter', 'system-ui', 'sans-serif'],
+        'body': ['Inter', 'system-ui', 'sans-serif'],
+        'heading': ['Inter', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        'hero': ['3.5rem', { lineHeight: '1.1', letterSpacing: '-0.025em', fontWeight: '700' }],
+        'hero-mobile': ['2.25rem', { lineHeight: '1.2', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'section-title': ['2.5rem', { lineHeight: '1.2', letterSpacing: '-0.02em', fontWeight: '600' }],
+        'card-title': ['1.5rem', { lineHeight: '1.3', letterSpacing: '-0.01em', fontWeight: '600' }],
+        'body-large': ['1.125rem', { lineHeight: '1.6', fontWeight: '400' }],
+        'body-medium': ['1rem', { lineHeight: '1.5', fontWeight: '400' }],
+        'caption': ['0.875rem', { lineHeight: '1.4', fontWeight: '500' }],
       },
       colors: {
         primary: '#ff7e97',        // pink

@@ -80,7 +80,7 @@ const AIInteriorPage = () => {
               <AIInteriorGenerator 
                 capturedScreenshot={capturedScreenshot}
                 onImageGenerated={(image) => {
-                  console.log('AI 인테리어 이미지 생성 완료:', image);
+                  // 이미지 생성 완료 처리 (필요시 추가 로직)
                 }}
               />
 
