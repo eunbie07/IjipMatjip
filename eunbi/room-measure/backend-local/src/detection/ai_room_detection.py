@@ -43,7 +43,7 @@ class RoomStructureAI:
 def detect_room_with_ai(image_path: str, confidence_threshold: float = 0.7) -> dict:
     """최신 AI 기반 방 모서리 감지 메인 함수"""
     
-    logger.info("🚀 최신 AI 기반 방 구조 분석 시작...")
+    logger.info("최신 AI 기반 방 구조 분석 시작...")
     
     try:
         # 이미지 로드
@@ -57,29 +57,29 @@ def detect_room_with_ai(image_path: str, confidence_threshold: float = 0.7) -> d
         # 첫 번째: 앙상블 AI 감지 시도 (최신 개선 버전)
         from .ensemble_detection import ensemble_detector
         
-        logger.info("🎯 앙상블 AI 감지 시도...")
+        logger.info("앙상블 AI 감지 시도...")
         
         ensemble_result = ensemble_detector.detect_room_with_ensemble(image_path, confidence_threshold, debug=True)
         
         if ensemble_result["success"] and ensemble_result["confidence"] >= confidence_threshold:
-            logger.info(f"✅ 앙상블 AI 감지 성공: 신뢰도 {ensemble_result['confidence']:.2f}, 방법: {ensemble_result['method']}")
+            logger.info(f"앙상블 AI 감지 성공: 신뢰도 {ensemble_result['confidence']:.2f}, 방법: {ensemble_result['method']}")
             return ensemble_result
         
         # 두 번째: 개선된 AI 감지 폴백
         from .improved_ai_detection import detect_room_corners_improved
         
-        logger.info("🎯 개선된 AI 감지 폴백...")
+        logger.info("개선된 AI 감지 폴백...")
         
         improved_result = detect_room_corners_improved(image_path, debug=True)
         
         if improved_result["success"] and improved_result["confidence"] >= confidence_threshold:
-            logger.info(f"✅ 개선된 AI 감지 성공: 신뢰도 {improved_result['confidence']:.2f}")
+            logger.info(f"개선된 AI 감지 성공: 신뢰도 {improved_result['confidence']:.2f}")
             return improved_result
         
         # 세 번째: 세 선 교차점 감지 (기하학적 방법) 
         from .corner_intersection_detection import detect_three_line_intersections, find_best_floor_corner_intersection
         
-        logger.info("🎯 세 선 교차점 감지 시작...")
+        logger.info("세 선 교차점 감지 시작...")
         
         three_line_intersections = detect_three_line_intersections(img, w, h)
         
@@ -88,7 +88,7 @@ def detect_room_with_ai(image_path: str, confidence_threshold: float = 0.7) -> d
             best_floor_corner = find_best_floor_corner_intersection(three_line_intersections, w, h)
             
             if best_floor_corner:
-                logger.info(f"✅ 세 선 교차점 감지 성공: 1번 포인트 위치 ({best_floor_corner['x']}, {best_floor_corner['y']})")
+                logger.info(f"세 선 교차점 감지 성공: 1번 포인트 위치 ({best_floor_corner['x']}, {best_floor_corner['y']})")
                 
                 # 나머지 3개 포인트는 기존 AI 방법으로 보완
                 remaining_points = generate_remaining_points_from_corner(best_floor_corner, three_line_intersections, w, h)
@@ -122,33 +122,33 @@ def detect_room_with_ai(image_path: str, confidence_threshold: float = 0.7) -> d
             transformer_result = detect_with_transformer_ai(image_path, confidence_threshold)
             
             if transformer_result["success"] and transformer_result["confidence"] >= confidence_threshold:
-                logger.info(f"✅ 최신 AI 감지 성공: 신뢰도 {transformer_result['confidence']:.2f}, 방법: {transformer_result['method']}")
+                logger.info(f"최신 AI 감지 성공: 신뢰도 {transformer_result['confidence']:.2f}, 방법: {transformer_result['method']}")
                 return transformer_result
         except ImportError:
             logger.warning("advanced_ai_detection 모듈을 찾을 수 없음")
         
         # 폴백: 기존 AI 기술들
-        logger.info("⚠️ 최신 AI 실패, 기존 AI 방법들 시도...")
+        logger.info("최신 AI 실패, 기존 AI 방법들 시도...")
         
         # 1단계: 세멘테이션 기반 방 구조 분석
         segmentation_result = detect_with_segmentation(img)
         
         if segmentation_result["success"] and segmentation_result["confidence"] >= confidence_threshold:
-            logger.info(f"✅ 세멘테이션 감지 성공: 신뢰도 {segmentation_result['confidence']:.2f}")
+            logger.info(f"세멘테이션 감지 성공: 신뢰도 {segmentation_result['confidence']:.2f}")
             return segmentation_result
         
         # 2단계: YOLO 스타일 객체 감지
         yolo_result = detect_with_yolo_style(img)
         
         if yolo_result["success"] and yolo_result["confidence"] >= confidence_threshold:
-            logger.info(f"✅ YOLO 스타일 감지 성공: 신뢰도 {yolo_result['confidence']:.2f}")
+            logger.info(f"YOLO 스타일 감지 성공: 신뢰도 {yolo_result['confidence']:.2f}")
             return yolo_result
         
         # 3단계: 딥러닝 기반 특징점 감지
         feature_result = detect_with_deep_features(img)
         
         if feature_result["success"]:
-            logger.info(f"✅ 딥러닝 특징점 감지 성공: 신뢰도 {feature_result['confidence']:.2f}")
+            logger.info(f"딥러닝 특징점 감지 성공: 신뢰도 {feature_result['confidence']:.2f}")
             return feature_result
         
         # 4단계: 고급 컴퓨터 비전 (AI 강화)
@@ -163,7 +163,7 @@ def detect_room_with_ai(image_path: str, confidence_threshold: float = 0.7) -> d
 def detect_with_segmentation(img) -> dict:
     """세멘테이션을 이용한 방 구조 분석"""
     
-    logger.info("🎯 세멘테이션 기반 분석...")
+    logger.info("세멘테이션 기반 분석...")
     
     try:
         h, w = img.shape[:2]
@@ -532,7 +532,7 @@ def sort_corners_like_manual_clicks(corners, w, h):
     # 수동 순서대로 정렬
     result.sort(key=lambda c: c.get("manual_order", 99))
     
-    logger.info("✅ 실제 수동 클릭 패턴으로 정렬 완료!")
+    logger.info("실제 수동 클릭 패턴으로 정렬 완료!")
     return result[:4]
 
 def calculate_segmentation_confidence(floor_mask, wall_mask, ceiling_mask):
@@ -562,7 +562,7 @@ def calculate_segmentation_confidence(floor_mask, wall_mask, ceiling_mask):
 def detect_with_yolo_style(img) -> dict:
     """YOLO 스타일 객체 감지"""
     
-    logger.info("🎯 YOLO 스타일 모서리 감지...")
+    logger.info("YOLO 스타일 모서리 감지...")
     
     try:
         h, w = img.shape[:2]
@@ -704,7 +704,7 @@ def select_distributed_corners(candidates, w, h):
 def detect_with_deep_features(img) -> dict:
     """딥러닝 기반 특징점 감지 (간소화 버전)"""
     
-    logger.info("🧠 딥러닝 특징점 분석...")
+    logger.info("딥러닝 특징점 분석...")
     
     try:
         h, w = img.shape[:2]

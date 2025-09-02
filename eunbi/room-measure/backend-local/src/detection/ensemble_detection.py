@@ -28,7 +28,7 @@ class EnsembleRoomDetector:
                 return {"success": False, "error": "이미지를 로드할 수 없습니다"}
             
             h, w = image.shape[:2]
-            logger.info(f"🔄 앙상블 방 감지 시작 - 이미지 크기: {w}x{h}")
+            logger.info(f"앙상블 방 감지 시작 - 이미지 크기: {w}x{h}")
             
             results = []
             total_weight = 0
@@ -43,9 +43,9 @@ class EnsembleRoomDetector:
                         'weight': self.algorithm_weights['improved_ai']
                     })
                     total_weight += self.algorithm_weights['improved_ai']
-                    logger.info(f"✅ Improved AI: 신뢰도 {improved_result.get('confidence', 0):.3f}")
+                    logger.info(f"Improved AI: 신뢰도 {improved_result.get('confidence', 0):.3f}")
                 else:
-                    logger.warning("❌ Improved AI 감지 실패")
+                    logger.warning("Improved AI 감지 실패")
             except Exception as e:
                 logger.warning(f"Improved AI 오류: {str(e)}")
             
@@ -59,9 +59,9 @@ class EnsembleRoomDetector:
                         'weight': self.algorithm_weights['canny_hough']
                     })
                     total_weight += self.algorithm_weights['canny_hough']
-                    logger.info(f"✅ Canny+Hough: 신뢰도 {canny_result.get('confidence', 0):.3f}")
+                    logger.info(f"Canny+Hough: 신뢰도 {canny_result.get('confidence', 0):.3f}")
                 else:
-                    logger.warning("❌ Canny+Hough 감지 실패")
+                    logger.warning("Canny+Hough 감지 실패")
             except Exception as e:
                 logger.warning(f"Canny+Hough 오류: {str(e)}")
             
@@ -75,9 +75,9 @@ class EnsembleRoomDetector:
                         'weight': self.algorithm_weights['harris_corner']
                     })
                     total_weight += self.algorithm_weights['harris_corner']
-                    logger.info(f"✅ Harris Corner: 신뢰도 {harris_result.get('confidence', 0):.3f}")
+                    logger.info(f"Harris Corner: 신뢰도 {harris_result.get('confidence', 0):.3f}")
                 else:
-                    logger.warning("❌ Harris Corner 감지 실패")
+                    logger.warning("Harris Corner 감지 실패")
             except Exception as e:
                 logger.warning(f"Harris Corner 오류: {str(e)}")
             
@@ -86,7 +86,7 @@ class EnsembleRoomDetector:
                 return {"success": False, "error": "모든 알고리즘이 실패했습니다", "confidence": 0.0}
             
             ensemble_result = self._combine_results(results, total_weight, w, h)
-            logger.info(f"🎯 앙상블 최종 신뢰도: {ensemble_result.get('confidence', 0):.3f}")
+            logger.info(f"앙상블 최종 신뢰도: {ensemble_result.get('confidence', 0):.3f}")
             
             return ensemble_result
             

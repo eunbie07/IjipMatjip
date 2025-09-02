@@ -74,18 +74,18 @@ class AccuracyValidator:
         
         if not validation_result['is_valid']:
             suggestions.extend([
-                "📷 다른 각도에서 촬영해보세요",
-                "💡 더 밝은 조명에서 촬영하세요", 
-                "📐 방의 모서리가 명확히 보이도록 촬영하세요",
-                "🔍 카메라를 안정적으로 고정하여 촬영하세요"
+                "다른 각도에서 촬영해보세요",
+                "더 밝은 조명에서 촬영하세요", 
+                "방의 모서리가 명확히 보이도록 촬영하세요",
+                "카메라를 안정적으로 고정하여 촬영하세요"
             ])
         
         if validation_result['warnings']:
-            suggestions.append("⚠️ 측정값이 일반적인 방 크기와 다릅니다. 실측으로 확인해보세요.")
+            suggestions.append("측정값이 일반적인 방 크기와 다릅니다. 실측으로 확인해보세요.")
             
         return suggestions
     
-    def estimate_measurement_quality(self, ai_confidence: float, validation_result: Dict, image_quality: Dict = None) -> Dict:
+    def estimate_measurement_quality(self, ai_confidence: float, validation_result: Dict, image_quality: Dict = None, correction_info: Dict = None) -> Dict:
         """측정 품질 점수 계산 (AI 신뢰도 + 물리적 타당성만)"""
         
         # 1. AI 신뢰도 점수 (0-1 → 0-40점)
@@ -94,13 +94,28 @@ class AccuracyValidator:
         # 2. 물리적 타당성 점수 (0-100 → 0-40점)  
         physical_score = (validation_result['estimated_accuracy'] / 100) * 40
         
-        # 3. 이미지 품질 점수 (0-20점)
+        # 3. 이미지 품질 점수 (0-15점)
         image_quality_score = 0
         if image_quality:
-            # 이미지 품질이 있으면 추가 점수
-            image_quality_score = min(image_quality.get('total_score', 0), 20)
+            # 이미지 품질이 있으면 추가 점수 (15점 최대로 축소)
+            image_quality_score = min(image_quality.get('total_score', 0), 15)
         
-        final_quality_score = confidence_score + physical_score + image_quality_score
+        # 4. 광각 보정 품질 보너스 (0-5점)
+        correction_bonus = 0
+        if correction_info:
+            correction_level = correction_info.get('correction_level', 'moderate')
+            # 왜곡 보정이 적용될수록 측정 정확도 향상
+            correction_bonuses = {
+                'minimal': 1,    # 왜곡 거의 없음 - 소폭 보너스
+                'moderate': 2,   # 일반 왜곡 보정 - 중간 보너스  
+                'strong': 4,     # 광각 왜곡 보정 - 높은 보너스
+                'ultra': 5       # 초광각 왜곡 보정 - 최대 보너스
+            }
+            correction_bonus = correction_bonuses.get(correction_level, 0)
+            if correction_info.get('fallback', False):
+                correction_bonus = 0  # 폴백시 보너스 없음
+        
+        final_quality_score = confidence_score + physical_score + image_quality_score + correction_bonus
         
         # 품질 등급과 예상 신뢰성 구간
         if final_quality_score >= 80:
@@ -128,9 +143,10 @@ class AccuracyValidator:
             'breakdown': {
                 'ai_confidence': round(confidence_score, 1),
                 'physical_validity': round(physical_score, 1),
-                'image_quality': round(image_quality_score, 1)
+                'image_quality': round(image_quality_score, 1),
+                'correction_bonus': round(correction_bonus, 1)
             },
-            'basis': "AI 알고리즘 확신도와 물리적 타당성 검증"
+            'basis': "AI 알고리즘 확신도, 물리적 타당성 및 광각 보정 품질 검증"
         }
 
 # 전역 인스턴스

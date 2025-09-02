@@ -27,7 +27,7 @@ def detect_windows_with_yolo(image_array, room_dimensions=None):
         logger.warning("YOLO 모델이 없어서 실제 이미지 분석 방법 사용")
         return detect_windows_with_image_analysis(image_array, room_dimensions)
     
-    logger.info("🎯 YOLO 기반 창문 감지 시작")
+    logger.info("YOLO 기반 창문 감지 시작")
     windows = []
     
     height, width = image_array.shape[:2]
@@ -98,7 +98,7 @@ def detect_windows_with_yolo(image_array, room_dimensions=None):
                 height_meters=1.5
             )
             potential_window_objects.append(window_info)
-            logger.info(f"🔍 창문 후보: {label} → {wall_position} 벽, 점수:{window_score:.2f}")
+            logger.info(f"창문 후보: {label} → {wall_position} 벽, 점수:{window_score:.2f}")
     
     # 가장 가능성 높은 창문 후보들만 선택
     potential_window_objects.sort(key=lambda x: x.confidence, reverse=True)
@@ -110,7 +110,7 @@ def detect_windows_with_yolo(image_array, room_dimensions=None):
         logger.info("실제 이미지 분석으로 창문 감지 시도")
         windows = detect_windows_with_image_analysis(image_array)
     
-    logger.info(f"🎯 YOLO 기반 창문 감지 완료: {len(windows)}개")
+    logger.info(f"YOLO 기반 창문 감지 완료: {len(windows)}개")
     
     # 추가 로그: 최종 결과 출력
     for i, window in enumerate(windows):
@@ -120,7 +120,7 @@ def detect_windows_with_yolo(image_array, room_dimensions=None):
 
 def detect_windows_with_image_analysis(image_array, room_dimensions=None):
     """실제 이미지 분석을 통한 창문 감지 (밝은 영역, 엣지, 색상 분석 종합)"""
-    logger.info("🔍 실제 이미지 분석 기반 창문 감지 시작")
+    logger.info("실제 이미지 분석 기반 창문 감지 시작")
     windows = []
     
     height, width = image_array.shape[:2]
@@ -147,19 +147,19 @@ def detect_windows_with_image_analysis(image_array, room_dimensions=None):
         window_info = candidate_to_window_info(candidate, width, height, room_points=None, room_dimensions=room_dimensions)
         if window_info:
             windows.append(window_info)
-            logger.info(f"✅ 이미지 분석 창문: {window_info.wall_position} 벽, 위치=({window_info.x_position:.2f}, {window_info.y_position:.2f}), 크기=({window_info.width_meters:.2f}×{window_info.height_meters:.2f}m), 신뢰도={window_info.confidence:.2f}")
+            logger.info(f"이미지 분석 창문: {window_info.wall_position} 벽, 위치=({window_info.x_position:.2f}, {window_info.y_position:.2f}), 크기=({window_info.width_meters:.2f}×{window_info.height_meters:.2f}m), 신뢰도={window_info.confidence:.2f}")
     
     # 5. 창문이 하나도 없으면 기본 분석 수행
     if len(windows) == 0:
         logger.info("이미지 분석으로도 창문 감지 실패, 기본 분석 수행")
         windows = perform_basic_window_analysis(image_array)
     
-    logger.info(f"🎯 이미지 분석 창문 감지 완료: {len(windows)}개")
+    logger.info(f"이미지 분석 창문 감지 완료: {len(windows)}개")
     return windows
 
 def find_bright_window_regions(image_array):
     """밝은 영역 기반 창문 감지"""
-    logger.info("💡 밝은 영역 분석 중...")
+    logger.info("밝은 영역 분석 중...")
     candidates = []
     
     # HSV 변환
@@ -212,12 +212,12 @@ def find_bright_window_regions(image_array):
                         
                         logger.info(f"  밝은 영역 창문 후보: 위치=({x},{y}), 크기=({w}x{h}), 밝기={roi_brightness:.1f}")
     
-    logger.info(f"💡 밝은 영역 분석 완료: {len(candidates)}개 후보")
+    logger.info(f"밝은 영역 분석 완료: {len(candidates)}개 후보")
     return candidates
 
 def find_edge_based_windows(image_array):
     """엣지 기반 창문 감지"""
-    logger.info("📐 엣지 기반 분석 중...")
+    logger.info("엣지 기반 분석 중...")
     candidates = []
     
     gray = cv2.cvtColor(image_array, cv2.COLOR_BGR2GRAY)
@@ -264,7 +264,7 @@ def find_edge_based_windows(image_array):
                         
                         logger.info(f"  엣지 기반 창문 후보: 위치=({x},{y}), 크기=({w}x{h}), 엣지밀도={edge_density:.3f}")
     
-    logger.info(f"📐 엣지 기반 분석 완료: {len(candidates)}개 후보")
+    logger.info(f"엣지 기반 분석 완료: {len(candidates)}개 후보")
     return candidates
 
 def find_color_based_windows(image_array):
@@ -356,7 +356,7 @@ def filter_and_merge_candidates(candidates, width, height):
     if not candidates:
         return []
     
-    logger.info(f"🔄 후보 필터링 시작: {len(candidates)}개")
+    logger.info(f"후보 필터링 시작: {len(candidates)}개")
     
     # 1. 신뢰도 기준 정렬
     candidates.sort(key=lambda x: x['confidence'], reverse=True)
@@ -411,7 +411,7 @@ def filter_and_merge_candidates(candidates, width, height):
             candidate['confidence'] > 0.65):  # 높은 신뢰도만
             filtered.append(candidate)
     
-    logger.info(f"🔄 후보 필터링 완료: {len(filtered)}개")
+    logger.info(f"후보 필터링 완료: {len(filtered)}개")
     return filtered
 
 def calculate_window_real_size(bbox, img_width, img_height, room_points=None, room_dimensions=None):
@@ -425,7 +425,7 @@ def calculate_window_real_size(bbox, img_width, img_height, room_points=None, ro
     try:
         if room_points and len(room_points) >= 2:
             # 방 측정 포인트가 있는 경우: 실제 방 크기 기준으로 계산
-            logger.info("📐 방 측정 포인트 기반 창문 크기 계산")
+            logger.info("방 측정 포인트 기반 창문 크기 계산")
             
             # 첫 번째와 두 번째 포인트 간 거리로 방 너비 계산 (예시)
             p1, p2 = room_points[0], room_points[1]
@@ -443,7 +443,7 @@ def calculate_window_real_size(bbox, img_width, img_height, room_points=None, ro
             width_meters = max(0.8, min(2.0, width_meters))   # 0.8m ~ 2.0m
             height_meters = max(1.0, min(1.8, height_meters)) # 1.0m ~ 1.8m
             
-            logger.info(f"📏 계산된 창문 크기: {width_meters:.2f}m × {height_meters:.2f}m (포인트 기반)")
+            logger.info(f"계산된 창문 크기: {width_meters:.2f}m × {height_meters:.2f}m (포인트 기반)")
             
         elif room_dimensions:
             # 실제 측정된 방 크기 기반 계산 (가장 정확함)
@@ -457,17 +457,17 @@ def calculate_window_real_size(bbox, img_width, img_height, room_points=None, ro
             actual_room_width = room_dimensions.get('width_cm', 400) / 100  # m 단위
             actual_room_height = room_dimensions.get('height_cm', 240) / 100  # m 단위
             
-            logger.info(f"📏 실제 방 크기: {actual_room_width:.2f}m × {actual_room_height:.2f}m")
+            logger.info(f"실제 방 크기: {actual_room_width:.2f}m × {actual_room_height:.2f}m")
             
             # 실제 방 크기 기준으로 창문 크기 계산 (원본 사진 비율 반영)
             width_meters = width_ratio * actual_room_width * 2.0  # 원본 사진의 큰 창문 반영
             height_meters = height_ratio * actual_room_height * 1.5  # 높이도 실제 비율 반영
             
-            logger.info(f"📐 이미지 비율: 너비={width_ratio:.3f}, 높이={height_ratio:.3f}")
+            logger.info(f"이미지 비율: 너비={width_ratio:.3f}, 높이={height_ratio:.3f}")
             
         else:
             # 방 정보가 없는 경우: 기본값 사용
-            logger.info("📐 기본값 기반 창문 크기 계산")
+            logger.info("기본값 기반 창문 크기 계산")
             
             # 이미지에서 창문이 차지하는 비율
             width_ratio = w / img_width
@@ -485,13 +485,13 @@ def calculate_window_real_size(bbox, img_width, img_height, room_points=None, ro
             width_meters = max(1.5, min(3.5, width_meters))  # 1.5~3.5m
             height_meters = max(1.0, min(2.5, height_meters))  # 1.0~2.5m
             
-            logger.info(f"📏 계산된 창문 크기: {width_meters:.2f}m × {height_meters:.2f}m (비율 기반)")
+            logger.info(f"계산된 창문 크기: {width_meters:.2f}m × {height_meters:.2f}m (비율 기반)")
             
             # 큰 창문 감지 시 더 큰 크기로 조정 (원본 사진 28% 비율 고려)
             if width_ratio > 0.08 or height_ratio > 0.10:  # 낮은 임계값으로 대부분 창문 감지
                 width_meters = min(width_meters * 1.8, 3.5)  # 80% 증가, 최대 3.5m
                 height_meters = min(height_meters * 1.6, 2.5)  # 60% 증가, 최대 2.5m
-                logger.info(f"🔍 큰 창문 감지 (28% 비율) → 크기 대폭 증가: {width_meters:.2f}m × {height_meters:.2f}m")
+                logger.info(f"큰 창문 감지 (28% 비율) → 크기 대폭 증가: {width_meters:.2f}m × {height_meters:.2f}m")
             
     except Exception as e:
         logger.warning(f"창문 크기 계산 실패: {e}, 기본값 사용")
@@ -531,7 +531,7 @@ def candidate_to_window_info(candidate, img_width, img_height, room_points=None,
         relative_y_in_image = center_y / img_height
         if relative_y_in_image < 0.4:  # 이미지 상단의 창문
             x_position = 0.7  # 오른쪽 벽의 뒤쪽 (70% 위치)
-            logger.info(f"🎯 이미지 상단 창문 → 오른쪽 벽 뒤쪽(70%)으로 매핑")
+            logger.info(f"이미지 상단 창문 → 오른쪽 벽 뒤쪽(70%)으로 매핑")
         else:
             x_position = 0.5  # 벽의 중앙
     else:
@@ -543,7 +543,7 @@ def candidate_to_window_info(candidate, img_width, img_height, room_points=None,
     # 원본 사진 기준: 상단에 있는 창문을 벽 상단으로 매핑
     if relative_y_in_image < 0.4:  # 이미지 상단 40% (원본 사진의 창문 영역)
         y_position = 0.75  # 벽 상단 고정 (75% 높이)
-        logger.info(f"🎯 이미지 상단 창문 → 벽 상단(75%)으로 매핑")
+        logger.info(f"이미지 상단 창문 → 벽 상단(75%)으로 매핑")
     elif relative_y_in_image < 0.6:  # 이미지 중간
         y_position = 0.4 + ((relative_y_in_image - 0.3) / 0.3) * 0.3  # 벽 중간 (0.4-0.7)
     else:  # 이미지 하단
@@ -575,7 +575,7 @@ def determine_wall_position_improved(center_x, center_y, img_width, img_height):
     x_ratio = center_x / img_width
     y_ratio = center_y / img_height
     
-    logger.info(f"🎯 창문 위치 분석: x_ratio={x_ratio:.3f}, y_ratio={y_ratio:.3f}")
+    logger.info(f"창문 위치 분석: x_ratio={x_ratio:.3f}, y_ratio={y_ratio:.3f}")
     
     # 1. 좌우 구분이 명확한 경우
     if x_ratio < 0.25:  # 이미지 좌측 25%
@@ -598,7 +598,7 @@ def determine_wall_position_improved(center_x, center_y, img_width, img_height):
     if 0.3 < x_ratio < 0.7 and y_ratio < 0.5:  # 중앙 상단 영역
         wall = "back"  # 원본 사진의 창문 위치에 맞게 뒷벽으로 수정
         confidence = "very_high"
-        logger.info(f"🎯 중앙 상단 창문 감지 → 뒷벽으로 매핑 (원본 사진 기준)")
+        logger.info(f"중앙 상단 창문 감지 → 뒷벽으로 매핑 (원본 사진 기준)")
         logger.info(f"🪟 중앙 상단 창문 감지 - 뒷벽으로 확정")
     
     logger.info(f"🏠 벽 위치 판단: {wall} (신뢰도: {confidence})")
@@ -624,7 +624,7 @@ def determine_wall_position(x, y, img_width, img_height):
 
 def perform_basic_window_analysis(image_array):
     """기본 창문 분석 (모든 방법 실패시 최후 수단)"""
-    logger.info("🔧 기본 창문 분석 수행")
+    logger.info("기본 창문 분석 수행")
     
     height, width = image_array.shape[:2]
     
@@ -683,10 +683,10 @@ def perform_basic_window_analysis(image_array):
             height_meters=1.5
         )
         
-        logger.info(f"🔧 기본 분석 창문: {wall_position} 벽, 위치=({window.x_position:.2f}, {window.y_position:.2f})")
+        logger.info(f"기본 분석 창문: {wall_position} 벽, 위치=({window.x_position:.2f}, {window.y_position:.2f})")
         return [window]
     
-    logger.info("🔧 기본 분석으로도 창문 감지 실패")
+    logger.info("기본 분석으로도 창문 감지 실패")
     return []
 
 # 메인 창문 감지 함수

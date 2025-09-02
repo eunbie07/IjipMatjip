@@ -24,7 +24,7 @@ const ProcessingSteps = ({ message }) => {
   }, [message]);
 
   return (
-    <div className="bg-surface rounded-xl border border-border shadow-sm p-6 max-w-md mx-auto">
+    <div className="bg-surface rounded-xl border border-border shadow-sm p-4 max-w-sm mx-auto scale-75 transform">
       <div className="mb-6">
         {/* 회전하는 3D 아이콘 */}
         <div className="relative mx-auto w-16 h-16 mb-4">

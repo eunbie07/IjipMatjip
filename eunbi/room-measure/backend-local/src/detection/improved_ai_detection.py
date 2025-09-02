@@ -14,12 +14,12 @@ class ImprovedRoomAI:
     
     def __init__(self):
         self.debug_mode = True
-        logger.info("🚀 개선된 AI 모델 초기화...")
+        logger.info("개선된 AI 모델 초기화...")
 
 def detect_room_corners_improved(image_path: str, debug: bool = False) -> dict:
     """개선된 AI 기반 방 모서리 감지 메인 함수"""
     
-    logger.info("🎯 개선된 AI 방 모서리 감지 시작...")
+    logger.info("개선된 AI 방 모서리 감지 시작...")
     
     try:
         img = cv2.imread(image_path)
@@ -72,7 +72,7 @@ def detect_room_corners_improved(image_path: str, debug: bool = False) -> dict:
             }
             cleaned_corners.append(cleaned_corner)
         
-        logger.info(f"✅ 개선된 AI 감지 완료: 신뢰도 {confidence:.2f}")
+        logger.info(f"개선된 AI 감지 완료: 신뢰도 {confidence:.2f}")
         
         return {
             "success": True,

@@ -76,18 +76,22 @@ const ClickGuide = ({ currentStep, warnings }) => (
     {/* 사용법 예시 이미지 */}
     <div className="mt-6 p-4 bg-background rounded-lg border border-border">
       <h4 className="font-semibold text-text-primary mb-3">사용법 예시</h4>
-      <div className="relative bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center">
-        <img
-          src="/image.png"
-          alt="방 측정 가이드 예시"
-          className="w-full h-48 object-cover object-bottom"
-        />
-        
-        <div className="absolute top-2 left-2 bg-primary text-white px-2 py-1 rounded text-xs">
-          예시 이미지
+      <div className="w-64 h-48 mx-auto rounded-lg overflow-hidden border-2 border-gray-200" style={{borderRadius: '8px'}}>
+        <div 
+          className="relative w-full h-full bg-gray-50"
+          style={{
+            backgroundImage: 'url("/image.png")',
+            backgroundSize: 'cover',
+            backgroundPosition: '5% bottom',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
+          <div className="absolute top-1 left-1 bg-primary text-white px-2 py-1 rounded text-xs">
+            예시 이미지
+          </div>
         </div>
       </div>
-      <p className="text-sm text-text-secondary mt-3">
+      <p className="text-sm text-text-secondary mt-3 text-center">
         방의 네 모서리를 위 이미지처럼 순서대로 클릭하세요
       </p>
     </div>
@@ -688,10 +692,10 @@ const ImageClickArea = ({ imageUrl, onComplete, depthWidth, depthHeight }) => {
                 ref={imageRef}
                 src={imageUrl}
                 alt="측정할 방 이미지"
-                className="max-w-full h-auto cursor-crosshair"
+                className="w-full h-auto cursor-crosshair block"
                 onClick={handleImageClick}
                 onLoad={handleImageLoad}
-                style={{ maxHeight: "600px" }}
+                style={{ maxHeight: "600px", maxWidth: "100%" }}
               />
 
               {/* 클릭된 점들 표시 */}
